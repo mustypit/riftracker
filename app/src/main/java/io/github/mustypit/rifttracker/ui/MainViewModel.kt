@@ -1,0 +1,188 @@
+package io.github.mustypit.rifttracker.ui
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import io.github.mustypit.rifttracker.data.AppDb
+import io.github.mustypit.rifttracker.data.MatchStore
+import io.github.mustypit.rifttracker.game.AddResult
+import io.github.mustypit.rifttracker.game.Format
+import io.github.mustypit.rifttracker.game.GameRules
+import io.github.mustypit.rifttracker.game.Match
+import io.github.mustypit.rifttracker.game.MatchRules
+import io.github.mustypit.rifttracker.game.Outcome
+import io.github.mustypit.rifttracker.game.PointKind
+import io.github.mustypit.rifttracker.game.Side
+import io.github.mustypit.rifttracker.stats.Period
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlin.random.Random
+
+/** The few things tests swap out. */
+object AppGraph {
+    var clock: () -> Long = System::currentTimeMillis
+    var random: Random = Random.Default
+}
+
+enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Legends("Legends") }
+
+sealed interface Screen {
+    data class MatchDetail(val id: Long) : Screen
+    data class LegendDetail(val legend: String) : Screen
+    data object LogMatch : Screen
+}
+
+/** Values to start a match with (rematch fills them in). */
+data class MatchSetup(val format: Format = Format.BO3, val myLegend: String = "", val oppName: String = "", val oppLegend: String = "")
+
+class MainViewModel(app: Application) : AndroidViewModel(app) {
+    private val store = MatchStore(AppDb.get(app).matches())
+    private val now get() = AppGraph.clock()
+
+    private val _tab = MutableStateFlow(Tab.Play)
+    val tab: StateFlow<Tab> = _tab.asStateFlow()
+    private val _stack = MutableStateFlow<List<Screen>>(emptyList())
+    val stack: StateFlow<List<Screen>> = _stack.asStateFlow()
+
+    val history: StateFlow<List<Match>> = store.finished.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val period = MutableStateFlow(Period.ALL)
+
+    /** The match being counted. Kept in memory for instant taps and saved after every change. */
+    private val _active = MutableStateFlow<Match?>(null)
+    val active: StateFlow<Match?> = _active.asStateFlow()
+    private val _loaded = MutableStateFlow(false)
+    val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
+
+    /** Side waiting for the "winning point by conquering?" answer. */
+    private val _confirmConquer = MutableStateFlow<Side?>(null)
+    val confirmConquer: StateFlow<Side?> = _confirmConquer.asStateFlow()
+
+    /** Shown after a coin flip until the first point. */
+    private val _coin = MutableStateFlow<Side?>(null)
+    val coin: StateFlow<Side?> = _coin.asStateFlow()
+
+    val setup = MutableStateFlow(MatchSetup())
+
+    private val saving = Mutex()
+
+    init {
+        viewModelScope.launch {
+            saving.withLock { _active.value = store.activeNow() }
+            _loaded.value = true
+        }
+    }
+
+    // Navigation
+
+    fun selectTab(t: Tab) { _tab.value = t; _stack.value = emptyList() }
+    fun push(s: Screen) { _stack.value = _stack.value + s }
+    fun back(): Boolean {
+        if (_stack.value.isNotEmpty()) { _stack.value = _stack.value.dropLast(1); return true }
+        if (_tab.value != Tab.Play) { _tab.value = Tab.Play; return true }
+        return false
+    }
+
+    // Counting
+
+    private fun persist() = viewModelScope.launch {
+        saving.withLock {
+            val m = _active.value ?: return@withLock
+            val saved = store.save(m)
+            if (m.id == 0L) _active.update { it?.copy(id = saved.id) }
+        }
+    }
+
+    fun startMatch(s: MatchSetup) {
+        setup.value = s
+        _active.value = Match(format = s.format, myLegend = s.myLegend.trim(), oppName = s.oppName.trim(), oppLegend = s.oppLegend.trim(), startedAt = now)
+        persist()
+    }
+
+    /** Starts the next game. [first] null means flip a coin. */
+    fun chooseFirst(first: Side?) {
+        val m = _active.value ?: return
+        val who = first ?: (if (AppGraph.random.nextBoolean()) Side.ME else Side.OPP).also { _coin.value = it }
+        if (first != null) _coin.value = null
+        _active.value = MatchRules.startGame(m, who, now)
+        persist()
+    }
+
+    fun addPoint(side: Side, kind: PointKind, confirmed: Boolean = false) {
+        val m = _active.value ?: return
+        val g = MatchRules.current(m) ?: return
+        when (val r = GameRules.add(g, side, kind, now, confirmed)) {
+            is AddResult.Added -> {
+                _coin.value = null
+                _active.value = MatchRules.replaceCurrent(m, r.game)
+                persist()
+            }
+            AddResult.ConfirmFinalConquer -> _confirmConquer.value = side
+            AddResult.Ignored -> {}
+        }
+    }
+
+    fun answerConquer(count: Boolean) {
+        val side = _confirmConquer.value ?: return
+        _confirmConquer.value = null
+        if (count) addPoint(side, PointKind.CONQUER, confirmed = true)
+    }
+
+    fun undo() {
+        val m = _active.value ?: return
+        val last = m.games.lastOrNull() ?: return
+        // Undo on a game that hasn't had a point yet takes back starting it.
+        _active.value = if (!last.isOver && last.events.isEmpty()) m.copy(games = m.games.dropLast(1)) else MatchRules.undo(m)
+        persist()
+    }
+
+    fun drawGame() {
+        val m = _active.value ?: return
+        val g = MatchRules.current(m) ?: return
+        _active.value = MatchRules.replaceCurrent(m, GameRules.endAsDraw(g, now))
+        persist()
+    }
+
+    fun abandonMatch() = viewModelScope.launch {
+        saving.withLock {
+            _active.value?.takeIf { it.id != 0L }?.let { store.delete(it.id) }
+            _active.value = null
+        }
+    }
+
+    /** Saves the decided match to history and shows it. */
+    fun finishMatch() = viewModelScope.launch {
+        val id = saving.withLock {
+            val m = _active.value ?: return@withLock null
+            val saved = store.save(m.copy(endedAt = now))
+            _active.value = null
+            saved.id
+        } ?: return@launch
+        _tab.value = Tab.Matches
+        _stack.value = listOf(Screen.MatchDetail(id))
+    }
+
+    fun rematch(m: Match) {
+        _tab.value = Tab.Play
+        _stack.value = emptyList()
+        if (_active.value == null) startMatch(MatchSetup(m.format, m.myLegend, m.oppName, m.oppLegend))
+    }
+
+    // History
+
+    fun logMatch(s: MatchSetup, results: List<Outcome>, firsts: List<Side?>) = viewModelScope.launch {
+        store.save(MatchRules.logged(s.format, s.myLegend.trim(), s.oppName.trim(), s.oppLegend.trim(), results, firsts, now))
+        back()
+    }
+
+    fun deleteMatch(id: Long) = viewModelScope.launch {
+        store.delete(id)
+        back()
+    }
+}

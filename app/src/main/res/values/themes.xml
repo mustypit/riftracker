@@ -1,0 +1,7 @@
+<resources>
+    <color name="ink">#111111</color>
+    <color name="paper">#F6F4F0</color>
+    <style name="Theme.RiftTracker" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/paper</item>
+    </style>
+</resources>

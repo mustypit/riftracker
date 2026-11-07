@@ -1,0 +1,128 @@
+package io.github.mustypit.rifttracker.game
+
+/** What happened when a point button was pressed. */
+sealed interface AddResult {
+    data class Added(val game: Game) : AddResult
+    /**
+     * The point would be the winning one and comes from a conquer. That only counts if the player
+     * scored every other battlefield that turn, which the app doesn't track, so it asks.
+     */
+    data object ConfirmFinalConquer : AddResult
+    /** Game already over, or the score would go below zero. */
+    data object Ignored : AddResult
+}
+
+/** Scoring within one game. Pure functions: the clock is passed in. */
+object GameRules {
+    const val VICTORY_SCORE = 8
+
+    fun add(game: Game, side: Side, kind: PointKind, now: Long, confirmed: Boolean = false): AddResult {
+        if (game.isOver) return AddResult.Ignored
+        val delta = if (kind == PointKind.CORRECTION) -1 else 1
+        val score = game.score(side)
+        if (score + delta < 0) return AddResult.Ignored
+        if (kind == PointKind.CONQUER && score + delta >= VICTORY_SCORE && !confirmed) return AddResult.ConfirmFinalConquer
+        val events = game.events + PointEvent(side, kind, delta, (now - game.startedAt).coerceAtLeast(0))
+        val won = score + delta >= VICTORY_SCORE
+        return AddResult.Added(
+            game.copy(
+                events = events,
+                outcome = if (won) (if (side == Side.ME) Outcome.WIN else Outcome.LOSS) else null,
+                endedAt = if (won) now else null,
+            ),
+        )
+    }
+
+    /** Takes back the last press; reopens the game if that press ended it. */
+    fun undo(game: Game): Game {
+        if (game.events.isEmpty()) return if (game.outcome == Outcome.DRAW) game.copy(outcome = null, endedAt = null) else game
+        if (game.outcome == Outcome.DRAW) return game.copy(outcome = null, endedAt = null)
+        return game.copy(events = game.events.dropLast(1), outcome = null, endedAt = null)
+    }
+
+    /** Time ran out or players agreed: a draw. */
+    fun endAsDraw(game: Game, now: Long): Game = if (game.isOver) game else game.copy(outcome = Outcome.DRAW, endedAt = now)
+
+    /** Score after each press, for the timeline: (event, my score, their score). */
+    fun timeline(game: Game): List<Triple<PointEvent, Int, Int>> {
+        var me = 0
+        var opp = 0
+        return game.events.map { e ->
+            if (e.side == Side.ME) me += e.delta else opp += e.delta
+            Triple(e, me, opp)
+        }
+    }
+}
+
+/** Best-of-1 / best-of-3 bookkeeping. */
+object MatchRules {
+    fun wins(m: Match) = m.games.count { it.outcome == Outcome.WIN }
+    fun losses(m: Match) = m.games.count { it.outcome == Outcome.LOSS }
+    fun draws(m: Match) = m.games.count { it.outcome == Outcome.DRAW }
+
+    /** The game being played, if any. */
+    fun current(m: Match): Game? = m.games.lastOrNull()?.takeIf { !it.isOver }
+
+    /** True when no more games are needed: someone has enough wins, or all games are played. */
+    fun isDecided(m: Match): Boolean {
+        if (current(m) != null) return false
+        return wins(m) >= m.format.winsNeeded || losses(m) >= m.format.winsNeeded || m.games.size >= m.format.maxGames
+    }
+
+    fun result(m: Match): Outcome = when {
+        wins(m) > losses(m) -> Outcome.WIN
+        losses(m) > wins(m) -> Outcome.LOSS
+        else -> Outcome.DRAW
+    }
+
+    /** "2–1", or "1–1–1" when there were draws. */
+    fun scoreLine(m: Match): String {
+        val d = draws(m)
+        return if (d == 0) "${wins(m)}–${losses(m)}" else "${wins(m)}–${losses(m)}–$d"
+    }
+
+    /** Whoever lost the previous game usually picks, and goes first. Null for game 1 or after a draw. */
+    fun suggestedFirst(m: Match): Side? = when (m.games.lastOrNull()?.outcome) {
+        Outcome.WIN -> Side.OPP
+        Outcome.LOSS -> Side.ME
+        else -> null
+    }
+
+    fun startGame(m: Match, wentFirst: Side?, now: Long): Match {
+        require(current(m) == null && !isDecided(m)) { "No game to start" }
+        return m.copy(games = m.games + Game(wentFirst = wentFirst, startedAt = now))
+    }
+
+    fun replaceCurrent(m: Match, game: Game): Match = m.copy(games = m.games.dropLast(1) + game)
+
+    /** Undo works across the end of a game: it reopens the last game while the match isn't saved. */
+    fun undo(m: Match): Match {
+        val last = m.games.lastOrNull() ?: return m
+        return replaceCurrent(m, GameRules.undo(last))
+    }
+
+    /** A match entered afterwards: just game results, no point log. */
+    fun logged(format: Format, myLegend: String, oppName: String, oppLegend: String, results: List<Outcome>, firsts: List<Side?>, at: Long): Match =
+        Match(
+            format = format, myLegend = myLegend, oppName = oppName, oppLegend = oppLegend,
+            startedAt = at, endedAt = at, logged = true,
+            games = results.mapIndexed { i, o -> Game(wentFirst = firsts.getOrNull(i), startedAt = at, endedAt = at, outcome = o) },
+        )
+
+    /** Whether a list of logged game results makes a complete match for the format. */
+    fun validLog(format: Format, results: List<Outcome>): Boolean {
+        if (results.isEmpty() || results.size > format.maxGames) return false
+        val m = Match(format = format, myLegend = "", oppLegend = "", startedAt = 0, games = results.map { Game(startedAt = 0, outcome = it) })
+        // Every game before the last must have left the match undecided.
+        val undecidedBefore = (1 until results.size).all { n -> !isDecided(m.copy(games = m.games.take(n))) }
+        return isDecided(m) && undecidedBefore
+    }
+}
+
+fun formatDuration(ms: Long): String {
+    val total = (ms / 1000).coerceAtLeast(0)
+    val h = total / 3600
+    val m = (total % 3600) / 60
+    val s = total % 60
+    return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+}
