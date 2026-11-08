@@ -100,7 +100,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
 
     val darkness by vm.settings.darkness.collectAsState()
     var panels by remember { mutableStateOf(setOf<Side>()) }
-    Box(Modifier.fillMaxSize().background(C.Ink)) {
+    Box(Modifier.fillMaxSize().background(C.Black)) {
         Column(Modifier.fillMaxSize()) {
             for (side in listOf(Side.OPP, Side.ME)) {
                 if (side == Side.ME) MiddleBar(vm, match, game, coin)
@@ -144,7 +144,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
 }
 
 /** Dark or white text, whichever reads better on [c]. */
-private fun inkOn(c: Color) = if (c.luminance() > 0.4f) C.Ink else Color.White
+private fun inkOn(c: Color) = if (c.luminance() > 0.4f) C.Black else Color.White
 
 /** Two colours for a player: the legend's domains, or the seat colour when they're unknown. */
 private fun playerColors(legendName: String, side: Side): Pair<Color, Color> {
@@ -312,7 +312,7 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
         now = AppGraph.clock()
         while (running) { delay(1000); now = AppGraph.clock() }
     }
-    Row(Modifier.fillMaxWidth().height(52.dp).background(C.Ink).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().height(52.dp).background(C.Black).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = vm::undo, enabled = game != null) { Icon(Icons.AutoMirrored.Filled.Undo, "Undo", tint = Color.White) }
         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
             // After a tap on a score took a point off, the pill offers to undo it for a few seconds.
@@ -324,7 +324,7 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
                 else -> "FIRST TO ${GameRules.VICTORY_SCORE}"
             }
             Text(
-                label, style = Caps, color = C.Ink,
+                label, style = Caps, color = C.Black,
                 modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (correction != null) Color.White else C.Yellow)
                     .clickable(enabled = correction != null) { vm.undo() }
                     .padding(horizontal = 10.dp, vertical = 4.dp),
@@ -360,7 +360,7 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
 private fun Overlay(content: @Composable () -> Unit) {
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f)).clickable(enabled = true, onClick = {}), contentAlignment = Alignment.Center) {
         Column(
-            Modifier.padding(24.dp).fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Color.White).padding(22.dp),
+            Modifier.padding(24.dp).fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(C.Card).padding(22.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) { content() }
     }
@@ -391,7 +391,7 @@ private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, battlefieldSlo
         Spacer(Modifier.height(10.dp))
         BigButton(match.nameOf(Side.OPP).uppercase(), playerColors(match.oppLegend, Side.OPP).first, inkOn(playerColors(match.oppLegend, Side.OPP).first)) { onChoose(Side.OPP) }
         Spacer(Modifier.height(10.dp))
-        BigButton("FLIP A COIN", C.Ink, Color.White) { onChoose(null) }
+        BigButton("FLIP A COIN", C.Solid, C.OnSolid) { onChoose(null) }
     }
 }
 
@@ -415,7 +415,7 @@ private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () 
             Text(line, fontWeight = FontWeight.ExtraBold, color = C.Ink, modifier = Modifier.padding(top = 10.dp))
         }
         Spacer(Modifier.height(18.dp))
-        if (decided) BigButton("SAVE MATCH", C.Ink, Color.White, onClick = onNext)
+        if (decided) BigButton("SAVE MATCH", C.Solid, C.OnSolid, onClick = onNext)
         else Text("Next game: who goes first?", style = Caps, color = C.Muted)
         if (!decided) {
             val suggested = MatchRules.suggestedFirst(match)

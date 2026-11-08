@@ -59,7 +59,7 @@ private val NOW = LocalDateTime.parse("2026-11-07T21:00").toInstant(ZoneOffset.U
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = RobolectricDeviceQualifiers.Pixel7)
-class AppTest {
+open class AppTest {
     @get:Rule val rule = createEmptyComposeRule()
 
     private val context: Context get() = ApplicationProvider.getApplicationContext()
@@ -93,8 +93,11 @@ class AppTest {
         rule.waitForIdle()
     }
 
-    private fun shot(name: String) = rule.onRoot().captureRoboImage("screenshots/$name.png")
-    private fun screenShot(name: String) = captureScreenRoboImage("screenshots/$name.png")
+    /** Screenshots from the dark-mode run (AppDarkTest) get a "dark_" prefix. */
+    private val prefix get() =
+        if (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES) "dark_" else ""
+    private fun shot(name: String) = rule.onRoot().captureRoboImage("screenshots/$prefix$name.png")
+    private fun screenShot(name: String) = captureScreenRoboImage("screenshots/$prefix$name.png")
 
     private fun ComposeTestRule.waitFor(text: String, substring: Boolean = false) {
         waitUntilAtLeastOneExists(hasText(text, substring = substring), timeoutMillis = 10_000)

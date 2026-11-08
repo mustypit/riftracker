@@ -94,7 +94,7 @@ fun NewMatchScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
         MatchFields(format, { format = it }, my, name, { name = it }, opp, { pick = it })
         Spacer(Modifier.height(20.dp))
         Box(Modifier.padding(horizontal = 20.dp)) {
-            BigButton(if (ready) "START" else "PICK BOTH LEGENDS", if (ready) C.Ink else C.Line, if (ready) Color.White else C.Muted) {
+            BigButton(if (ready) "START" else "PICK BOTH LEGENDS", if (ready) C.Solid else C.Track, if (ready) C.OnSolid else C.Muted) {
                 if (ready) vm.startMatch(MatchSetup(format, my, name, opp))
             }
         }
@@ -133,7 +133,7 @@ fun LogMatchScreen(vm: MainViewModel) {
         val rows = (1..format.maxGames).filter { n -> n == 1 || (chosen.size >= n - 1 && !MatchRules.validLog(format, chosen.take(n - 1))) }
         rows.forEach { n ->
             val i = n - 1
-            Column(Modifier.padding(horizontal = 20.dp, vertical = 6.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White).padding(12.dp)) {
+            Column(Modifier.padding(horizontal = 20.dp, vertical = 6.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card).padding(12.dp)) {
                 Text("GAME $n", style = Caps, color = C.Ink)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 8.dp)) {
                     listOf(Outcome.WIN to "Won", Outcome.LOSS to "Lost", Outcome.DRAW to "Draw").forEach { (o, label) ->
@@ -152,7 +152,7 @@ fun LogMatchScreen(vm: MainViewModel) {
         }
         Spacer(Modifier.height(16.dp))
         Box(Modifier.padding(horizontal = 20.dp)) {
-            BigButton("SAVE", if (valid) C.Ink else C.Line, if (valid) Color.White else C.Muted) {
+            BigButton("SAVE", if (valid) C.Solid else C.Track, if (valid) C.OnSolid else C.Muted) {
                 if (valid) vm.logMatch(MatchSetup(format, my, name, opp), chosen, firsts.take(chosen.size))
             }
         }
@@ -165,7 +165,7 @@ fun LogMatchScreen(vm: MainViewModel) {
 @Composable
 private fun ResultPick(label: String, color: Color, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Box(
-        modifier.height(40.dp).clip(RoundedCornerShape(12.dp)).background(if (selected) color else Color(0xFFF0ECE6)).clickable(onClick = onClick),
+        modifier.height(40.dp).clip(RoundedCornerShape(12.dp)).background(if (selected) color else C.Soft).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
-    ) { Text(label, fontWeight = FontWeight.ExtraBold, color = C.Ink) }
+    ) { Text(label, fontWeight = FontWeight.ExtraBold, color = if (selected) C.Black else C.Ink) }
 }

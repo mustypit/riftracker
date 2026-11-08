@@ -61,7 +61,7 @@ fun AppShell(vm: MainViewModel) {
         // Screens handle the status bar themselves (header blocks draw behind it).
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            if (top == null) NavigationBar(containerColor = Color.White) {
+            if (top == null) NavigationBar(containerColor = C.Card) {
                 Tab.entries.forEach { t ->
                     NavigationBarItem(
                         selected = t == tab,
@@ -73,7 +73,7 @@ fun AppShell(vm: MainViewModel) {
                             )
                         },
                         label = { Text(t.label) },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = C.Yellow, selectedIconColor = C.Ink, selectedTextColor = C.Ink),
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = C.Yellow, selectedIconColor = C.Black, selectedTextColor = C.Ink, unselectedIconColor = C.Muted, unselectedTextColor = C.Muted),
                     )
                 }
             }

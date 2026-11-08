@@ -42,7 +42,7 @@ import io.github.mustypit.rifttracker.game.Outcome
 
 /** Black header block with a big number, used at the top of the list screens. */
 @Composable
-fun HeaderBlock(onBack: (() -> Unit)? = null, color: Color = C.Ink, ink: Color = Color.White, content: @Composable ColumnScope.() -> Unit) {
+fun HeaderBlock(onBack: (() -> Unit)? = null, color: Color = C.Header, ink: Color = C.OnHeader, content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.fillMaxWidth().background(color).statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 18.dp)) {
         if (onBack != null) {
             IconButton(onClick = onBack, modifier = Modifier.padding(start = 0.dp).size(40.dp)) {
@@ -60,13 +60,13 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier) =
 /** A row of equal pill buttons; one selected. */
 @Composable
 fun <T> Segmented(options: List<T>, selected: T, label: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFFE6E1DA)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Track).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         options.forEach { o ->
             val on = o == selected
             Box(
-                Modifier.weight(1f).height(40.dp).clip(RoundedCornerShape(11.dp)).background(if (on) C.Ink else Color.Transparent).clickable { onSelect(o) },
+                Modifier.weight(1f).height(40.dp).clip(RoundedCornerShape(11.dp)).background(if (on) C.Solid else Color.Transparent).clickable { onSelect(o) },
                 contentAlignment = Alignment.Center,
-            ) { Text(label(o), color = if (on) Color.White else C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = if (options.size > 3) 12.sp else 13.sp, maxLines = 1) }
+            ) { Text(label(o), color = if (on) C.OnSolid else C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = if (options.size > 3) 12.sp else 13.sp, maxLines = 1) }
         }
     }
 }
@@ -76,9 +76,9 @@ fun Chip(text: String, selected: Boolean = false, onClick: () -> Unit) {
     Text(
         text,
         fontWeight = FontWeight.Bold, fontSize = 13.sp,
-        color = if (selected) Color.White else C.Ink,
-        modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (selected) C.Ink else Color.White)
-            .border(1.5.dp, if (selected) C.Ink else C.Line, RoundedCornerShape(10.dp))
+        color = if (selected) C.OnSolid else C.Ink,
+        modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (selected) C.Solid else C.Card)
+            .border(1.5.dp, if (selected) C.Solid else C.Line, RoundedCornerShape(10.dp))
             .clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 7.dp),
     )
 }
@@ -90,7 +90,7 @@ fun RiftTextField(label: String, value: String, onChange: (String) -> Unit, modi
         shape = RoundedCornerShape(14.dp),
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
+            focusedContainerColor = C.Card, unfocusedContainerColor = C.Card, focusedTextColor = C.Ink, unfocusedTextColor = C.Ink, cursorColor = C.Ink, unfocusedLabelColor = C.Muted,
             focusedBorderColor = C.Ink, unfocusedBorderColor = C.Line, focusedLabelColor = C.Ink,
         ),
         modifier = modifier.fillMaxWidth(),
@@ -102,11 +102,11 @@ fun RiftTextField(label: String, value: String, onChange: (String) -> Unit, modi
 fun MatchRow(m: Match, onClick: () -> Unit, showMyLegend: Boolean = true) {
     val r = MatchRules.result(m)
     Row(
-        Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White).clickable(onClick = onClick),
+        Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card).clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.width(54.dp).height(64.dp).background(C.outcome(r)), contentAlignment = Alignment.Center) {
-            Text(when (r) { Outcome.WIN -> "W"; Outcome.LOSS -> "L"; Outcome.DRAW -> "D" }, fontWeight = FontWeight.Black, fontSize = 22.sp, color = C.Ink)
+            Text(when (r) { Outcome.WIN -> "W"; Outcome.LOSS -> "L"; Outcome.DRAW -> "D" }, fontWeight = FontWeight.Black, fontSize = 22.sp, color = C.Black)
         }
         LegendAvatar(m.oppLegend, 40.dp, Modifier.padding(start = 12.dp))
         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {

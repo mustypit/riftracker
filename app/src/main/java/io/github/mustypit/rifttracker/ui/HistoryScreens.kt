@@ -138,25 +138,25 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
     Box(Modifier.fillMaxSize()) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
-            HeaderBlock(onBack = { vm.back() }, color = C.outcome(r), ink = C.Ink) {
+            HeaderBlock(onBack = { vm.back() }, color = C.outcome(r), ink = C.Black) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(when (r) { Outcome.WIN -> "VICTORY"; Outcome.LOSS -> "DEFEAT"; Outcome.DRAW -> "DRAW" }, style = Caps, color = C.Ink, modifier = Modifier.weight(1f))
+                    Text(when (r) { Outcome.WIN -> "VICTORY"; Outcome.LOSS -> "DEFEAT"; Outcome.DRAW -> "DRAW" }, style = Caps, color = C.Black, modifier = Modifier.weight(1f))
                     Box {
-                        IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Match options", tint = C.Ink) }
+                        IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Match options", tint = C.Black) }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             DropdownMenuItem(text = { Text("Delete match") }, onClick = { menu = false; confirmDelete = true })
                         }
                     }
                 }
-                Text(MatchRules.scoreLine(m), fontWeight = FontWeight.Black, fontSize = 56.sp, color = C.Ink)
-                Text("${m.myLegend} vs ${m.opponentLabel}", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = C.Ink)
+                Text(MatchRules.scoreLine(m), fontWeight = FontWeight.Black, fontSize = 56.sp, color = C.Black)
+                Text("${m.myLegend} vs ${m.opponentLabel}", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = C.Black)
                 val time = Instant.ofEpochMilli(m.startedAt).atZone(Zone.id).format(dateTimeFmt)
-                Text(listOfNotNull(m.format.label, time, if (m.logged) "logged" else "\u23F1 " + formatDuration(m.durationMs(m.startedAt))).joinToString(" · "), color = C.Ink.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
+                Text(listOfNotNull(m.format.label, time, if (m.logged) "logged" else "\u23F1 " + formatDuration(m.durationMs(m.startedAt))).joinToString(" · "), color = C.Black.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
             }
         }
         m.games.forEachIndexed { i, g ->
             item(key = "g$i") {
-                Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color.White).padding(16.dp)) {
+                Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.size(12.dp).clip(CircleShape).background(g.outcome?.let(C::outcome) ?: C.Line))
                         Text("GAME ${i + 1}", style = Caps, modifier = Modifier.padding(start = 8.dp).weight(1f))
@@ -183,7 +183,7 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
             }
         }
         item {
-            Box(Modifier.padding(16.dp)) { BigButton("REMATCH", C.Ink, Color.White) { vm.rematch(m) } }
+            Box(Modifier.padding(16.dp)) { BigButton("REMATCH", C.Solid, C.OnSolid) { vm.rematch(m) } }
         }
     }
     editing?.let { (i, side) ->
@@ -383,7 +383,7 @@ private fun StatRow(title: String, r: Record, sub: String? = null, avatar: Strin
     val rate = r.winRate
     val enough = r.total >= Stats.MIN_MATCHES_FOR_RATE
     Row(
-        Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White)
+        Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card)
             .let { if (onClick != null) it.clickable(onClick = onClick) else it }.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -394,7 +394,7 @@ private fun StatRow(title: String, r: Record, sub: String? = null, avatar: Strin
         }
         if (enough && rate != null) {
             Text(
-                Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Ink,
+                Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Black,
                 modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Teal else C.Coral).padding(horizontal = 10.dp, vertical = 4.dp),
             )
         } else {
@@ -466,7 +466,7 @@ private fun Count(n: Int, label: String, color: Color) {
 
 @Composable
 private fun Fact(value: String, label: String, modifier: Modifier) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(Color.White).padding(14.dp)) {
+    Column(modifier.clip(RoundedCornerShape(16.dp)).background(C.Card).padding(14.dp)) {
         Text(value, fontWeight = FontWeight.Black, fontSize = 24.sp)
         Text(label, color = C.Muted, fontSize = 12.sp, maxLines = 2)
     }

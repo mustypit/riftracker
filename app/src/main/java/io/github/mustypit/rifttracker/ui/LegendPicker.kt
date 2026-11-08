@@ -97,14 +97,14 @@ fun LegendAvatar(name: String, size: Dp, modifier: Modifier = Modifier, corner: 
 @Composable
 fun LegendSlot(label: String, value: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier.padding(horizontal = 20.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White)
+        modifier.padding(horizontal = 20.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card)
             .border(1.5.dp, if (value.isBlank()) C.Line else C.Ink, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick).padding(10.dp)
             .semantics { contentDescription = label },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (value.isBlank()) {
-            Box(Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFEFEBE5)), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(C.Track), contentAlignment = Alignment.Center) {
                 Text("?", fontWeight = FontWeight.Black, fontSize = 22.sp, color = C.Muted)
             }
         } else LegendAvatar(value, 48.dp)
@@ -128,7 +128,7 @@ fun LegendPicker(title: String, recentNames: List<String>, selected: String, onP
     val recent = if (query.isBlank()) Legends.recent(recentNames) else emptyList()
 
     Column(Modifier.fillMaxSize().background(C.Paper)) {
-        Column(Modifier.fillMaxWidth().background(C.Ink).statusBarsPadding().padding(start = 8.dp, end = 16.dp, top = 4.dp, bottom = 14.dp)) {
+        Column(Modifier.fillMaxWidth().background(C.Header).statusBarsPadding().padding(start = 8.dp, end = 16.dp, top = 4.dp, bottom = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White) }
                 Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp)
@@ -159,7 +159,7 @@ fun LegendPicker(title: String, recentNames: List<String>, selected: String, onP
 @Composable
 private fun LegendTile(l: Legend, selected: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.clip(RoundedCornerShape(16.dp)).background(Color.White)
+        Modifier.clip(RoundedCornerShape(16.dp)).background(C.Card)
             .border(2.dp, if (selected) C.Ink else Color.Transparent, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick).padding(6.dp)
             .semantics { contentDescription = "Legend ${l.name}" },
