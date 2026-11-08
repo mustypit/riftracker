@@ -37,14 +37,14 @@ report as artifacts.
 
 | Test | What it covers |
 |---|---|
-| `game/RulesTest` | Scoring with simulated presses: win at 8, final-point-by-conquer check, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
+| `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
 | `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
 
 Robolectric quirk: at phone sizes, **dialogs containing a text field never go idle**. The app has
 none: setup forms and the legend picker are screens/overlays, not dialogs. Dialogs without text fields
-(final-point check, abandon, delete) are fine; capture them with `captureScreenRoboImage`.
+(abandon, delete) are fine; capture them with `captureScreenRoboImage`.
 
 ## Architecture
 
@@ -93,6 +93,10 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 
 - No turn tracking (people forget to press it); only how long each game and match lasts.
 - Who goes first is asked at the start of each game (loser of the previous game is suggested).
+- No rules nagging: the owner removed the "winning point by conquering?" check (players know the
+  rules). After a match, SAVE MATCH returns to New match (prefilled for a rematch); no review
+  screen pops up: matches are reviewed from the Matches tab.
+- Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
 - Deferred: decks with versions, battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
   game, central menu button, clean panels); ask the owner for a screen recording.

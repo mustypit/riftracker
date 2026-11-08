@@ -42,4 +42,16 @@ object RiftIcons {
     }
 
     val Minus = icon("minus") { fill("M6 10.7h12a1.3 1.3 0 0 1 0 2.6H6a1.3 1.3 0 0 1 0-2.6z") }
+
+    /** Two crossed swords, kept minimal: two lines in an X, each with a short crossguard. The Play tab. */
+    val CrossedSwords = icon("crossed_swords") {
+        fun line(d: String) = addPath(
+            addPathNodes(d), stroke = SolidColor(Color.Black), strokeLineWidth = 2.4f,
+            strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round,
+        )
+        line("M4.5 4.5L19 19")    // blade + handle, top-left to bottom-right
+        line("M19.5 4.5L5 19")    // the other one
+        line("M13.5 18.5L18.5 13.5") // its crossguard
+        line("M5.5 13.5L10.5 18.5")  // and this one's
+    }
 }

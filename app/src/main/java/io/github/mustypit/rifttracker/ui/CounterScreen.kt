@@ -79,7 +79,6 @@ private fun Match.nameOf(side: Side) = if (side == Side.ME) "You" else oppName.i
  */
 @Composable
 fun CounterScreen(vm: MainViewModel, match: Match) {
-    val confirm by vm.confirmConquer.collectAsState()
     val coin by vm.coin.collectAsState()
     val game = match.games.lastOrNull()
     val current = MatchRules.current(match)
@@ -103,16 +102,6 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
             game != null && game.isOver -> GameOverCard(match, game, decided, onUndo = vm::undo, onNext = { vm.finishMatch() }, onNextGame = { vm.chooseFirst(it) })
             else -> FirstChooser(match, onChoose = vm::chooseFirst)
         }
-    }
-
-    if (confirm != null) {
-        AlertDialog(
-            onDismissRequest = { vm.answerConquer(false) },
-            title = { Text("Winning point by conquering?") },
-            text = { Text("The final point from a conquer only counts if ${if (confirm == Side.ME) "you" else match.nameOf(Side.OPP)} also scored every other battlefield this turn.") },
-            confirmButton = { TextButton(onClick = { vm.answerConquer(true) }) { Text("Count it") } },
-            dismissButton = { TextButton(onClick = { vm.answerConquer(false) }) { Text("Cancel") } },
-        )
     }
 }
 

@@ -15,9 +15,9 @@ import org.junit.Test
 /** Plays presses against a game the way the counter screen does, at one press per 30 s. */
 private class Table(var game: Game = Game(wentFirst = ME, startedAt = 1_000_000)) {
     var now = 1_000_000L
-    fun press(side: Side, kind: PointKind, confirmed: Boolean = false): AddResult {
+    fun press(side: Side, kind: PointKind): AddResult {
         now += 30_000
-        val r = GameRules.add(game, side, kind, now, confirmed)
+        val r = GameRules.add(game, side, kind, now)
         if (r is AddResult.Added) game = r.game
         return r
     }
@@ -56,21 +56,13 @@ class GameRulesTest {
     }
 
     @Test
-    fun winningByConqueringAsksFirstAndCountsOnlyWhenConfirmed() {
-        val t = Table()
-        repeat(7) { t.press(ME, HOLD) }
-        assertEquals(AddResult.ConfirmFinalConquer, t.press(ME, CONQUER))
-        assertEquals("nothing changes until confirmed", 7 to 0, t.score())
-        t.press(ME, CONQUER, confirmed = true)
-        assertEquals(Outcome.WIN, t.game.outcome)
-    }
-
-    @Test
-    fun conqueringBeforeTheLastPointNeedsNoCheck() {
-        val t = Table()
-        repeat(6) { t.press(ME, CONQUER) }
-        assertTrue(t.press(ME, CONQUER) is AddResult.Added) // 7: not the winning point
-        assertEquals(7 to 0, t.score())
+    fun anyKindOfPointCanWinNoQuestionsAsked() {
+        for (kind in listOf(CONQUER, HOLD, ABILITY)) {
+            val t = Table()
+            repeat(7) { t.press(ME, HOLD) }
+            assertTrue(t.press(ME, kind) is AddResult.Added)
+            assertEquals("won by $kind", Outcome.WIN, t.game.outcome)
+        }
     }
 
     @Test

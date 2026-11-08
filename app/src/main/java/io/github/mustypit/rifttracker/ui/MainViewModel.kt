@@ -60,10 +60,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val _loaded = MutableStateFlow(false)
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
 
-    /** Side waiting for the "winning point by conquering?" answer. */
-    private val _confirmConquer = MutableStateFlow<Side?>(null)
-    val confirmConquer: StateFlow<Side?> = _confirmConquer.asStateFlow()
-
     /** Shown after a coin flip until the first point. */
     private val _coin = MutableStateFlow<Side?>(null)
     val coin: StateFlow<Side?> = _coin.asStateFlow()
@@ -114,24 +110,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         persist()
     }
 
-    fun addPoint(side: Side, kind: PointKind, confirmed: Boolean = false) {
+    fun addPoint(side: Side, kind: PointKind) {
         val m = _active.value ?: return
         val g = MatchRules.current(m) ?: return
-        when (val r = GameRules.add(g, side, kind, now, confirmed)) {
-            is AddResult.Added -> {
-                _coin.value = null
-                _active.value = MatchRules.replaceCurrent(m, r.game)
-                persist()
-            }
-            AddResult.ConfirmFinalConquer -> _confirmConquer.value = side
-            AddResult.Ignored -> {}
+        val r = GameRules.add(g, side, kind, now)
+        if (r is AddResult.Added) {
+            _coin.value = null
+            _active.value = MatchRules.replaceCurrent(m, r.game)
+            persist()
         }
-    }
-
-    fun answerConquer(count: Boolean) {
-        val side = _confirmConquer.value ?: return
-        _confirmConquer.value = null
-        if (count) addPoint(side, PointKind.CONQUER, confirmed = true)
     }
 
     fun undo() {
@@ -156,16 +143,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    /** Saves the decided match to history and shows it. */
+    /**
+     * Saves the decided match to history and goes back to the New match screen (still filled in with
+     * the same players, so a rematch is one tap). The match can be reviewed later from Matches.
+     */
     fun finishMatch() = viewModelScope.launch {
-        val id = saving.withLock {
-            val m = _active.value ?: return@withLock null
-            val saved = store.save(m.copy(endedAt = now))
+        saving.withLock {
+            val m = _active.value ?: return@withLock
+            store.save(m.copy(endedAt = now))
             _active.value = null
-            saved.id
-        } ?: return@launch
-        _tab.value = Tab.Matches
-        _stack.value = listOf(Screen.MatchDetail(id))
+        }
+        _tab.value = Tab.Play
+        _stack.value = emptyList()
     }
 
     fun rematch(m: Match) {

@@ -3,11 +3,6 @@ package io.github.mustypit.rifttracker.game
 /** What happened when a point button was pressed. */
 sealed interface AddResult {
     data class Added(val game: Game) : AddResult
-    /**
-     * The point would be the winning one and comes from a conquer. That only counts if the player
-     * scored every other battlefield that turn, which the app doesn't track, so it asks.
-     */
-    data object ConfirmFinalConquer : AddResult
     /** Game already over, or the score would go below zero. */
     data object Ignored : AddResult
 }
@@ -16,12 +11,12 @@ sealed interface AddResult {
 object GameRules {
     const val VICTORY_SCORE = 8
 
-    fun add(game: Game, side: Side, kind: PointKind, now: Long, confirmed: Boolean = false): AddResult {
+    /** Players know the final-point rules, so any kind of point can win the game. */
+    fun add(game: Game, side: Side, kind: PointKind, now: Long): AddResult {
         if (game.isOver) return AddResult.Ignored
         val delta = if (kind == PointKind.CORRECTION) -1 else 1
         val score = game.score(side)
         if (score + delta < 0) return AddResult.Ignored
-        if (kind == PointKind.CONQUER && score + delta >= VICTORY_SCORE && !confirmed) return AddResult.ConfirmFinalConquer
         val events = game.events + PointEvent(side, kind, delta, (now - game.startedAt).coerceAtLeast(0))
         val won = score + delta >= VICTORY_SCORE
         return AddResult.Added(

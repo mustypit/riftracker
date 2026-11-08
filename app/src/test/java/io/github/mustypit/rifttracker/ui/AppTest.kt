@@ -147,10 +147,7 @@ class AppTest {
         rule.onNode(hasText("TAP TO UNDO", substring = true)).assertExists()
         shot("05_counter_game")
         press("You", "HOLD", 2)
-        press("You", "CONQUER")
-        rule.waitFor("Winning point by conquering?")
-        screenShot("06_final_point_check")
-        click("Count it")
+        press("You", "CONQUER") // the winning point, no questions asked
         rule.waitFor("YOU WIN GAME 1")
         shot("07_game_won")
 
@@ -167,8 +164,12 @@ class AppTest {
         shot("08_match_won")
         click("SAVE MATCH")
 
-        rule.waitFor("VICTORY")
-        shot("09_match_detail")
+        // Straight back to New match, still filled in for a rematch; no review screen.
+        rule.waitFor("Who's playing?")
+        rule.onNode(hasText("Riven")).assertExists()
+        rule.onNode(hasText("Mordekaiser")).assertExists()
+        shot("09_back_to_new_match")
+        rule.waitUntil(10_000) { saved().isNotEmpty() }
         val m = saved().single()
         assertEquals(Outcome.WIN, MatchRules.result(m))
         assertEquals("2–1", MatchRules.scoreLine(m))
@@ -178,16 +179,20 @@ class AppTest {
         assertTrue(m.games[0].events.any { it.kind == PointKind.CORRECTION })
         assertEquals("Morgan", m.oppName)
         assertNull(runBlocking(Dispatchers.IO) { store.activeNow() })
+
+        // The review is still there, from Matches.
+        click("Matches")
+        rule.onNode(hasText("vs Mordekaiser")).performClick(); rule.waitForIdle()
+        rule.waitFor("VICTORY")
+        shot("09b_match_detail")
     }
 
     @Test
-    fun undoAndDeclineTheFinalConquer() {
+    fun undoAndCorrections() {
         launch()
         pickLegend("Your legend", "Ahri"); pickLegend("Their legend", "Jinx")
         click("START"); click("YOU")
         press("You", "HOLD", 7)
-        press("You", "CONQUER")
-        click("Cancel")
         rule.onNode(hasContentDescription("You score 7")).assertExists()
         press("Opponent", "HOLD")
         rule.onNode(hasContentDescription("Undo")).performClick(); rule.waitForIdle()

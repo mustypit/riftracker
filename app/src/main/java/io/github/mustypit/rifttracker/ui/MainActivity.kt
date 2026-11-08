@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.FormatListBulleted
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -68,7 +67,7 @@ fun AppShell(vm: MainViewModel) {
                         onClick = { vm.selectTab(t) },
                         icon = {
                             Icon(
-                                when (t) { Tab.Play -> Icons.Default.PlayArrow; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Legends -> Icons.Default.BarChart },
+                                when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Legends -> Icons.Default.BarChart },
                                 null,
                             )
                         },
