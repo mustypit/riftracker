@@ -11,6 +11,7 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ActivityScenario
@@ -72,6 +73,13 @@ class AppTest {
         AppGraph.random = Random(7)
         Zone.id = ZoneOffset.UTC
         runBlocking(Dispatchers.IO) { AppDb.get(context).clearAllTables() }
+        // A few real battlefields (the app adds the full Riftcodex list when it has it).
+        if (io.github.mustypit.rifttracker.game.Battlefields.all.isEmpty()) {
+            io.github.mustypit.rifttracker.game.Battlefields.install(
+                """[{"name": "Altar of Blood", "set": "Vendetta"}, {"name": "Black Market", "set": "Spiritforged"},
+                    {"name": "Ravenbloom Conservatory", "set": "Spiritforged"}, {"name": "Risen Altar", "set": "Vendetta"}]""",
+            )
+        }
     }
 
     @After
@@ -135,6 +143,15 @@ class AppTest {
         click("START")
 
         rule.waitFor("WHO GOES FIRST?")
+        // Battlefields for game 1, picked from the library (optional).
+        rule.onNode(hasContentDescription("Your battlefield")).performClick(); rule.waitForIdle()
+        rule.waitFor("Search battlefields")
+        shot("03a_battlefield_picker")
+        type("Search battlefields", "Altar of")
+        rule.onNode(hasContentDescription("Battlefield Altar of Blood")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Morgan's battlefield")).performClick(); rule.waitForIdle()
+        type("Search battlefields", "Market")
+        rule.onNode(hasContentDescription("Battlefield Black Market")).performClick(); rule.waitForIdle()
         shot("03_who_goes_first")
         click("YOU")
         shot("04_counter_start")
@@ -195,6 +212,16 @@ class AppTest {
         rule.onNode(hasText("vs Mordekaiser")).performClick(); rule.waitForIdle()
         rule.waitFor("VICTORY")
         shot("09b_match_detail")
+        assertEquals("Altar of Blood", m.games[0].battlefieldOf(Side.ME))
+        assertEquals("Black Market", m.games[0].battlefieldOf(Side.OPP))
+        assertNull("game 2 had none picked", m.games[1].battlefieldOf(Side.ME))
+
+        // Forgot one? Add it from the review afterwards.
+        rule.onNode(androidx.compose.ui.test.hasScrollToNodeAction()).performScrollToNode(hasContentDescription("You battlefield: not set"))
+        rule.onAllNodes(hasContentDescription("You battlefield: not set"))[0].performClick(); rule.waitForIdle()
+        type("Search battlefields", "Risen")
+        rule.onNode(hasContentDescription("Battlefield Risen Altar")).performClick(); rule.waitForIdle()
+        rule.waitUntil(10_000) { saved().single().games[1].battlefieldOf(Side.ME) == "Risen Altar" }
     }
 
     @Test
@@ -284,8 +311,11 @@ class AppTest {
         click("Rivals")
         rule.waitFor("Morgan")
         shot("14_rivals")
+        click("Fields")
+        rule.waitFor("YOUR BATTLEFIELDS · GAMES")
+        shot("14b_battlefields")
 
-        click("Your legends")
+        click("Yours")
         click("Ahri")
         rule.waitFor("best run")
         shot("15_legend_detail")
@@ -367,6 +397,10 @@ class AppTest {
                 val g = Game(
                     wentFirst = if (i % 2 == 0) Side.ME else Side.OPP, startedAt = t, endedAt = t + 15 * 60_000, outcome = o,
                     events = listOf(PointEvent(if (o == Outcome.WIN) Side.ME else Side.OPP, PointKind.HOLD, 8, 14 * 60_000)),
+                    battlefields = mapOf(
+                        Side.ME to listOf("Altar of Blood", "Risen Altar", "Ravenbloom Conservatory")[(i + s.daysAgo) % 3],
+                        Side.OPP to listOf("Black Market", "Ravenbloom Conservatory")[(i + s.hour) % 2],
+                    ),
                 )
                 t += 17 * 60_000
                 g

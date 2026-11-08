@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
+import io.github.mustypit.rifttracker.game.Battlefields
 import io.github.mustypit.rifttracker.game.Legends
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -113,10 +114,31 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                 )
             }
         }
+        // Battlefields for the next game, picked on the card before it starts (optional).
+        val pending by vm.pendingBattlefields.collectAsState()
+        var picking by remember { mutableStateOf<Side?>(null) }
+        val battlefieldSlots: @Composable () -> Unit = {
+            if (Battlefields.all.isNotEmpty()) {
+                Spacer(Modifier.height(14.dp))
+                BattlefieldSlot("Your battlefield", pending[Side.ME], onClick = { picking = Side.ME })
+                Spacer(Modifier.height(8.dp))
+                BattlefieldSlot("${match.nameOf(Side.OPP)}'s battlefield", pending[Side.OPP], onClick = { picking = Side.OPP })
+            }
+        }
         when {
             current != null -> {}
-            game != null && game.isOver -> GameOverCard(match, game, decided, onUndo = vm::undo, onNext = { vm.finishMatch() }, onNextGame = { vm.chooseFirst(it) })
-            else -> FirstChooser(match, onChoose = vm::chooseFirst)
+            game != null && game.isOver -> GameOverCard(match, game, decided, onUndo = vm::undo, onNext = { vm.finishMatch() }, onNextGame = { vm.chooseFirst(it) }, battlefieldSlots)
+            else -> FirstChooser(match, onChoose = vm::chooseFirst, battlefieldSlots)
+        }
+        picking?.let { side ->
+            val history by vm.history.collectAsState()
+            BattlefieldPicker(
+                title = if (side == Side.ME) "Your battlefield" else "Their battlefield",
+                recentNames = history.flatMap { m -> m.games.reversed().map { it.battlefieldOf(side) } },
+                selected = pending[side],
+                onPick = { vm.pickPendingBattlefield(side, it); picking = null },
+                onClose = { picking = null },
+            )
         }
     }
 }
@@ -353,7 +375,7 @@ fun BigButton(text: String, color: Color, ink: Color, modifier: Modifier = Modif
 }
 
 @Composable
-private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit) {
+private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, battlefieldSlots: @Composable () -> Unit) {
     val suggested = MatchRules.suggestedFirst(match)
     Overlay {
         Text(if (match.games.isEmpty()) "WHO GOES FIRST?" else "GAME ${match.games.size + 1}: WHO GOES FIRST?", style = Caps.copy(fontSize = 14.sp), color = C.Ink)
@@ -363,6 +385,7 @@ private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit) {
                 color = C.Muted, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
             )
         }
+        battlefieldSlots()
         Spacer(Modifier.height(16.dp))
         BigButton("YOU", playerColors(match.myLegend, Side.ME).first, inkOn(playerColors(match.myLegend, Side.ME).first)) { onChoose(Side.ME) }
         Spacer(Modifier.height(10.dp))
@@ -373,7 +396,7 @@ private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit) {
 }
 
 @Composable
-private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () -> Unit, onNext: () -> Unit, onNextGame: (Side?) -> Unit) {
+private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () -> Unit, onNext: () -> Unit, onNextGame: (Side?) -> Unit, battlefieldSlots: @Composable () -> Unit) {
     val n = match.games.size
     val title = when (game.outcome) {
         Outcome.WIN -> "YOU WIN" + if (match.format == Format.BO3) " GAME $n" else ""
@@ -396,6 +419,7 @@ private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () 
         else Text("Next game: who goes first?", style = Caps, color = C.Muted)
         if (!decided) {
             val suggested = MatchRules.suggestedFirst(match)
+            battlefieldSlots()
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 BigButton("YOU" + if (suggested == Side.ME) " ★" else "", playerColors(match.myLegend, Side.ME).first, inkOn(playerColors(match.myLegend, Side.ME).first), Modifier.weight(1f)) { onNextGame(Side.ME) }

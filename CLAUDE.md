@@ -104,6 +104,11 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - **Match review score chart** (`ScoreChart`): lanes per player, running score on a line coloured by
   the leader, lead changes outlined, breakdown by point kind, lead changes and longest run
   (`GameRules.chart/breakdown/longestRun`).
+- **Battlefields**: each game stores the battlefield each player brought (`Game.battlefields`), picked
+  (optional) on the "who goes first" card or later from the match review; stats per battlefield
+  (counted per game) in Legends → Fields. Library from Riftcodex via the same importer
+  (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
+  and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
 - Deferred: decks with versions, battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per

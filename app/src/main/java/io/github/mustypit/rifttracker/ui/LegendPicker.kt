@@ -61,17 +61,20 @@ private val tilePalette = listOf(
     Color(0xFFE85CC8) to Color(0xFFFF6B4A), Color(0xFF8BD450) to Color(0xFF21C4A7),
 )
 
-/** Art from assets/legends, loaded once per id; null when there's none. */
-internal object LegendArt {
+/** Art from an assets folder, loaded once per id; null when there's none. */
+internal open class AssetArt(private val folder: String) {
     private val cache = HashMap<String, ImageBitmap?>()
     private var files: Set<String>? = null
 
     fun get(context: android.content.Context, id: String): ImageBitmap? = cache.getOrPut(id) {
-        val names = files ?: (context.assets.list("legends")?.toSet() ?: emptySet()).also { files = it }
+        val names = files ?: (context.assets.list(folder)?.toSet() ?: emptySet()).also { files = it }
         val file = listOf("webp", "png", "jpg").map { "$id.$it" }.firstOrNull { it in names } ?: return@getOrPut null
-        context.assets.open("legends/$file").use { BitmapFactory.decodeStream(it) }?.asImageBitmap()
+        context.assets.open("$folder/$file").use { BitmapFactory.decodeStream(it) }?.asImageBitmap()
     }
 }
+
+internal object LegendArt : AssetArt("legends")
+internal object BattlefieldArt : AssetArt("battlefields")
 
 /** A legend's picture: real art when the app has it, otherwise a monogram tile. */
 @Composable

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turns Riftcodex legend cards into the app's legend library.
+"""Turns Riftcodex legend and battlefield cards into the app's libraries.
 
   python3 scripts/build_legend_assets.py --fetch            # download from Riftcodex (CI does this)
   python3 scripts/build_legend_assets.py legends_raw.json   # use a saved list
@@ -12,6 +12,7 @@ writes:
 
   app/src/main/assets/legends/<id>.jpg     the artwork, ~720 px
   app/src/main/assets/legends/legends.json name, title, set, domains, artist, image
+  app/src/main/assets/battlefields/<id>.jpg + battlefields.json (name, set, artist, image)
 
 Needs Pillow (pip install pillow). Legends missing from Riftcodex (e.g. a set it hasn't added yet)
 stay in the app's built-in list in Legends.kt.
@@ -100,71 +101,104 @@ def get(url, tries=5):
             time.sleep(3 * (i + 1))
 
 
-def fetch_legends():
-    """Every legend card on Riftcodex, page by page (100 cards per page)."""
-    legends, page, pages = [], 1, 1
+def fetch_cards(types=("Legend", "Battlefield")):
+    """Every legend and battlefield card on Riftcodex, page by page (100 cards per page)."""
+    cards, page, pages = [], 1, 1
     while page <= pages:
         data = json.loads(get(f"{API}?size=100&page={page}"))
         pages = data.get("pages", 1)
-        legends += [c for c in data.get("items", []) if c.get("classification", {}).get("type") == "Legend"]
-        print(f"page {page} of {pages}: {len(legends)} legend cards so far")
+        cards += [c for c in data.get("items", []) if c.get("classification", {}).get("type") in types]
+        print(f"page {page} of {pages}: {len(cards)} legend/battlefield cards so far")
         page += 1
-    return legends
+    return cards
 
 
-def art(url):
+def art(url, box=ART_BOX):
     im = Image.open(io.BytesIO(get(url))).convert("RGB")
     w, h = im.size
-    x0, y0, x1, y1 = ART_BOX
+    x0, y0, x1, y1 = box
     im = im.crop((int(w * x0), int(h * y0), int(w * x1), int(h * y1)))
     im.thumbnail((720, 720))
     return im
 
 
 MIN_LEGENDS = 20  # fewer than this from --fetch means something's off: change nothing
+BF_OUT = OUT.parent / "battlefields"
+# Artwork band of a landscape battlefield card: between the upside-down rules text and the name.
+BF_ART_BOX = (0.04, 0.21, 0.96, 0.60)
+
+
+def pick_battlefields(cards):
+    """One battlefield card per name: the plain printing from a main set, newest set first."""
+    by_name = {}
+    for c in cards:
+        if c.get("classification", {}).get("type") == "Battlefield":
+            by_name.setdefault(base_name(c), []).append(c)
+    return {name: sorted(cs, key=rank)[0] for name, cs in sorted(by_name.items())}
+
+
+def write_index(folder, library):
+    """Writes <folder>/<name>.json and removes art this script made last time that nothing uses now.
+    Images never listed in the index (added by hand, e.g. for a set Riftcodex lacks) stay."""
+    index = folder / f"{folder.name}.json"
+    if index.exists():
+        before = {e.get("image") for e in json.loads(index.read_text(encoding="utf-8")) if e.get("image")}
+        for stale in before - {e["image"] for e in library if e["image"]}:
+            (folder / stale).unlink(missing_ok=True)
+            print(f"  removed {stale}")
+    index.write_text(json.dumps(library, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"{len(library)} -> {index}")
+
+
+def save_art(folder, file_id, url, box):
+    try:
+        art(url, box).save(folder / f"{file_id}.jpg", quality=82, optimize=True)
+        return f"{file_id}.jpg"
+    except Exception as e:  # keep going; the app falls back to a colour tile
+        print(f"  no art for {file_id}: {e}")
+        return None
 
 
 def main(source):
     if source == "--fetch":
-        cards = fetch_legends()
+        cards = fetch_cards()
         if len(pick(cards)) < MIN_LEGENDS:
             sys.exit(f"Only {len(pick(cards))} legends from Riftcodex; not touching the app's data.")
     else:
         cards = json.loads(Path(source).read_text(encoding="utf-8-sig"))
         if isinstance(cards, dict):  # a single card, or a Riftcodex page
             cards = cards.get("items", [cards])
-    chosen = pick(cards)
+
+    # Legends (skipped when the input has none, so a battlefields-only file doesn't wipe them)
     OUT.mkdir(parents=True, exist_ok=True)
     library = []
-    for name, c in chosen.items():
-        lid = image_id(name)
+    for name, c in pick(cards).items():
+        url = c.get("media", {}).get("image_url")
+        image = save_art(OUT, image_id(name), url, ART_BOX) if url and c.get("orientation", "portrait") == "portrait" else None
         entry = {
             "name": name,
             "title": title(c),
             "set": c["set"]["label"],
             "domains": [d for d in c["classification"].get("domain", []) if d in DOMAINS],
             "artist": c.get("media", {}).get("artist"),
-            "image": None,
+            "image": image,
         }
-        url = c.get("media", {}).get("image_url")
-        if url and c.get("orientation", "portrait") == "portrait":
-            try:
-                art(url).save(OUT / f"{lid}.jpg", quality=82, optimize=True)
-                entry["image"] = f"{lid}.jpg"
-            except Exception as e:  # keep going; the app falls back to a colour tile
-                print(f"  no art for {name}: {e}")
         library.append(entry)
         print(f"{name:14} {entry['set']:12} {'/'.join(entry['domains']):12} {entry['image'] or '-'}")
-    # Remove art this script made last time that no legend uses now. Images that were never in
-    # legends.json (added by hand, e.g. for a set Riftcodex lacks) are left alone.
-    index = OUT / "legends.json"
-    if index.exists():
-        before = {e.get("image") for e in json.loads(index.read_text(encoding="utf-8")) if e.get("image")}
-        for stale in before - {e["image"] for e in library if e["image"]}:
-            (OUT / stale).unlink(missing_ok=True)
-            print(f"  removed {stale}")
-    index.write_text(json.dumps(library, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"{len(library)} legends -> {OUT}/legends.json")
+    if library:
+        write_index(OUT, library)
+
+    # Battlefields (skipped when the input has none, so a legends-only file doesn't wipe them)
+    battlefields = pick_battlefields(cards)
+    if battlefields:
+        BF_OUT.mkdir(parents=True, exist_ok=True)
+        bf_library = []
+        for name, c in battlefields.items():
+            url = c.get("media", {}).get("image_url")
+            image = save_art(BF_OUT, image_id(name), url, BF_ART_BOX) if url and c.get("orientation") == "landscape" else None
+            bf_library.append({"name": name, "set": c["set"]["label"], "artist": c.get("media", {}).get("artist"), "image": image})
+            print(f"  battlefield {name:30} {c['set']['label']:12} {image or '-'}")
+        write_index(BF_OUT, bf_library)
 
 
 if __name__ == "__main__":

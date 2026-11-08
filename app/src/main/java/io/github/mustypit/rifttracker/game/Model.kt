@@ -35,7 +35,12 @@ data class Game(
     val outcome: Outcome? = null,
     /** XP per player, set from the pull-up panel (not part of the score). */
     val xp: Map<Side, Int> = emptyMap(),
+    /** The battlefield each player brought to this game, by name (optional). */
+    val battlefields: Map<Side, String> = emptyMap(),
 ) {
+    fun battlefieldOf(side: Side): String? = battlefields[side]
+    fun withBattlefield(side: Side, name: String?): Game =
+        copy(battlefields = if (name.isNullOrBlank()) battlefields - side else battlefields + (side to name.trim()))
     fun score(side: Side): Int = events.filter { it.side == side }.sumOf { it.delta }
     fun xpOf(side: Side): Int = xp[side] ?: 0
     val isOver get() = outcome != null

@@ -1,6 +1,8 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.aspectRatio
+import io.github.mustypit.rifttracker.game.Battlefields
 import io.github.mustypit.rifttracker.game.Game
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -130,7 +132,10 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
     val r = MatchRules.result(m)
     var menu by remember { mutableStateOf(false) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    /** (game index, side) whose battlefield is being picked. */
+    var editing by remember { mutableStateOf<Pair<Int, Side>?>(null) }
 
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
             HeaderBlock(onBack = { vm.back() }, color = C.outcome(r), ink = C.Ink) {
@@ -163,6 +168,13 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
                         if (m.logged) null else "\u23F1 " + formatDuration(g.durationMs(g.startedAt)),
                     )
                     Text(facts.joinToString(" · "), color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
+                    // Battlefields: shown when set; tap to set or change (also after the match).
+                    if (Battlefields.all.isNotEmpty() || g.battlefields.isNotEmpty()) {
+                        Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            GameBattlefield("You", g.battlefieldOf(Side.ME), Modifier.weight(1f)) { editing = i to Side.ME }
+                            GameBattlefield(m.oppName.ifBlank { "Them" }, g.battlefieldOf(Side.OPP), Modifier.weight(1f)) { editing = i to Side.OPP }
+                        }
+                    }
                     if (g.events.isNotEmpty()) {
                         Spacer(Modifier.height(10.dp))
                         ScoreChart(g, m.oppName.ifBlank { m.oppLegend })
@@ -174,6 +186,16 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
             Box(Modifier.padding(16.dp)) { BigButton("REMATCH", C.Ink, Color.White) { vm.rematch(m) } }
         }
     }
+    editing?.let { (i, side) ->
+        BattlefieldPicker(
+            title = if (side == Side.ME) "Your battlefield" else "Their battlefield",
+            recentNames = all.flatMap { mm -> mm.games.reversed().map { it.battlefieldOf(side) } },
+            selected = m.games.getOrNull(i)?.battlefieldOf(side),
+            onPick = { vm.setBattlefield(m.id, i, side, it); editing = null },
+            onClose = { editing = null },
+        )
+    }
+    }
 
     if (confirmDelete) {
         AlertDialog(
@@ -183,6 +205,19 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
             confirmButton = { TextButton(onClick = { confirmDelete = false; vm.deleteMatch(m.id) }) { Text("Delete") } },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
+    }
+}
+
+/** One player's battlefield in a game card: art and name, or an "add" placeholder. */
+@Composable
+private fun GameBattlefield(who: String, name: String?, modifier: Modifier, onClick: () -> Unit) {
+    Column(modifier.clickable(onClick = onClick).semantics { contentDescription = "$who battlefield: ${name ?: "not set"}" }) {
+        if (name != null) BattlefieldThumb(name, Modifier.fillMaxWidth().aspectRatio(2.4f))
+        else Box(Modifier.fillMaxWidth().aspectRatio(2.4f).clip(RoundedCornerShape(10.dp)).background(C.Line), contentAlignment = Alignment.Center) {
+            Text("+ battlefield", color = C.Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+        }
+        Text(who.uppercase(), style = Caps.copy(fontSize = 10.sp), color = C.Muted, modifier = Modifier.padding(top = 4.dp))
+        Text(name ?: "Not set", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (name == null) C.Muted else C.Ink)
     }
 }
 
@@ -268,7 +303,7 @@ private fun BreakdownRow(who: String, counts: Map<PointKind, Int>, color: Color)
 
 // ---------------------------------------------------------------- Legends
 
-enum class LegendTab(val label: String) { Legends("Your legends"), Opponents("Against"), Rivals("Rivals") }
+enum class LegendTab(val label: String) { Legends("Yours"), Opponents("Against"), Rivals("Rivals"), Battlefields("Fields") }
 
 @Composable
 fun LegendsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
@@ -307,6 +342,37 @@ fun LegendsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                 if (rivals.isEmpty()) item { EmptyState("No rivals yet", "Add your opponent's name when you start a match to track your record against them.", Modifier.fillMaxWidth()) }
                 items(rivals, key = { "r" + it.name }) { s -> StatRow(s.name, s.record, sub = s.legends.joinToString(", ")) }
             }
+            LegendTab.Battlefields -> {
+                // Counted per game: each game of a best-of-3 can use a different battlefield.
+                val mine = Stats.byBattlefield(matches, Side.ME)
+                val theirs = Stats.byBattlefield(matches, Side.OPP)
+                if (mine.isEmpty() && theirs.isEmpty()) item { EmptyState("No battlefields yet", "Pick battlefields on the “who goes first” card, or add them to a game from its match.", Modifier.fillMaxWidth()) }
+                if (mine.isNotEmpty()) item { SectionLabel("Your battlefields · games") }
+                items(mine, key = { "bm" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
+                if (theirs.isNotEmpty()) item { SectionLabel("Against these battlefields · games") }
+                items(theirs, key = { "bo" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
+            }
+        }
+    }
+}
+
+/** A battlefield's art strip with its name, game record and win rate. */
+@Composable
+private fun BattlefieldStatRow(name: String, r: Record) {
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White)) {
+        BattlefieldThumb(name, Modifier.fillMaxWidth().aspectRatio(4.2f), corner = 0)
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(name, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(r.line + if (r.total == 1) " · 1 game" else " · ${r.total} games", color = C.Muted, fontSize = 13.sp)
+            }
+            val rate = r.winRate
+            if (r.total >= Stats.MIN_MATCHES_FOR_RATE && rate != null) {
+                Text(
+                    Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 18.sp, color = C.Ink,
+                    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Teal else C.Coral).padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+            } else Text(Stats.rateOrHint(r).replace("match", "game"), color = C.Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

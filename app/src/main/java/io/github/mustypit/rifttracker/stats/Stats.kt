@@ -138,6 +138,16 @@ object Stats {
             .map { (month, ss) -> MonthGroup(month, ss, ss.fold(Record()) { r, s -> Record(r.wins + s.record.wins, r.losses + s.record.losses, r.draws + s.record.draws) }) }
     }
 
+    /**
+     * Game results per battlefield played by [side] (yours, or your opponents'), most played first.
+     * Counted per game, since each game of a best-of-3 can use a different battlefield.
+     */
+    fun byBattlefield(matches: List<Match>, side: Side): List<LegendSummary> =
+        matches.flatMap { m -> m.games.mapNotNull { g -> val bf = g.battlefieldOf(side); val o = g.outcome; if (bf != null && o != null) Triple(bf, o, m.startedAt) else null } }
+            .groupBy { key(it.first) }
+            .map { (_, gs) -> LegendSummary(gs.maxBy { it.third }.first, gs.fold(Record()) { r, g -> r + g.second }, gs.maxOf { it.third }) }
+            .sortedWith(compareByDescending<LegendSummary> { it.record.total }.thenByDescending { it.lastPlayed })
+
     fun percent(rate: Double?): String = if (rate == null) "–" else "${Math.round(rate * 100)}%"
 
     /** "59%", or "2 more matches" while there aren't enough to say. */

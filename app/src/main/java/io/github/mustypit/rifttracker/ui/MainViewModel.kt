@@ -103,13 +103,31 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         persist()
     }
 
+    /** Battlefields picked on the "who goes first" card, for the game about to start. */
+    private val _pendingBattlefields = MutableStateFlow<Map<Side, String>>(emptyMap())
+    val pendingBattlefields: StateFlow<Map<Side, String>> = _pendingBattlefields.asStateFlow()
+
+    fun pickPendingBattlefield(side: Side, name: String?) {
+        _pendingBattlefields.update { if (name == null) it - side else it + (side to name) }
+    }
+
     /** Starts the next game. [first] null means flip a coin. */
     fun chooseFirst(first: Side?) {
         val m = _active.value ?: return
         val who = first ?: (if (AppGraph.random.nextBoolean()) Side.ME else Side.OPP).also { _coin.value = it }
         if (first != null) _coin.value = null
-        _active.value = MatchRules.startGame(m, who, now)
+        val started = MatchRules.startGame(m, who, now)
+        val bfs = _pendingBattlefields.value
+        _active.value = MatchRules.replaceCurrent(started, started.games.last().copy(battlefields = bfs))
+        _pendingBattlefields.value = emptyMap()
         persist()
+    }
+
+    /** Sets or clears a battlefield on a saved match's game (from the match review). */
+    fun setBattlefield(matchId: Long, gameIndex: Int, side: Side, name: String?) = viewModelScope.launch {
+        val m = history.value.firstOrNull { it.id == matchId } ?: return@launch
+        val g = m.games.getOrNull(gameIndex) ?: return@launch
+        store.save(m.copy(games = m.games.toMutableList().also { it[gameIndex] = g.withBattlefield(side, name) }))
     }
 
     fun addPoint(side: Side, kind: PointKind) {

@@ -66,7 +66,7 @@ fun <T> Segmented(options: List<T>, selected: T, label: (T) -> String, onSelect:
             Box(
                 Modifier.weight(1f).height(40.dp).clip(RoundedCornerShape(11.dp)).background(if (on) C.Ink else Color.Transparent).clickable { onSelect(o) },
                 contentAlignment = Alignment.Center,
-            ) { Text(label(o), color = if (on) Color.White else C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1) }
+            ) { Text(label(o), color = if (on) Color.White else C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = if (options.size > 3) 12.sp else 13.sp, maxLines = 1) }
         }
     }
 }

@@ -79,3 +79,22 @@ class LegendsTest {
         assertEquals(listOf("Jinx", "Ahri", "Zed"), r.map { it.name })
     }
 }
+
+class BattlefieldsTest {
+    @org.junit.After fun reset() = Battlefields.resetForTests()
+
+    @Test
+    fun libraryLoadsFromImporterJson() {
+        Battlefields.install(
+            """[{"name": "Altar of Blood", "set": "Vendetta", "image": "altar_of_blood.jpg"},
+                {"name": "Black Market", "set": "Spiritforged"},
+                {"name": "Sunken Temple", "set": "Origins"},
+                {"name": "Future Field", "set": "Next Set"}]""",
+        )
+        assertEquals("altar_of_blood", Battlefields.byName("altar of blood")!!.id)
+        val groups = Battlefields.grouped("")
+        assertEquals(listOf("Vendetta", "Spiritforged", "Origins", "Next Set"), groups.map { it.first })
+        assertEquals(listOf("Black Market"), Battlefields.grouped("mark").flatMap { it.second }.map { it.name })
+        assertEquals(listOf("Sunken Temple", "Altar of Blood"), Battlefields.recent(listOf("Sunken Temple", null, "Nope", "Altar of Blood", "sunken temple")).map { it.name })
+    }
+}

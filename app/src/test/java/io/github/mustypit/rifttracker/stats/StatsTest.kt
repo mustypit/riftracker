@@ -142,3 +142,30 @@ class StatsTest {
         assertEquals(3, Stats.legendDetail(listOf(match), "Ahri").games)
     }
 }
+
+class BattlefieldStatsTest {
+    private fun g(o: Outcome, mine: String?, theirs: String?) =
+        Game(startedAt = 0, endedAt = 1, outcome = o).withBattlefield(Side.ME, mine).withBattlefield(Side.OPP, theirs)
+
+    @Test
+    fun recordPerBattlefieldCountsGames() {
+        val m1 = Match(format = Format.BO3, myLegend = "Ahri", oppLegend = "Jinx", startedAt = 10, endedAt = 20,
+            games = listOf(g(WIN, "Altar of Blood", "Black Market"), g(LOSS, "Risen Altar", "Black Market"), g(WIN, "Altar of Blood", null)))
+        val m2 = Match(format = Format.BO1, myLegend = "Ahri", oppLegend = "Zed", startedAt = 30, endedAt = 40,
+            games = listOf(g(DRAW, "altar of blood", "Sunken Temple")))
+        val mine = Stats.byBattlefield(listOf(m1, m2), Side.ME)
+        assertEquals(listOf("altar of blood", "Risen Altar"), mine.map { it.legend }) // most recent spelling
+        assertEquals(Record(2, 0, 1), mine[0].record)
+        assertEquals(Record(0, 1), mine[1].record)
+        val theirs = Stats.byBattlefield(listOf(m1, m2), Side.OPP)
+        assertEquals(Record(1, 1), theirs.first { it.legend == "Black Market" }.record)
+        assertEquals("games without a battlefield don't count", 3, theirs.sumOf { it.record.total })
+    }
+
+    @Test
+    fun choosingAndClearingABattlefield() {
+        val game = Game(startedAt = 0).withBattlefield(Side.ME, " Altar of Blood ")
+        assertEquals("Altar of Blood", game.battlefieldOf(Side.ME))
+        assertNull(game.withBattlefield(Side.ME, null).battlefieldOf(Side.ME))
+    }
+}
