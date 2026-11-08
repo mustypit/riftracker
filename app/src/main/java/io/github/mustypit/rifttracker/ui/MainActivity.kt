@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import io.github.mustypit.rifttracker.game.Legends
 
 class MainActivity : ComponentActivity() {
     private val vm: MainViewModel by viewModels()
@@ -33,6 +34,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        // Legend data from Riftcodex, if the app was built with it (scripts/build_legend_assets.py).
+        runCatching { assets.open("legends/legends.json").bufferedReader().use { Legends.install(it.readText()) } }
         setContent { RiftTheme { AppShell(vm) } }
     }
 }

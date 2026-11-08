@@ -6,6 +6,30 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LegendsTest {
+    @org.junit.After fun reset() = Legends.resetForTests()
+
+    @Test
+    fun riftcodexDataUpdatesKnownLegendsAndAddsNewOnes() {
+        Legends.install(
+            """[
+              {"name": "Vi", "title": "Piltover Enforcer", "set": "Unleashed", "domains": ["Fury", "Order"], "artist": "J. Santoro", "image": "vi.jpg"},
+              {"name": "Garen", "title": "Might of Demacia", "set": "Origins: Proving Grounds", "domains": ["Body", "Order"]},
+              {"name": "Newcomer", "title": "Fresh Face", "set": "Some Future Set", "domains": ["Mind", "Colorless"]}
+            ]""",
+        )
+        val vi = Legends.byName("Vi")!!
+        assertEquals(listOf(Domain.FURY, Domain.ORDER), vi.domains)
+        assertEquals("Piltover Enforcer", vi.title)
+        assertEquals("Unleashed", vi.set)
+        assertEquals(listOf(Domain.BODY, Domain.ORDER), Legends.byName("Garen")!!.domains)
+        assertEquals("Origins", Legends.byName("Garen")!!.set)
+        val n = Legends.byName("Newcomer")!!
+        assertEquals("Some Future Set", n.set)
+        assertEquals("unknown domains are dropped", listOf(Domain.MIND), n.domains)
+        assertTrue(Legends.grouped("").any { it.first == "Some Future Set" })
+        assertEquals("legends Riftcodex lacks stay", listOf(Domain.FURY, Domain.ORDER), Legends.byName("Mordekaiser")!!.domains)
+    }
+
     @Test
     fun libraryIsConsistent() {
         assertEquals("names are unique", Legends.all.size, Legends.all.map { it.name.lowercase() }.toSet().size)

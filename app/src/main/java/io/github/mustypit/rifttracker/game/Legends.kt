@@ -5,7 +5,26 @@ enum class Domain(val argb: Long) {
     FURY(0xFFE2483A), CALM(0xFF3FAE63), MIND(0xFF3B8BEB), BODY(0xFFF08A2E), CHAOS(0xFF7B4FC0), ORDER(0xFFE3B52B)
 }
 
-data class Legend(val id: String, val name: String, val set: String, val domains: List<Domain> = emptyList())
+data class Legend(
+    val id: String,
+    val name: String,
+    val set: String,
+    val domains: List<Domain> = emptyList(),
+    /** The legend card's title, e.g. "The Exile" (from Riftcodex). */
+    val title: String = "",
+    val artist: String? = null,
+)
+
+/** One entry of assets/legends/legends.json, written by scripts/build_legend_assets.py. */
+@kotlinx.serialization.Serializable
+data class LegendEntry(
+    val name: String,
+    val title: String = "",
+    val set: String = "",
+    val domains: List<String> = emptyList(),
+    val artist: String? = null,
+    val image: String? = null,
+)
 
 /**
  * The built-in legend library. Players pick from this; they never type a legend.
@@ -20,7 +39,8 @@ data class Legend(val id: String, val name: String, val set: String, val domains
  */
 object Legends {
     /** Newest first. */
-    val sets = listOf("Radiance", "Vendetta", "Unleashed", "Spiritforged", "Origins")
+    private val builtInSets = listOf("Radiance", "Vendetta", "Unleashed", "Spiritforged", "Origins")
+    val sets = builtInSets.toMutableList()
 
     private fun set(name: String, vararg legends: String) = legends.map { Legend(idOf(it), it, name, domainsOf[it].orEmpty()) }
 
@@ -44,13 +64,51 @@ object Legends {
         "Diana" to listOf(Domain.MIND, Domain.CHAOS),
     )
 
-    val all: List<Legend> = listOf(
+    private val builtIn: List<Legend> = listOf(
         set("Radiance", "Ekko", "Evelynn", "Jarvan IV", "K'Sante", "Mordekaiser", "Orianna", "Riven", "Seraphine", "Ziggs"),
         set("Vendetta", "Akali", "Ambessa", "Jayce", "Kennen", "Mel", "Nasus", "Renekton", "Shen", "Zed"),
         set("Unleashed", "Diana", "Ivern", "Kha'Zix", "Lillia", "Master Yi", "Poppy", "Pyke", "Rengar", "Vex", "Vi"),
         set("Spiritforged", "Azir", "Draven", "Ezreal", "Fiora", "Irelia", "Jax", "Lucian", "Ornn", "Rek'Sai", "Renata Glasc", "Rumble", "Sivir"),
         set("Origins", "Ahri", "Annie", "Darius", "Garen", "Jinx", "Kai'Sa", "Lee Sin", "Leona", "Lux", "Miss Fortune", "Sett", "Teemo", "Viktor", "Volibear", "Yasuo"),
     ).flatten()
+
+    /** Built-in legends, updated with Riftcodex data once [install] has run. */
+    @Volatile var all: List<Legend> = builtIn
+        private set
+
+    /** Riftcodex set labels that belong under one of the app's set headings. */
+    private fun setHeading(label: String) = when {
+        label.startsWith("Origins") -> "Origins"
+        else -> label
+    }
+
+    /**
+     * Merges Riftcodex data (the contents of legends.json) into the built-in list: known legends get
+     * their domains, title and artist; legends the app doesn't know yet are added. Legends missing
+     * from Riftcodex (a set it hasn't added yet) stay as they are.
+     */
+    fun install(json: String) {
+        val entries = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromString<List<LegendEntry>>(json)
+        val byKey = entries.associateBy { it.name.trim().lowercase() }
+        fun domains(e: LegendEntry) = e.domains.mapNotNull { d -> Domain.entries.firstOrNull { it.name.equals(d, ignoreCase = true) } }
+        val updated = builtIn.map { l ->
+            val e = byKey[l.name.lowercase()] ?: return@map l
+            l.copy(domains = domains(e).ifEmpty { l.domains }, title = e.title, artist = e.artist)
+        }
+        val known = builtIn.map { it.name.lowercase() }.toSet()
+        val added = entries.filter { it.name.trim().lowercase() !in known }.map { e ->
+            val set = setHeading(e.set).ifBlank { "Other" }
+            if (set !in sets) sets.add(set)
+            Legend(idOf(e.name), e.name.trim(), set, domains(e), e.title, e.artist)
+        }
+        all = updated + added
+    }
+
+    /** Tests: back to the built-in list. */
+    fun resetForTests() {
+        all = builtIn
+        sets.clear(); sets.addAll(builtInSets)
+    }
 
     /** "Kai'Sa" -> "kaisa", "Lee Sin" -> "lee_sin": the image file name. */
     fun idOf(name: String) = name.lowercase().filter { it.isLetter() || it == ' ' }.trim().replace(' ', '_')

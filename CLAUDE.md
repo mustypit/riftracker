@@ -58,10 +58,17 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `kaisa`, `lee_sin`, `jarvan_iv`): the card's artwork only (no frame, name bar or text), ~720 px.
   Riven and Mordekaiser are in so far (from the owner's card images); others show a monogram tile.
   Domains (`Domain`, card colours) are filled in for some legends.
-- **Next: Riftcodex** (api.riftcodex.com, free, no key) should supply every legend's art and domains
-  through an updater script that writes these assets. The host was added to the gps_tracker
-  environment, but the proxy hadn't picked it up when last tried; check the response format live
-  (the docs disagree on `/cards?size=` vs `/api/cards?limit=`).
+- **Riftcodex** (free card API, no key) supplies legend art, domains and titles. It refuses the cloud
+  dev machines (the proxy's CONNECT gets 403 even when allowed), so: the owner runs
+  `scripts/fetch-riftcodex-legends.ps1` at home (Windows PowerShell, no installs) and sends
+  `legends_raw.json`; then here `python3 scripts/build_legend_assets.py legends_raw.json` downloads
+  each legend's card image from Riot's CDN (`cmsassets.rgpub.io`, allowed in the environment), crops
+  the artwork and writes `assets/legends/<id>.jpg` + `legends.json`. The app merges `legends.json`
+  into the built-in list at startup (`Legends.install`), so legends Riftcodex lacks (Radiance as of
+  Nov 2026) keep working. Using GitHub Actions to fetch Riftcodex was refused as a sandbox escape;
+  don't, unless the owner explicitly asks. API: `GET /cards?page=N&size=100` → `{items, total, page,
+  size, pages}`; a legend has `classification.type == "Legend"`, `classification.domain`,
+  `set.set_id/label`, `media.image_url`, `metadata.{alternate_art, overnumbered, signature}`.
 - `stats/Stats.kt`: pure stats over finished matches.
 - `data/Db.kt`: Room, one row per match with the match as JSON (new fields get defaults when old
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it
