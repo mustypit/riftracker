@@ -52,6 +52,24 @@ object GameRules {
             Triple(e, me, opp)
         }
     }
+
+    /**
+     * How each of [side]'s current points was scored, oldest first: one entry per point on the side
+     * track. A correction (−1) takes away the most recent point.
+     */
+    fun scoredKinds(game: Game, side: Side): List<PointKind> {
+        val kinds = ArrayDeque<PointKind>()
+        game.events.filter { it.side == side }.forEach { e ->
+            if (e.delta > 0) kinds.addLast(e.kind) else if (kinds.isNotEmpty()) kinds.removeLast()
+        }
+        return kinds.toList()
+    }
+
+    /** The last press if it was a correction made less than [withinMs] ago (for the "−1 · UNDO" note). */
+    fun recentCorrection(game: Game?, now: Long, withinMs: Long = 4000): PointEvent? {
+        val e = game?.events?.lastOrNull() ?: return null
+        return e.takeIf { it.kind == PointKind.CORRECTION && now - (game.startedAt + it.atMs) < withinMs }
+    }
 }
 
 /** Best-of-1 / best-of-3 bookkeeping. */

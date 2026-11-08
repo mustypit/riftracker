@@ -154,42 +154,64 @@ private fun PlayerHalf(match: Match, game: Game?, side: Side, enabled: Boolean, 
                 )
             },
         )
-        Column(Modifier.fillMaxSize().padding(vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
+        Column(Modifier.fillMaxSize().padding(vertical = 18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
             Spacer(Modifier.height(4.dp))
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    "$score",
-                    style = TextStyle(fontSize = 132.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-5).sp, shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f)),
-                    modifier = Modifier.semantics { contentDescription = "${match.nameOf(side)} score $score" },
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(top = 6.dp)) {
-                    repeat(GameRules.VICTORY_SCORE) { i ->
-                        Box(Modifier.size(width = 20.dp, height = 7.dp).clip(RoundedCornerShape(4.dp)).background(Color.White.copy(alpha = if (i < score) 1f else 0.25f)))
-                    }
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
-                PointButton(RiftIcons.Minus, null, "${match.nameOf(side)} minus one", Color.White.copy(alpha = 0.16f), 40.dp, enabled) { onPoint(PointKind.CORRECTION) }
-                PointButton(RiftIcons.Conquer, "CONQUER", "${match.nameOf(side)} CONQUER", c1, 58.dp, enabled) { onPoint(PointKind.CONQUER) }
-                PointButton(RiftIcons.Hold, "HOLD", "${match.nameOf(side)} HOLD", c1, 58.dp, enabled) { onPoint(PointKind.HOLD) }
-                PointButton(RiftIcons.Ability, "ABILITY", "${match.nameOf(side)} ABILITY", c1, 58.dp, enabled) { onPoint(PointKind.ABILITY) }
+            // Tapping the score takes one point off (the middle bar then offers to undo it).
+            Text(
+                "$score",
+                style = TextStyle(fontSize = 140.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-5).sp, shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f)),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(24.dp))
+                    .clickable(enabled = enabled && score > 0, onClickLabel = "take one point off") { onPoint(PointKind.CORRECTION) }
+                    .padding(horizontal = 18.dp)
+                    .semantics { contentDescription = "${match.nameOf(side)} score $score" },
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                PointButton(RiftIcons.Conquer, "${match.nameOf(side)} CONQUER", c1, enabled) { onPoint(PointKind.CONQUER) }
+                PointButton(RiftIcons.Hold, "${match.nameOf(side)} HOLD", c1, enabled) { onPoint(PointKind.HOLD) }
+                PointButton(RiftIcons.Ability, "${match.nameOf(side)} ABILITY", c1, enabled) { onPoint(PointKind.ABILITY) }
             }
         }
+        SideTrack(game?.let { GameRules.scoredKinds(it, side) }.orEmpty(), c1, Modifier.align(Alignment.CenterEnd).padding(end = 10.dp))
     }
 }
 
-/** Round icon button tinted with the player's colour, label underneath. */
+/** Round icon button tinted with the player's colour. */
 @Composable
-private fun PointButton(icon: ImageVector, label: String?, description: String, color: Color, size: Dp, enabled: Boolean, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            Modifier.size(size).clip(CircleShape).background(if (enabled) color.copy(alpha = if (color.alpha < 1f) color.alpha else 0.88f) else color.copy(alpha = 0.35f))
-                .border(1.5.dp, Color.White.copy(alpha = 0.22f), CircleShape)
-                .clickable(enabled = enabled, onClick = onClick)
-                .semantics { contentDescription = description },
-            contentAlignment = Alignment.Center,
-        ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(size * 0.46f)) }
-        if (label != null) Text(label, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 0.8.sp, modifier = Modifier.padding(top = 5.dp))
+private fun PointButton(icon: ImageVector, description: String, color: Color, enabled: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier.size(64.dp).clip(CircleShape).background(color.copy(alpha = if (enabled) 0.9f else 0.35f))
+            .border(1.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
+            .clickable(enabled = enabled, onClick = onClick)
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(30.dp)) }
+}
+
+/**
+ * The progress track down the outer edge: one cell per point up to the victory score, filling from
+ * the bottom. Each filled cell shows how that point was scored.
+ */
+@Composable
+private fun SideTrack(kinds: List<PointKind>, color: Color, modifier: Modifier) {
+    Column(
+        modifier.clip(RoundedCornerShape(16.dp)).background(Color.Black.copy(alpha = 0.45f)).padding(4.dp)
+            .semantics { contentDescription = "${kinds.size} of ${GameRules.VICTORY_SCORE} points" },
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        for (i in GameRules.VICTORY_SCORE - 1 downTo 0) {
+            val kind = kinds.getOrNull(i)
+            Box(
+                Modifier.size(width = 26.dp, height = 24.dp).clip(RoundedCornerShape(8.dp))
+                    .background(if (kind != null) color else Color.White.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (kind != null) {
+                    val icon = when (kind) { PointKind.CONQUER -> RiftIcons.Conquer; PointKind.HOLD -> RiftIcons.Hold; else -> RiftIcons.Ability }
+                    Icon(icon, null, tint = Color.White, modifier = Modifier.size(14.dp))
+                }
+            }
+        }
     }
 }
 
@@ -207,12 +229,20 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
     Row(Modifier.fillMaxWidth().height(52.dp).background(C.Ink).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = vm::undo, enabled = game != null) { Icon(Icons.AutoMirrored.Filled.Undo, "Undo", tint = Color.White) }
         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            // After a tap on a score took a point off, the pill offers to undo it for a few seconds.
+            val correction = GameRules.recentCorrection(game, maxOf(now, AppGraph.clock()))
             val label = when {
+                correction != null -> "−1 ${match.nameOf(correction.side).uppercase()} · TAP TO UNDO"
                 coin != null -> "COIN: ${if (coin == Side.ME) "YOU GO" else match.nameOf(Side.OPP).uppercase() + " GOES"} FIRST"
                 match.format == Format.BO3 -> "GAME ${match.games.size.coerceAtLeast(1)} · ${MatchRules.scoreLine(match)}"
                 else -> "FIRST TO ${GameRules.VICTORY_SCORE}"
             }
-            Text(label, style = Caps, color = C.Ink, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(C.Yellow).padding(horizontal = 10.dp, vertical = 4.dp))
+            Text(
+                label, style = Caps, color = C.Ink,
+                modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (correction != null) Color.White else C.Yellow)
+                    .clickable(enabled = correction != null) { vm.undo() }
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            )
         }
         Text(
             formatDuration(game?.durationMs(maxOf(now, AppGraph.clock())) ?: 0), // also refreshed by any redraw

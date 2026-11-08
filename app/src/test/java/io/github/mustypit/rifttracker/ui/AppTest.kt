@@ -141,7 +141,10 @@ class AppTest {
         // Game 1: a back-and-forth, then the winning point by conquering (asks first).
         press("You", "HOLD"); press("Morgan", "CONQUER"); press("Morgan", "HOLD")
         press("You", "CONQUER", 2); press("Morgan", "ABILITY"); press("You", "HOLD", 2)
-        press("Morgan", "minus one")
+        // Tapping a score takes a point off; the middle pill offers to undo it.
+        clock.addAndGet(40_000)
+        rule.onNode(hasContentDescription("Morgan score 3")).performClick(); rule.waitForIdle()
+        rule.onNode(hasText("TAP TO UNDO", substring = true)).assertExists()
         shot("05_counter_game")
         press("You", "HOLD", 2)
         press("You", "CONQUER")
@@ -188,6 +191,15 @@ class AppTest {
         rule.onNode(hasContentDescription("You score 7")).assertExists()
         press("Opponent", "HOLD")
         rule.onNode(hasContentDescription("Undo")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Opponent score 0")).assertExists()
+        // A stray tap on a score takes a point off; tapping the pill puts it back.
+        rule.onNode(hasContentDescription("You score 7")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You score 6")).assertExists()
+        rule.onNode(hasText("TAP TO UNDO", substring = true)).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You score 7")).assertExists()
+        rule.onNode(hasContentDescription("7 of 8 points")).assertExists()
+        // A score of 0 can't be tapped below zero.
+        rule.onNode(hasContentDescription("Opponent score 0")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Opponent score 0")).assertExists()
         // Win, then take the winning point back: the game reopens.
         press("You", "HOLD")

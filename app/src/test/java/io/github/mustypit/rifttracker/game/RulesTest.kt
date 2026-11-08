@@ -116,6 +116,28 @@ class GameRulesTest {
     }
 
     @Test
+    fun sideTrackShowsHowEachCurrentPointWasScored() {
+        val t = Table()
+        t.press(ME, CONQUER); t.press(OPP, HOLD); t.press(ME, HOLD); t.press(ME, ABILITY)
+        assertEquals(listOf(CONQUER, HOLD, ABILITY), GameRules.scoredKinds(t.game, ME))
+        assertEquals(listOf(HOLD), GameRules.scoredKinds(t.game, OPP))
+        t.press(ME, CORRECTION) // takes away the latest point (the ability)
+        assertEquals(listOf(CONQUER, HOLD), GameRules.scoredKinds(t.game, ME))
+        assertEquals(t.game.score(ME), GameRules.scoredKinds(t.game, ME).size)
+    }
+
+    @Test
+    fun aRecentCorrectionIsReportedForAFewSeconds() {
+        val t = Table()
+        t.press(ME, HOLD)
+        assertNull("last press wasn't a correction", GameRules.recentCorrection(t.game, t.now))
+        t.press(ME, CORRECTION)
+        assertEquals(PointKind.CORRECTION, GameRules.recentCorrection(t.game, t.now + 1000)?.kind)
+        assertNull("gone after 4 s", GameRules.recentCorrection(t.game, t.now + 5000))
+        assertNull(GameRules.recentCorrection(null, 0))
+    }
+
+    @Test
     fun durationsFormat() {
         assertEquals("0:00", formatDuration(0))
         assertEquals("4:05", formatDuration(245_000))
