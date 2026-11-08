@@ -76,7 +76,7 @@ class AppTest {
         // A few real battlefields (the app adds the full Riftcodex list when it has it).
         if (io.github.mustypit.rifttracker.game.Battlefields.all.isEmpty()) {
             io.github.mustypit.rifttracker.game.Battlefields.install(
-                """[{"name": "Altar of Blood", "set": "Vendetta"}, {"name": "Black Market", "set": "Spiritforged"},
+                """[{"name": "Altar of Blood", "set": "Vendetta"}, {"name": "Sunken Temple", "set": "Origins"},
                     {"name": "Ravenbloom Conservatory", "set": "Spiritforged"}, {"name": "Risen Altar", "set": "Vendetta"}]""",
             )
         }
@@ -150,8 +150,8 @@ class AppTest {
         type("Search battlefields", "Altar of")
         rule.onNode(hasContentDescription("Battlefield Altar of Blood")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Morgan's battlefield")).performClick(); rule.waitForIdle()
-        type("Search battlefields", "Market")
-        rule.onNode(hasContentDescription("Battlefield Black Market")).performClick(); rule.waitForIdle()
+        type("Search battlefields", "Sunken")
+        rule.onNode(hasContentDescription("Battlefield Sunken Temple")).performClick(); rule.waitForIdle()
         shot("03_who_goes_first")
         click("YOU")
         shot("04_counter_start")
@@ -213,7 +213,7 @@ class AppTest {
         rule.waitFor("VICTORY")
         shot("09b_match_detail")
         assertEquals("Altar of Blood", m.games[0].battlefieldOf(Side.ME))
-        assertEquals("Black Market", m.games[0].battlefieldOf(Side.OPP))
+        assertEquals("Sunken Temple", m.games[0].battlefieldOf(Side.OPP))
         assertNull("game 2 had none picked", m.games[1].battlefieldOf(Side.ME))
 
         // Forgot one? Add it from the review afterwards.
@@ -399,7 +399,7 @@ class AppTest {
                     events = listOf(PointEvent(if (o == Outcome.WIN) Side.ME else Side.OPP, PointKind.HOLD, 8, 14 * 60_000)),
                     battlefields = mapOf(
                         Side.ME to listOf("Altar of Blood", "Risen Altar", "Ravenbloom Conservatory")[(i + s.daysAgo) % 3],
-                        Side.OPP to listOf("Black Market", "Ravenbloom Conservatory")[(i + s.hour) % 2],
+                        Side.OPP to listOf("Sunken Temple", "Ravenbloom Conservatory")[(i + s.hour) % 2],
                     ),
                 )
                 t += 17 * 60_000
