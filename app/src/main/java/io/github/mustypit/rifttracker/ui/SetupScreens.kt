@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,8 +81,15 @@ fun NewMatchScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding()) {
         HeaderBlock {
-            Text("NEW MATCH", style = Caps, color = C.Yellow)
-            Text("Who's playing?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("NEW MATCH", style = Caps, color = C.Yellow)
+                    Text("Who's playing?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
+                }
+                androidx.compose.material3.IconButton(onClick = { vm.push(Screen.Settings) }) {
+                    androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.Settings, "Settings", tint = Color.White)
+                }
+            }
         }
         MatchFields(format, { format = it }, my, name, { name = it }, opp, { pick = it })
         Spacer(Modifier.height(20.dp))

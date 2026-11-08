@@ -1,6 +1,12 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.ui.BiasAlignment
@@ -91,11 +97,21 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
         onDispose { view.keepScreenOn = false }
     }
 
+    val darkness by vm.settings.darkness.collectAsState()
+    var panels by remember { mutableStateOf(setOf<Side>()) }
     Box(Modifier.fillMaxSize().background(C.Ink)) {
         Column(Modifier.fillMaxSize()) {
-            PlayerHalf(match, game, Side.OPP, enabled = current != null, onPoint = { vm.addPoint(Side.OPP, it) }, modifier = Modifier.weight(1f).rotate(180f))
-            MiddleBar(vm, match, game, coin)
-            PlayerHalf(match, game, Side.ME, enabled = current != null, onPoint = { vm.addPoint(Side.ME, it) }, modifier = Modifier.weight(1f))
+            for (side in listOf(Side.OPP, Side.ME)) {
+                if (side == Side.ME) MiddleBar(vm, match, game, coin)
+                PlayerHalf(
+                    match, game, side, enabled = current != null, onPoint = { vm.addPoint(side, it) },
+                    modifier = Modifier.weight(1f).let { if (side == Side.OPP) it.rotate(180f) else it },
+                    darkness = darkness,
+                    panelOpen = side in panels,
+                    onPanelChange = { open -> panels = if (open) panels + side else panels - side },
+                    onXp = { vm.adjustXp(side, it) },
+                )
+            }
         }
         when {
             current != null -> {}
@@ -120,7 +136,10 @@ private fun playerColors(legendName: String, side: Side): Pair<Color, Color> {
  * Without art: a dark background washed with the domain colours.
  */
 @Composable
-private fun PlayerHalf(match: Match, game: Game?, side: Side, enabled: Boolean, onPoint: (PointKind) -> Unit, modifier: Modifier) {
+private fun PlayerHalf(
+    match: Match, game: Game?, side: Side, enabled: Boolean, onPoint: (PointKind) -> Unit, modifier: Modifier,
+    darkness: Float, panelOpen: Boolean, onPanelChange: (Boolean) -> Unit, onXp: (Int) -> Unit,
+) {
     val score = game?.score(side) ?: 0
     val legendName = if (side == Side.ME) match.myLegend else match.oppLegend
     val context = LocalContext.current
@@ -132,18 +151,9 @@ private fun PlayerHalf(match: Match, game: Game?, side: Side, enabled: Boolean, 
         } else {
             Box(Modifier.matchParentSize().background(Brush.linearGradient(listOf(c1.copy(alpha = 0.6f), c2.copy(alpha = 0.6f)))))
         }
-        // The veil: darkest behind the score, lighter towards the edges so the art shows.
-        Box(
-            Modifier.matchParentSize().drawBehind {
-                drawRect(
-                    Brush.radialGradient(
-                        0f to Color.Black.copy(alpha = 0.66f), 0.82f to Color.Black.copy(alpha = 0.24f), 1f to Color.Black.copy(alpha = 0.24f),
-                        center = center, radius = maxOf(size.width * 0.64f, size.height * 0.6f),
-                    ),
-                )
-            },
-        )
-        Column(Modifier.fillMaxSize().padding(vertical = 18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
+        // The veil: darkest behind the score, lighter towards the edges so the art shows (Settings).
+        Box(Modifier.matchParentSize().legendVeil(darkness))
+        Column(Modifier.fillMaxSize().padding(top = 18.dp, bottom = 26.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
             Spacer(Modifier.height(4.dp))
             // Tapping the score takes one point off (the middle bar then offers to undo it).
             Text(
@@ -162,7 +172,72 @@ private fun PlayerHalf(match: Match, game: Game?, side: Side, enabled: Boolean, 
             }
         }
         SideTrack(game?.let { GameRules.scoredKinds(it, side) }.orEmpty(), c1, Modifier.align(Alignment.CenterEnd).padding(end = 10.dp))
+        // XP at a glance when the panel is closed.
+        val xp = game?.xpOf(side) ?: 0
+        if (xp > 0 && !panelOpen) {
+            Text(
+                "XP $xp", style = Caps, color = Color.White,
+                modifier = Modifier.align(Alignment.TopStart).padding(14.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.5f))
+                    .padding(horizontal = 10.dp, vertical = 5.dp).semantics { contentDescription = "${match.nameOf(side)} XP $xp" },
+            )
+        }
+        PullUpPanel(
+            open = panelOpen, onOpenChange = onPanelChange, color = c1, name = match.nameOf(side),
+            modifier = Modifier.align(Alignment.BottomCenter),
+        ) {
+            CounterRow("XP", xp, "${match.nameOf(side)} XP", enabled = game != null, onChange = onXp)
+        }
     }
+}
+
+/**
+ * The hidden panel at the bottom of a half: a handle on the edge; tap it or swipe up to open,
+ * swipe down or tap the handle again to close. Holds extra counters (XP for now).
+ */
+@Composable
+private fun PullUpPanel(open: Boolean, onOpenChange: (Boolean) -> Unit, color: Color, name: String, modifier: Modifier, content: @Composable () -> Unit) {
+    val drag = Modifier.draggable(
+        orientation = Orientation.Vertical,
+        state = rememberDraggableState { },
+        onDragStopped = { velocity -> if (velocity < -50f) onOpenChange(true) else if (velocity > 50f) onOpenChange(false) },
+    )
+    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier.fillMaxWidth().height(26.dp).then(drag)
+                .clickable(onClickLabel = if (open) "close" else "open") { onOpenChange(!open) }
+                .semantics { contentDescription = if (open) "Hide $name extras" else "Show $name extras" },
+            contentAlignment = Alignment.Center,
+        ) { Box(Modifier.size(width = 54.dp, height = 5.dp).clip(RoundedCornerShape(3.dp)).background(Color.White.copy(alpha = 0.6f))) }
+        AnimatedVisibility(open, enter = expandVertically(expandFrom = Alignment.Top), exit = shrinkVertically(shrinkTowards = Alignment.Top)) {
+            Column(
+                Modifier.fillMaxWidth().then(drag).background(Color(0xF2141414)).border(1.dp, color.copy(alpha = 0.5f))
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+            ) { content() }
+        }
+    }
+}
+
+/** A labelled counter with − and + buttons. */
+@Composable
+private fun CounterRow(label: String, value: Int, description: String, enabled: Boolean, onChange: (Int) -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = Caps.copy(fontSize = 15.sp), color = Color.White, modifier = Modifier.weight(1f))
+        RoundStep("−", "$description minus", enabled && value > 0) { onChange(-1) }
+        Text(
+            "$value", color = Color.White, fontWeight = FontWeight.Black, fontSize = 34.sp, textAlign = TextAlign.Center,
+            modifier = Modifier.width(72.dp).semantics { contentDescription = "$description $value" },
+        )
+        RoundStep("+", "$description plus", enabled) { onChange(+1) }
+    }
+}
+
+@Composable
+private fun RoundStep(text: String, description: String, enabled: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier.size(48.dp).clip(CircleShape).background(Color.White.copy(alpha = if (enabled) 0.16f else 0.06f))
+            .clickable(enabled = enabled, onClick = onClick).semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) { Text(text, color = Color.White.copy(alpha = if (enabled) 1f else 0.4f), fontWeight = FontWeight.Black, fontSize = 24.sp) }
 }
 
 /** Round icon button tinted with the player's colour. */
@@ -243,6 +318,7 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 DropdownMenuItem(text = { Text("End game as a draw") }, enabled = running, onClick = { menu = false; vm.drawGame() })
                 DropdownMenuItem(text = { Text("Abandon match") }, onClick = { menu = false; confirmAbandon = true })
+                DropdownMenuItem(text = { Text("Settings") }, onClick = { menu = false; vm.push(Screen.Settings) })
             }
         }
     }

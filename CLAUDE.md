@@ -96,6 +96,14 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - No rules nagging: the owner removed the "winning point by conquering?" check (players know the
   rules). After a match, SAVE MATCH returns to New match (prefilled for a rematch); no review
   screen pops up: matches are reviewed from the Matches tab.
+- **Settings** (gear on New match, or the counter's menu): "Background darkness" slider for the veil
+  over legend art (`Veil.alphas`, `SettingsStore`, SharedPreferences). 0 = the veil that passed the
+  readability check; it can only go darker. Default 0.35.
+- **Pull-up panels**: a handle at the bottom of each half opens extra counters (XP for now, stored
+  per game in `Game.xp`); a badge shows XP while closed.
+- **Match review score chart** (`ScoreChart`): lanes per player, running score on a line coloured by
+  the leader, lead changes outlined, breakdown by point kind, lead changes and longest run
+  (`GameRules.chart/breakdown/longestRun`).
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
 - Deferred: decks with versions, battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per

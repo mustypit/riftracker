@@ -119,6 +119,39 @@ class GameRulesTest {
     }
 
     @Test
+    fun chartTracksTheLeaderAndLeadChanges() {
+        val t = Table()
+        // Opponent leads 0–2, it's tied 2–2, then you take the lead: one lead change (at 3–2).
+        t.press(OPP, ABILITY); t.press(OPP, ABILITY); t.press(ME, HOLD); t.press(ME, HOLD); t.press(ME, HOLD); t.press(ME, CONQUER)
+        val rows = GameRules.chart(t.game)
+        assertEquals(listOf(OPP, OPP, OPP, null, ME, ME), rows.map { it.leader })
+        assertEquals(listOf(false, false, false, false, true, false), rows.map { it.leadChange })
+        assertEquals(3 to 2, rows[4].me to rows[4].opp)
+        // Taking it back again is a second change.
+        t.press(OPP, HOLD); t.press(OPP, HOLD); t.press(OPP, HOLD)
+        assertEquals(2, GameRules.chart(t.game).count { it.leadChange })
+    }
+
+    @Test
+    fun breakdownAndLongestRun() {
+        val t = Table()
+        t.press(OPP, ABILITY); t.press(ME, HOLD); t.press(ME, HOLD); t.press(ME, CONQUER); t.press(OPP, HOLD); t.press(ME, HOLD)
+        assertEquals(mapOf(CONQUER to 1, HOLD to 3, ABILITY to 0), GameRules.breakdown(t.game, ME))
+        assertEquals(mapOf(CONQUER to 0, HOLD to 1, ABILITY to 1), GameRules.breakdown(t.game, OPP))
+        assertEquals(ME to 3, GameRules.longestRun(t.game))
+        assertNull(GameRules.longestRun(Game(startedAt = 0)))
+    }
+
+    @Test
+    fun xpGoesUpAndDownButNotBelowZero() {
+        var g = Game(startedAt = 0)
+        g = GameRules.adjustXp(g, ME, +1); g = GameRules.adjustXp(g, ME, +1); g = GameRules.adjustXp(g, OPP, -1)
+        assertEquals(2, g.xpOf(ME))
+        assertEquals(0, g.xpOf(OPP))
+        assertEquals(0, g.score(ME)) // XP isn't score
+    }
+
+    @Test
     fun aRecentCorrectionIsReportedForAFewSeconds() {
         val t = Table()
         t.press(ME, HOLD)

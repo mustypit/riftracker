@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -146,6 +147,14 @@ class AppTest {
         rule.onNode(hasContentDescription("Morgan score 3")).performClick(); rule.waitForIdle()
         rule.onNode(hasText("TAP TO UNDO", substring = true)).assertExists()
         shot("05_counter_game")
+        // The hidden panel: open it from the handle, add 2 XP, close it; the XP shows as a badge.
+        rule.onNode(hasContentDescription("Show You extras")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You XP plus")).performClick()
+        rule.onNode(hasContentDescription("You XP plus")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You XP 2")).assertExists()
+        shot("05b_xp_panel")
+        rule.onNode(hasContentDescription("Hide You extras")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You XP 2")).assertExists() // the badge
         press("You", "HOLD", 2)
         press("You", "CONQUER") // the winning point, no questions asked
         rule.waitFor("YOU WIN GAME 1")
@@ -177,6 +186,7 @@ class AppTest {
         assertEquals(8, m.games[0].score(Side.ME))
         assertEquals(2, m.games[0].score(Side.OPP)) // 3 points minus the correction
         assertTrue(m.games[0].events.any { it.kind == PointKind.CORRECTION })
+        assertEquals("XP is saved with the game", 2, m.games[0].xpOf(Side.ME))
         assertEquals("Morgan", m.oppName)
         assertNull(runBlocking(Dispatchers.IO) { store.activeNow() })
 
@@ -300,6 +310,27 @@ class AppTest {
         assertTrue(m.logged)
         assertEquals(listOf(Outcome.WIN, Outcome.LOSS, Outcome.WIN), m.games.map { it.outcome })
         assertEquals("Diana", m.myLegend)
+    }
+
+    @Test
+    fun backgroundDarknessSetting() {
+        launch()
+        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        rule.waitFor("Background darkness")
+        shot("19_settings")
+        rule.onNode(hasContentDescription("Background darkness"))
+            .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(0.9f) }
+        rule.waitForIdle()
+        rule.waitFor("90%")
+        shot("19b_settings_darker")
+        // Kept after the app restarts.
+        scenario?.close()
+        launch()
+        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        rule.waitFor("90%")
+        // Lightest allowed is the veil that passed the readability check.
+        assertEquals(0.66f to 0.24f, Veil.alphas(0f))
+        assertEquals(Veil.alphas(0f), Veil.alphas(-1f))
     }
 
     @Test

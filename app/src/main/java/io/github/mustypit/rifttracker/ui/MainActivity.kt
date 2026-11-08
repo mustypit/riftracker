@@ -83,6 +83,7 @@ fun AppShell(vm: MainViewModel) {
                 is Screen.MatchDetail -> MatchDetailScreen(vm, top.id)
                 is Screen.LegendDetail -> LegendDetailScreen(vm, top.legend)
                 Screen.LogMatch -> LogMatchScreen(vm)
+                Screen.Settings -> SettingsScreen(vm)
                 null -> when (tab) {
                     Tab.Play -> if (loaded) NewMatchScreen(vm)
                     Tab.Matches -> MatchesScreen(vm)

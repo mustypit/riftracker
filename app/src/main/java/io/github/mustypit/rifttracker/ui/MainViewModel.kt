@@ -37,6 +37,7 @@ sealed interface Screen {
     data class MatchDetail(val id: Long) : Screen
     data class LegendDetail(val legend: String) : Screen
     data object LogMatch : Screen
+    data object Settings : Screen
 }
 
 /** Values to start a match with (rematch fills them in). */
@@ -45,6 +46,7 @@ data class MatchSetup(val format: Format = Format.BO3, val myLegend: String = ""
 class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val store = MatchStore(AppDb.get(app).matches())
     private val now get() = AppGraph.clock()
+    val settings = SettingsStore(app)
 
     private val _tab = MutableStateFlow(Tab.Play)
     val tab: StateFlow<Tab> = _tab.asStateFlow()
@@ -126,6 +128,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val last = m.games.lastOrNull() ?: return
         // Undo on a game that hasn't had a point yet takes back starting it.
         _active.value = if (!last.isOver && last.events.isEmpty()) m.copy(games = m.games.dropLast(1)) else MatchRules.undo(m)
+        persist()
+    }
+
+    /** XP from the pull-up panel, on the game in progress (or the one that just ended). */
+    fun adjustXp(side: Side, delta: Int) {
+        val m = _active.value ?: return
+        val g = m.games.lastOrNull() ?: return
+        _active.value = MatchRules.replaceCurrent(m, GameRules.adjustXp(g, side, delta))
         persist()
     }
 

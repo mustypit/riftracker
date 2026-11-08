@@ -1,6 +1,11 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.background
+import io.github.mustypit.rifttracker.game.Game
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -160,7 +165,7 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
                     Text(facts.joinToString(" · "), color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
                     if (g.events.isNotEmpty()) {
                         Spacer(Modifier.height(10.dp))
-                        GameRules.timeline(g).forEach { (e, me, opp) -> TimelineRow(e.side, e.kind, e.atMs, me, opp, m.oppName.ifBlank { m.oppLegend }) }
+                        ScoreChart(g, m.oppName.ifBlank { m.oppLegend })
                     }
                 }
             }
@@ -181,14 +186,83 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
     }
 }
 
+private fun kindIcon(kind: PointKind) = when (kind) {
+    PointKind.CONQUER -> RiftIcons.Conquer
+    PointKind.HOLD -> RiftIcons.Hold
+    PointKind.ABILITY -> RiftIcons.Ability
+    PointKind.CORRECTION -> RiftIcons.Minus
+}
+
+/**
+ * The game, point by point: time on the left, your points in the left lane, the running score in
+ * the middle on a line coloured by who's leading, their points in the right lane. A lead that
+ * changes hands gets a yellow outline. Then each player's points by kind and a few facts.
+ */
 @Composable
-private fun TimelineRow(side: Side, kind: PointKind, atMs: Long, me: Int, opp: Int, oppLabel: String) {
-    val what = when (kind) { PointKind.CONQUER -> "conquer"; PointKind.HOLD -> "hold"; PointKind.ABILITY -> "ability"; PointKind.CORRECTION -> "−1 correction" }
+private fun ScoreChart(g: Game, oppLabel: String) {
+    val rows = GameRules.chart(g)
+    Column(Modifier.fillMaxWidth().semantics { contentDescription = "Score chart" }) {
+        rows.forEach { r ->
+            val lead = r.leader?.let(C::side) ?: C.Line
+            Row(Modifier.fillMaxWidth().height(38.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(formatDuration(r.event.atMs), color = C.Muted, fontSize = 11.sp, modifier = Modifier.width(40.dp))
+                ChartLane(r.event.side == Side.ME, r.event.kind, C.Teal, r.leader == Side.ME, Modifier.weight(1f))
+                // Centre: the leader's line with the score on it.
+                Box(Modifier.width(66.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    Box(Modifier.width(4.dp).fillMaxHeight().background(lead))
+                    Text(
+                        "${r.me}–${r.opp}", fontWeight = FontWeight.Black, fontSize = 12.sp, color = C.Ink,
+                        modifier = Modifier.clip(RoundedCornerShape(9.dp)).background(C.Card)
+                            .border(if (r.leadChange) 2.dp else 1.dp, if (r.leadChange) C.Yellow else C.Line, RoundedCornerShape(9.dp))
+                            .padding(horizontal = 7.dp, vertical = 2.dp),
+                    )
+                }
+                ChartLane(r.event.side == Side.OPP, r.event.kind, C.Coral, r.leader == Side.OPP, Modifier.weight(1f))
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        BreakdownRow("YOU", GameRules.breakdown(g, Side.ME), C.Teal)
+        BreakdownRow(oppLabel.uppercase(), GameRules.breakdown(g, Side.OPP), C.Coral)
+        val changes = rows.filter { it.leadChange }
+        val run = GameRules.longestRun(g)
+        Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+            Column(Modifier.weight(1f)) {
+                Text("Lead changes", color = C.Muted, fontSize = 12.sp)
+                Text("${changes.size}", fontWeight = FontWeight.Black, fontSize = 22.sp, color = C.Ink)
+                changes.lastOrNull()?.let { Text("last ${formatDuration(it.event.atMs)} · ${it.me}–${it.opp}", color = C.Muted, fontSize = 12.sp) }
+            }
+            Column(Modifier.weight(1f)) {
+                Text("Longest run", color = C.Muted, fontSize = 12.sp)
+                Text(run?.second?.toString() ?: "–", fontWeight = FontWeight.Black, fontSize = 22.sp, color = run?.first?.let(C::side) ?: C.Ink)
+                run?.let { Text(if (it.first == Side.ME) "you, unanswered" else "$oppLabel, unanswered", color = C.Muted, fontSize = 12.sp) }
+            }
+        }
+    }
+}
+
+/** One lane of the chart: tinted while that player leads; an icon on the rows where they scored. */
+@Composable
+private fun ChartLane(scored: Boolean, kind: PointKind, color: Color, leading: Boolean, modifier: Modifier) {
+    Box(modifier.fillMaxHeight().background(if (leading) color.copy(alpha = 0.14f) else Color.Transparent), contentAlignment = Alignment.Center) {
+        if (scored) {
+            Box(Modifier.size(28.dp).clip(CircleShape).background(color), contentAlignment = Alignment.Center) {
+                Icon(kindIcon(kind), null, tint = Color.White, modifier = Modifier.size(15.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun BreakdownRow(who: String, counts: Map<PointKind, Int>, color: Color) {
     Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(formatDuration(atMs), color = C.Muted, fontSize = 12.sp, modifier = Modifier.width(44.dp))
-        Box(Modifier.width(4.dp).height(18.dp).clip(RoundedCornerShape(2.dp)).background(C.side(side)))
-        Text("${if (side == Side.ME) "You" else oppLabel} · $what", fontSize = 14.sp, modifier = Modifier.padding(start = 10.dp).weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text("$me–$opp", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
+        Text(who, style = Caps, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(96.dp))
+        listOf(PointKind.CONQUER, PointKind.HOLD, PointKind.ABILITY).forEach { k ->
+            val n = counts[k] ?: 0
+            Box(Modifier.size(22.dp).clip(CircleShape).background(if (n > 0) color else C.Line), contentAlignment = Alignment.Center) {
+                Icon(kindIcon(k), null, tint = Color.White, modifier = Modifier.size(12.dp))
+            }
+            Text("$n", fontWeight = FontWeight.Black, fontSize = 15.sp, color = if (n > 0) C.Ink else C.Muted, modifier = Modifier.padding(start = 5.dp, end = 14.dp))
+        }
     }
 }
 

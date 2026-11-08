@@ -60,6 +60,41 @@ object GameRules {
         return kinds.toList()
     }
 
+    /** Changes [side]'s XP by [delta], never below zero. Works after the game ended too (to fix it). */
+    fun adjustXp(game: Game, side: Side, delta: Int): Game =
+        game.copy(xp = game.xp + (side to (game.xpOf(side) + delta).coerceAtLeast(0)))
+
+    /** One line of the score chart: a press, the score after it, who leads, and whether the lead changed hands. */
+    data class ChartRow(val event: PointEvent, val me: Int, val opp: Int, val leader: Side?, val leadChange: Boolean)
+
+    fun chart(game: Game): List<ChartRow> {
+        var lastLeader: Side? = null
+        return timeline(game).map { (e, me, opp) ->
+            val leader = when { me > opp -> Side.ME; opp > me -> Side.OPP; else -> null }
+            // A lead change: someone takes the lead after the other player had it (a tie in between still counts).
+            val change = leader != null && lastLeader != null && leader != lastLeader
+            if (leader != null) lastLeader = leader
+            ChartRow(e, me, opp, leader, change)
+        }
+    }
+
+    /** How [side]'s current points were scored, per kind (conquer / hold / ability). */
+    fun breakdown(game: Game, side: Side): Map<PointKind, Int> =
+        listOf(PointKind.CONQUER, PointKind.HOLD, PointKind.ABILITY).associateWith { k -> scoredKinds(game, side).count { it == k } }
+
+    /** The longest run of points one player scored in a row, unanswered: (who, how many), or null. */
+    fun longestRun(game: Game): Pair<Side, Int>? {
+        var best: Pair<Side, Int>? = null
+        var who: Side? = null
+        var run = 0
+        game.events.filter { it.delta > 0 }.forEach { e ->
+            run = if (e.side == who) run + 1 else 1
+            who = e.side
+            if (best == null || run > best!!.second) best = e.side to run
+        }
+        return best
+    }
+
     /** The last press if it was a correction made less than [withinMs] ago (for the "−1 · UNDO" note). */
     fun recentCorrection(game: Game?, now: Long, withinMs: Long = 4000): PointEvent? {
         val e = game?.events?.lastOrNull() ?: return null

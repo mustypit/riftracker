@@ -33,8 +33,11 @@ data class Game(
     val events: List<PointEvent> = emptyList(),
     /** Set when the game is over; from the owner's point of view. */
     val outcome: Outcome? = null,
+    /** XP per player, set from the pull-up panel (not part of the score). */
+    val xp: Map<Side, Int> = emptyMap(),
 ) {
     fun score(side: Side): Int = events.filter { it.side == side }.sumOf { it.delta }
+    fun xpOf(side: Side): Int = xp[side] ?: 0
     val isOver get() = outcome != null
     fun durationMs(now: Long): Long = (endedAt ?: now) - startedAt
 }
