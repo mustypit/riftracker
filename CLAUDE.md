@@ -54,15 +54,27 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   Put new rules here and test them in `RulesTest`.
 - `game/Legends.kt`: the built-in legend library (players pick, never type). New set: add it at the
   top of `sets` and its legends to `all`. Never rename a legend (matches store the name).
-  Art: drop `app/src/main/assets/legends/<id>.webp|png|jpg` (id = `Legends.idOf(name)`, e.g.
-  `kaisa`, `lee_sin`, `jarvan_iv`); without it the app draws a monogram tile.
+  Art: `app/src/main/assets/legends/<id>.webp|png|jpg` (id = `Legends.idOf(name)`, e.g.
+  `kaisa`, `lee_sin`, `jarvan_iv`): the card's artwork only (no frame, name bar or text), ~720 px.
+  Riven and Mordekaiser are in so far (from the owner's card images); others show a monogram tile.
+  Domains (`Domain`, card colours) are filled in for some legends.
+- **Next: Riftcodex** (api.riftcodex.com, free, no key) should supply every legend's art and domains
+  through an updater script that writes these assets. The host was added to the gps_tracker
+  environment, but the proxy hadn't picked it up when last tried; check the response format live
+  (the docs disagree on `/cards?size=` vs `/api/cards?limit=`).
 - `stats/Stats.kt`: pure stats over finished matches.
 - `data/Db.kt`: Room, one row per match with the match as JSON (new fields get defaults when old
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it
   survives the app closing. A real schema change still needs a version bump and a migration
   (never destructive: it's the user's history).
-- `ui/`: Compose, look "bold blocks" (`Theme.kt`: teal = you, coral = opponent, black bars, yellow
-  highlights). `MainViewModel` holds navigation (tab + screen stack), the running match and actions.
+- `ui/`: Compose, look "bold blocks" (`Theme.kt`: black bars, yellow highlights; teal = you and
+  coral = opponent in lists). The counter uses design **B** (chosen from measured mockups): each half
+  shows the legend's art with a dark radial veil, strongest behind the score, white digits, no name
+  label, and round point buttons (flag = conquer, shield = hold, spark = ability; `RiftIcons.kt`)
+  filled with the legend's first domain colour. Without art: dark background washed with the two
+  domain colours; without domains: the seat colour. Text on coloured buttons picks dark/white by
+  luminance. Raw art behind the score failed the readability check (32% of pixels under 3:1); keep
+  the veil. `MainViewModel` holds navigation (tab + screen stack), the running match and actions.
   `AppGraph` is where tests swap the clock and the coin-flip random.
 
 ## Product decisions

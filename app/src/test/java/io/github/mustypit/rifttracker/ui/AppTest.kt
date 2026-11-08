@@ -126,10 +126,10 @@ class AppTest {
         rule.onNode(hasContentDescription("Your legend")).performClick(); rule.waitForIdle()
         rule.waitFor("RADIANCE")
         shot("01b_legend_picker")
-        type("Search legends", "Ahri")
-        rule.onNode(hasContentDescription("Legend Ahri")).performClick(); rule.waitForIdle()
+        type("Search legends", "Riven")
+        rule.onNode(hasContentDescription("Legend Riven")).performClick(); rule.waitForIdle()
         type("Their name (optional)", "Morgan")
-        pickLegend("Their legend", "Jinx")
+        pickLegend("Their legend", "Mordekaiser")
         shot("02_new_match_filled")
         click("START")
 

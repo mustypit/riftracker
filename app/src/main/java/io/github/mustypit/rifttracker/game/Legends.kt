@@ -1,6 +1,11 @@
 package io.github.mustypit.rifttracker.game
 
-data class Legend(val id: String, val name: String, val set: String)
+/** Riftbound's six domains, with the colours printed on the cards. */
+enum class Domain(val argb: Long) {
+    FURY(0xFFE2483A), CALM(0xFF3FAE63), MIND(0xFF3B8BEB), BODY(0xFFF08A2E), CHAOS(0xFF7B4FC0), ORDER(0xFFE3B52B)
+}
+
+data class Legend(val id: String, val name: String, val set: String, val domains: List<Domain> = emptyList())
 
 /**
  * The built-in legend library. Players pick from this; they never type a legend.
@@ -17,7 +22,27 @@ object Legends {
     /** Newest first. */
     val sets = listOf("Radiance", "Vendetta", "Unleashed", "Spiritforged", "Origins")
 
-    private fun set(name: String, vararg legends: String) = legends.map { Legend(idOf(it), it, name) }
+    private fun set(name: String, vararg legends: String) = legends.map { Legend(idOf(it), it, name, domainsOf[it].orEmpty()) }
+
+    /**
+     * Domain pairs known so far: from the cards themselves (Riven, Mordekaiser) and public set
+     * coverage. To be replaced by Riftcodex data; a legend without domains gets neutral colours.
+     */
+    private val domainsOf: Map<String, List<Domain>> = mapOf(
+        "Mordekaiser" to listOf(Domain.FURY, Domain.ORDER),
+        "Riven" to listOf(Domain.CALM, Domain.CHAOS),
+        "Azir" to listOf(Domain.CALM, Domain.ORDER),
+        "Fiora" to listOf(Domain.BODY, Domain.ORDER),
+        "Jax" to listOf(Domain.CALM, Domain.BODY),
+        "Rumble" to listOf(Domain.MIND, Domain.FURY),
+        "Draven" to listOf(Domain.FURY, Domain.CHAOS),
+        "Ezreal" to listOf(Domain.MIND, Domain.CHAOS),
+        "Shen" to listOf(Domain.CALM, Domain.ORDER),
+        "Zed" to listOf(Domain.FURY, Domain.CHAOS),
+        "Akali" to listOf(Domain.FURY, Domain.CALM),
+        "Master Yi" to listOf(Domain.CALM, Domain.BODY),
+        "Diana" to listOf(Domain.MIND, Domain.CHAOS),
+    )
 
     val all: List<Legend> = listOf(
         set("Radiance", "Ekko", "Evelynn", "Jarvan IV", "K'Sante", "Mordekaiser", "Orianna", "Riven", "Seraphine", "Ziggs"),

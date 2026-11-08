@@ -1,6 +1,20 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
+import io.github.mustypit.rifttracker.game.Legends
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -102,50 +116,80 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     }
 }
 
+/** Dark or white text, whichever reads better on [c]. */
+private fun inkOn(c: Color) = if (c.luminance() > 0.4f) C.Ink else Color.White
+
+/** Two colours for a player: the legend's domains, or the seat colour when they're unknown. */
+private fun playerColors(legendName: String, side: Side): Pair<Color, Color> {
+    val d = Legends.byName(legendName)?.domains.orEmpty()
+    return if (d.size >= 2) Color(d[0].argb) to Color(d[1].argb) else C.side(side) to C.side(side)
+}
+
+/**
+ * One player's half (design "B"): the legend's art with a dark veil that's strongest behind the
+ * number, white digits, and round point buttons filled with the legend's domain colour.
+ * Without art: a dark background washed with the domain colours.
+ */
 @Composable
 private fun PlayerHalf(match: Match, game: Game?, side: Side, enabled: Boolean, onPoint: (PointKind) -> Unit, modifier: Modifier) {
     val score = game?.score(side) ?: 0
-    val ink = C.sideInk(side)
-    val legend = if (side == Side.ME) match.myLegend else match.oppLegend
-    Box(modifier.fillMaxWidth().background(C.side(side)), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                LegendAvatar(legend, 28.dp, Modifier.padding(end = 8.dp), corner = 8.dp)
-                Text("${match.nameOf(side)} · $legend".uppercase(), style = Caps, color = ink.copy(alpha = 0.75f))
-                if (game?.wentFirst == side) {
-                    Spacer(Modifier.width(8.dp))
-                    Text("1ST", style = Caps.copy(fontSize = 10.sp), color = C.Yellow, modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(C.Ink).padding(horizontal = 6.dp, vertical = 2.dp))
+    val legendName = if (side == Side.ME) match.myLegend else match.oppLegend
+    val context = LocalContext.current
+    val art = remember(legendName) { Legends.byName(legendName)?.let { LegendArt.get(context, it.id) } }
+    val (c1, c2) = playerColors(legendName, side)
+    Box(modifier.fillMaxWidth().background(Color(0xFF0C0C0C)).clipToBounds()) {
+        if (art != null) {
+            Image(art, null, contentScale = ContentScale.Crop, alignment = BiasAlignment(0f, -0.4f), modifier = Modifier.matchParentSize())
+        } else {
+            Box(Modifier.matchParentSize().background(Brush.linearGradient(listOf(c1.copy(alpha = 0.6f), c2.copy(alpha = 0.6f)))))
+        }
+        // The veil: darkest behind the score, lighter towards the edges so the art shows.
+        Box(
+            Modifier.matchParentSize().drawBehind {
+                drawRect(
+                    Brush.radialGradient(
+                        0f to Color.Black.copy(alpha = 0.66f), 0.82f to Color.Black.copy(alpha = 0.24f), 1f to Color.Black.copy(alpha = 0.24f),
+                        center = center, radius = maxOf(size.width * 0.64f, size.height * 0.6f),
+                    ),
+                )
+            },
+        )
+        Column(Modifier.fillMaxSize().padding(vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
+            Spacer(Modifier.height(4.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "$score",
+                    style = TextStyle(fontSize = 132.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-5).sp, shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f)),
+                    modifier = Modifier.semantics { contentDescription = "${match.nameOf(side)} score $score" },
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(top = 6.dp)) {
+                    repeat(GameRules.VICTORY_SCORE) { i ->
+                        Box(Modifier.size(width = 20.dp, height = 7.dp).clip(RoundedCornerShape(4.dp)).background(Color.White.copy(alpha = if (i < score) 1f else 0.25f)))
+                    }
                 }
             }
-            Text(
-                "$score",
-                fontSize = 128.sp, fontWeight = FontWeight.Black, color = ink, letterSpacing = (-4).sp,
-                modifier = Modifier.semantics { contentDescription = "${match.nameOf(side)} score $score" },
-            )
-            Text("/ ${GameRules.VICTORY_SCORE}", style = Caps, color = ink.copy(alpha = 0.55f))
-            Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(top = 8.dp)) {
-                repeat(GameRules.VICTORY_SCORE) { i ->
-                    Box(Modifier.size(width = 22.dp, height = 9.dp).clip(RoundedCornerShape(3.dp)).background(if (i < score) ink.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.16f)))
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 14.dp)) {
-                Box(
-                    Modifier.size(42.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.15f))
-                        .clickable(enabled = enabled) { onPoint(PointKind.CORRECTION) }
-                        .semantics { contentDescription = "${match.nameOf(side)} minus one" },
-                    contentAlignment = Alignment.Center,
-                ) { Text("−", fontSize = 22.sp, fontWeight = FontWeight.Black, color = ink) }
-                listOf(PointKind.CONQUER to "CONQUER", PointKind.HOLD to "HOLD", PointKind.ABILITY to "ABILITY").forEach { (kind, label) ->
-                    Box(
-                        Modifier.height(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = if (enabled) 0.9f else 0.5f))
-                            .clickable(enabled = enabled) { onPoint(kind) }
-                            .semantics { contentDescription = "${match.nameOf(side)} $label" }
-                            .padding(horizontal = 13.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { Text(label, fontSize = 12.sp, fontWeight = FontWeight.Black, color = C.Ink, letterSpacing = 0.5.sp) }
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
+                PointButton(RiftIcons.Minus, null, "${match.nameOf(side)} minus one", Color.White.copy(alpha = 0.16f), 40.dp, enabled) { onPoint(PointKind.CORRECTION) }
+                PointButton(RiftIcons.Conquer, "CONQUER", "${match.nameOf(side)} CONQUER", c1, 58.dp, enabled) { onPoint(PointKind.CONQUER) }
+                PointButton(RiftIcons.Hold, "HOLD", "${match.nameOf(side)} HOLD", c1, 58.dp, enabled) { onPoint(PointKind.HOLD) }
+                PointButton(RiftIcons.Ability, "ABILITY", "${match.nameOf(side)} ABILITY", c1, 58.dp, enabled) { onPoint(PointKind.ABILITY) }
             }
         }
+    }
+}
+
+/** Round icon button tinted with the player's colour, label underneath. */
+@Composable
+private fun PointButton(icon: ImageVector, label: String?, description: String, color: Color, size: Dp, enabled: Boolean, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier.size(size).clip(CircleShape).background(if (enabled) color.copy(alpha = if (color.alpha < 1f) color.alpha else 0.88f) else color.copy(alpha = 0.35f))
+                .border(1.5.dp, Color.White.copy(alpha = 0.22f), CircleShape)
+                .clickable(enabled = enabled, onClick = onClick)
+                .semantics { contentDescription = description },
+            contentAlignment = Alignment.Center,
+        ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(size * 0.46f)) }
+        if (label != null) Text(label, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 0.8.sp, modifier = Modifier.padding(top = 5.dp))
     }
 }
 
@@ -225,9 +269,9 @@ private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit) {
             )
         }
         Spacer(Modifier.height(16.dp))
-        BigButton("YOU", C.Teal, C.TealInk) { onChoose(Side.ME) }
+        BigButton("YOU", playerColors(match.myLegend, Side.ME).first, inkOn(playerColors(match.myLegend, Side.ME).first)) { onChoose(Side.ME) }
         Spacer(Modifier.height(10.dp))
-        BigButton(match.nameOf(Side.OPP).uppercase(), C.Coral, C.CoralInk) { onChoose(Side.OPP) }
+        BigButton(match.nameOf(Side.OPP).uppercase(), playerColors(match.oppLegend, Side.OPP).first, inkOn(playerColors(match.oppLegend, Side.OPP).first)) { onChoose(Side.OPP) }
         Spacer(Modifier.height(10.dp))
         BigButton("FLIP A COIN", C.Ink, Color.White) { onChoose(null) }
     }
@@ -259,8 +303,8 @@ private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () 
             val suggested = MatchRules.suggestedFirst(match)
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                BigButton("YOU" + if (suggested == Side.ME) " ★" else "", C.Teal, C.TealInk, Modifier.weight(1f)) { onNextGame(Side.ME) }
-                BigButton(match.nameOf(Side.OPP).uppercase() + if (suggested == Side.OPP) " ★" else "", C.Coral, C.CoralInk, Modifier.weight(1f)) { onNextGame(Side.OPP) }
+                BigButton("YOU" + if (suggested == Side.ME) " ★" else "", playerColors(match.myLegend, Side.ME).first, inkOn(playerColors(match.myLegend, Side.ME).first), Modifier.weight(1f)) { onNextGame(Side.ME) }
+                BigButton(match.nameOf(Side.OPP).uppercase() + if (suggested == Side.OPP) " ★" else "", playerColors(match.oppLegend, Side.OPP).first, inkOn(playerColors(match.oppLegend, Side.OPP).first), Modifier.weight(1f)) { onNextGame(Side.OPP) }
             }
             if (suggested != null) Text("★ lost the last game", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
         }

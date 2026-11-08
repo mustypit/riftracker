@@ -15,6 +15,13 @@ class LegendsTest {
     }
 
     @Test
+    fun domainsComeFromTheCards() {
+        assertEquals(listOf(Domain.CALM, Domain.CHAOS), Legends.byName("Riven")!!.domains)
+        assertEquals(listOf(Domain.FURY, Domain.ORDER), Legends.byName("Mordekaiser")!!.domains)
+        assertTrue("every listed legend has two domains or none", Legends.all.all { it.domains.size == 0 || it.domains.size == 2 })
+    }
+
+    @Test
     fun idsAndInitials() {
         assertEquals("kaisa", Legends.idOf("Kai'Sa"))
         assertEquals("lee_sin", Legends.idOf("Lee Sin"))

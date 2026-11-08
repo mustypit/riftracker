@@ -62,7 +62,7 @@ private val tilePalette = listOf(
 )
 
 /** Art from assets/legends, loaded once per id; null when there's none. */
-private object LegendArt {
+internal object LegendArt {
     private val cache = HashMap<String, ImageBitmap?>()
     private var files: Set<String>? = null
 
