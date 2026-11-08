@@ -12,19 +12,16 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
-      - name: Use the fixed signing key so updates install over old versions
-        # Optional for now. The keystore goes in the SIGNING_KEYSTORE repository secret (base64 of a
-        # debug keystore, alias androiddebugkey, password android); never commit it. Without it the
-        # APK is signed with a throwaway key, so each build installs only after uninstalling the last.
+      - name: Signing key (so every build installs over the previous one)
+        # SIGNING_KEYSTORE secret: base64 of this app's keystore (alias androiddebugkey). Never
+        # commit it or replace it: a different key means uninstalling the app (and its history).
+        # Gradle reads the path from SIGNING_KEYSTORE_PATH (see app/build.gradle.kts).
         env:
           SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
         run: |
-          if [ -z "$SIGNING_KEYSTORE" ]; then
-            echo "::warning::No SIGNING_KEYSTORE secret: this APK won't install over earlier builds."
-          else
-            mkdir -p ~/.android
-            echo "$SIGNING_KEYSTORE" | base64 -d > ~/.android/debug.keystore
-          fi
+          if [ -z "$SIGNING_KEYSTORE" ]; then echo "::error::SIGNING_KEYSTORE secret is missing"; exit 1; fi
+          echo "$SIGNING_KEYSTORE" | base64 -d > "$RUNNER_TEMP/app.keystore"
+          echo "SIGNING_KEYSTORE_PATH=$RUNNER_TEMP/app.keystore" >> "$GITHUB_ENV"
       - name: Tests and screenshots
         # Every JVM test (logic, database, UI on Robolectric) plus a screenshot of each screen.
         run: ./gradlew recordRoborazziDebug --no-daemon
@@ -40,6 +37,13 @@ jobs:
           path: app/screenshots/
       - name: Build APK
         run: ./gradlew assembleDebug --no-daemon
+      - name: Check the APK can update the installed app
+        # Fails the build if the APK isn't signed with this app's fixed certificate.
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          CERT=$($APKSIGNER verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep "SHA-256 digest" | head -1 | awk '{print $NF}')
+          echo "APK certificate SHA-256: $CERT"
+          test "$CERT" = "f3a6406a295f2e5fd75a7706f49dbac721719c57164a3c0e5cf00684e4d84307"
       - name: Name the APK after the build
         run: cp app/build/outputs/apk/debug/app-debug.apk rifttracker-${{ github.run_number }}.apk
       - uses: actions/upload-artifact@v4

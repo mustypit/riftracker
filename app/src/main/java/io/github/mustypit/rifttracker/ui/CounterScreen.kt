@@ -92,10 +92,20 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     val decided = MatchRules.isDecided(match)
 
     // The phone lies on the table for a whole game: keep the screen on.
+    // Full screen while counting: hide the status and navigation bars (a swipe from the edge shows
+    // them for a moment). Everything comes back when the counter closes.
     val view = LocalView.current
     DisposableEffect(Unit) {
         view.keepScreenOn = true
-        onDispose { view.keepScreenOn = false }
+        val window = generateSequence(view.context) { (it as? android.content.ContextWrapper)?.baseContext }
+            .filterIsInstance<android.app.Activity>().firstOrNull()?.window
+        val bars = window?.let { androidx.core.view.WindowCompat.getInsetsController(it, view) }
+        bars?.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        bars?.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        onDispose {
+            view.keepScreenOn = false
+            bars?.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        }
     }
 
     val darkness by vm.settings.darkness.collectAsState()

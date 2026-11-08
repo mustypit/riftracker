@@ -71,12 +71,12 @@ fun BattlefieldThumb(name: String, modifier: Modifier, corner: Int = 10) {
 @Composable
 fun BattlefieldSlot(label: String, value: String?, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFFF2EFEA))
+        modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Soft)
             .clickable(onClick = onClick).padding(8.dp).semantics { contentDescription = label },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (value != null) BattlefieldThumb(value, Modifier.width(72.dp).aspectRatio(2.2f), corner = 8)
-        else Box(Modifier.width(72.dp).aspectRatio(2.2f).clip(RoundedCornerShape(8.dp)).background(Color(0xFFE2DDD5)), contentAlignment = Alignment.Center) {
+        else Box(Modifier.width(72.dp).aspectRatio(2.2f).clip(RoundedCornerShape(8.dp)).background(C.Track), contentAlignment = Alignment.Center) {
             Text("+", color = C.Muted, fontWeight = FontWeight.Black, fontSize = 18.sp)
         }
         Column(Modifier.weight(1f).padding(start = 12.dp)) {
@@ -94,7 +94,7 @@ fun BattlefieldPicker(title: String, recentNames: List<String?>, selected: Strin
     val groups = Battlefields.grouped(query)
     val recent = if (query.isBlank()) Battlefields.recent(recentNames) else emptyList()
     Column(Modifier.fillMaxSize().background(C.Paper)) {
-        Column(Modifier.fillMaxWidth().background(C.Ink).statusBarsPadding().padding(start = 8.dp, end = 16.dp, top = 4.dp, bottom = 14.dp)) {
+        Column(Modifier.fillMaxWidth().background(C.Header).statusBarsPadding().padding(start = 8.dp, end = 16.dp, top = 4.dp, bottom = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White) }
                 Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp, modifier = Modifier.weight(1f))
@@ -124,11 +124,11 @@ fun BattlefieldPicker(title: String, recentNames: List<String?>, selected: Strin
 @Composable
 private fun BattlefieldTile(b: Battlefield, selected: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.clip(RoundedCornerShape(14.dp)).background(Color.White)
+        Modifier.clip(RoundedCornerShape(14.dp)).background(C.Card)
             .border(2.dp, if (selected) C.Ink else Color.Transparent, RoundedCornerShape(14.dp))
             .clickable(onClick = onClick).padding(6.dp).semantics { contentDescription = "Battlefield ${b.name}" },
     ) {
         BattlefieldThumb(b.name, Modifier.fillMaxWidth().aspectRatio(2.2f))
-        Text(b.name, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp, start = 2.dp))
+        Text(b.name, color = C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp, start = 2.dp))
     }
 }

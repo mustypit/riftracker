@@ -359,7 +359,7 @@ fun LegendsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
 /** A battlefield's art strip with its name, game record and win rate. */
 @Composable
 private fun BattlefieldStatRow(name: String, r: Record) {
-    Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White)) {
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card)) {
         BattlefieldThumb(name, Modifier.fillMaxWidth().aspectRatio(4.2f), corner = 0)
         Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -369,7 +369,7 @@ private fun BattlefieldStatRow(name: String, r: Record) {
             val rate = r.winRate
             if (r.total >= Stats.MIN_MATCHES_FOR_RATE && rate != null) {
                 Text(
-                    Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 18.sp, color = C.Ink,
+                    Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 18.sp, color = C.Black,
                     modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Teal else C.Coral).padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             } else Text(Stats.rateOrHint(r).replace("match", "game"), color = C.Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)

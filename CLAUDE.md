@@ -109,6 +109,11 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (counted per game) in Legends → Fields. Library from Riftcodex via the same importer
   (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
   and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
+- **Dark mode** follows the phone: colours are roles in `Theme.kt` (`C.Paper/Card/Ink/Muted/Line/
+  Track/Soft/Solid/OnSolid/Header`), each with a light and a dark value; `C.Black`, teal, coral and
+  yellow are fixed. Use the roles in new UI, never `Color.White`/hex for surfaces or text.
+  `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
+- The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
 - Deferred: decks with versions, battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
@@ -117,8 +122,14 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 
 ## Conventions
 
-- Signing: CI decodes the `SIGNING_KEYSTORE` secret (base64 debug keystore, alias
-  `androiddebugkey`, password `android`) to `~/.android/debug.keystore`; without it the build is
-  signed with a throwaway key (warning) and won't install over earlier builds. Never commit a key.
+- Signing: `app/build.gradle.kts` signs debug and release with the key at `SIGNING_KEYSTORE_PATH`
+  (alias `androiddebugkey`, password `android`, overridable with `SIGNING_KEY_ALIAS` /
+  `SIGNING_PASSWORD`). CI decodes the `SIGNING_KEYSTORE` secret (base64) to a temp file and sets that
+  path, then checks the APK's certificate SHA-256 is
+  `f3a6406a295f2e5fd75a7706f49dbac721719c57164a3c0e5cf00684e4d84307` (fails otherwise). Writing the
+  key to `~/.android/debug.keystore` was ignored on GitHub runners: don't go back to that. Never
+  change the key, the applicationId or the signing setup; `versionCode` = `GITHUB_RUN_NUMBER` of
+  the Build APK workflow (if it's ever renamed or recreated, add an offset). Settings → About shows
+  the installed copy's key and whether updates can install over it.
 - Develop on the branch the session names (or `main` for this repo while it's new); commit and
   push when done; don't open PRs unless asked.

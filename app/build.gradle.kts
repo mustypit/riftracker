@@ -32,8 +32,26 @@ android {
         versionName = "1.0"
     }
 
-    // Debug builds are signed with ~/.android/debug.keystore. CI writes a fixed key there,
-    // so every GitHub build installs over the previous one.
+    // Updates only install over the old app when every APK has the same signing certificate.
+    // GitHub runners start clean, so the key is passed to Gradle explicitly: CI decodes the
+    // SIGNING_KEYSTORE secret to a file and sets SIGNING_KEYSTORE_PATH. (Putting a key in
+    // ~/.android/debug.keystore was ignored on the runners.) Never change this key, the
+    // applicationId or this setup; CI checks the APK's certificate fingerprint after building.
+    signingConfigs {
+        System.getenv("SIGNING_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }?.let { path ->
+            create("fixed") {
+                storeFile = file(path)
+                // The keystore's own password; the secret is the keystore file itself.
+                storePassword = System.getenv("SIGNING_PASSWORD")?.takeIf { it.isNotBlank() } ?: "android"
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS")?.takeIf { it.isNotBlank() } ?: "androiddebugkey"
+                keyPassword = System.getenv("SIGNING_PASSWORD")?.takeIf { it.isNotBlank() } ?: "android"
+            }
+        }
+    }
+    buildTypes {
+        getByName("debug") { signingConfigs.findByName("fixed")?.let { signingConfig = it } }
+        getByName("release") { signingConfigs.findByName("fixed")?.let { signingConfig = it } }
+    }
     buildFeatures { compose = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

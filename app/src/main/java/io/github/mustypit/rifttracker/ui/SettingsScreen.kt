@@ -65,7 +65,7 @@ fun SettingsScreen(vm: MainViewModel) {
             Text("Make it yours", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
         }
         SectionLabel("Scoring screen")
-        Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color.White).padding(16.dp)) {
+        Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
             Text("Background darkness", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
             Text(
                 "How much the legend art is dimmed behind the score. Even the lightest setting keeps the score easy to read.",
@@ -91,5 +91,45 @@ fun SettingsScreen(vm: MainViewModel) {
                 Text("Darker", color = C.Muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
             }
         }
+        SectionLabel("About")
+        val about = remember { AppInfo.read(context) }
+        Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
+            Text("RiftTracker ${about.versionName} · build ${about.versionCode}", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
+            Text(
+                "Signing key " + (about.certSha256?.let { "${it.take(8)}…${it.takeLast(8)}" } ?: "unknown"),
+                color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp),
+            )
+            Text(
+                if (about.certSha256 == AppInfo.UPDATE_KEY_SHA256) "✓ Updates install over this copy"
+                else "⚠ Not the update key: the next build won't install over this copy",
+                color = if (about.certSha256 == AppInfo.UPDATE_KEY_SHA256) C.Teal else C.Coral,
+                fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp),
+            )
+            Text("Unofficial fan app, not affiliated with Riot Games. Card data from Riftcodex.", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 10.dp))
+        }
+        androidx.compose.foundation.layout.Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** Version and signing certificate of the installed app (to tell which key a copy has). */
+object AppInfo {
+    /** SHA-256 of the certificate every CI build must be signed with (checked in build.yml too). */
+    const val UPDATE_KEY_SHA256 = "f3a6406a295f2e5fd75a7706f49dbac721719c57164a3c0e5cf00684e4d84307"
+
+    data class Info(val versionName: String, val versionCode: Long, val certSha256: String?)
+
+    fun read(context: android.content.Context): Info {
+        val pm = context.packageManager
+        val info = runCatching {
+            if (android.os.Build.VERSION.SDK_INT >= 28) pm.getPackageInfo(context.packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES)
+            else @Suppress("DEPRECATION") pm.getPackageInfo(context.packageName, android.content.pm.PackageManager.GET_SIGNATURES)
+        }.getOrNull()
+        val sig = info?.let {
+            if (android.os.Build.VERSION.SDK_INT >= 28) it.signingInfo?.apkContentsSigners?.firstOrNull()
+            else @Suppress("DEPRECATION") it.signatures?.firstOrNull()
+        }
+        val sha = sig?.let { s -> java.security.MessageDigest.getInstance("SHA-256").digest(s.toByteArray()).joinToString("") { "%02x".format(it) } }
+        val code = info?.let { if (android.os.Build.VERSION.SDK_INT >= 28) it.longVersionCode else @Suppress("DEPRECATION") it.versionCode.toLong() } ?: 0
+        return Info(info?.versionName ?: "?", code, sha)
     }
 }
