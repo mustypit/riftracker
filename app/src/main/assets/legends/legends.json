@@ -55,28 +55,6 @@
   "image": "azir.jpg"
  },
  {
-  "name": "Butcher of the Sands",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Fury",
-   "Body"
-  ],
-  "artist": "Edgardo Monteon",
-  "image": "butcher_of_the_sands.jpg"
- },
- {
-  "name": "Curator of the Sands",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Calm",
-   "Mind"
-  ],
-  "artist": "Envar Studio",
-  "image": "curator_of_the_sands.jpg"
- },
- {
   "name": "Darius",
   "title": "Hand of Noxus",
   "set": "Origins",
@@ -86,17 +64,6 @@
   ],
   "artist": "Six More Vodka",
   "image": "darius.jpg"
- },
- {
-  "name": "Defender of Tomorrow",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Mind",
-   "Body"
-  ],
-  "artist": "Stella Chen Yui",
-  "image": "defender_of_tomorrow.jpg"
  },
  {
   "name": "Diana",
@@ -119,17 +86,6 @@
   ],
   "artist": "Pandart Studio",
   "image": "draven.jpg"
- },
- {
-  "name": "Eye of Twilight",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Calm",
-   "Order"
-  ],
-  "artist": "Oscar Vega",
-  "image": "eye_of_twilight.jpg"
  },
  {
   "name": "Ezreal",
@@ -163,17 +119,6 @@
   ],
   "artist": "Six More Vodka",
   "image": "garen.jpg"
- },
- {
-  "name": "Heart of the Tempest",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Order",
-   "Chaos"
-  ],
-  "artist": "Envar Studio",
-  "image": "heart_of_the_tempest.jpg"
  },
  {
   "name": "Irelia",
@@ -216,7 +161,7 @@
    "Mind",
    "Body"
   ],
-  "artist": "Envar Studio",
+  "artist": "Stella Chen Yui",
   "image": "jayce.jpg"
  },
  {
@@ -251,6 +196,17 @@
   ],
   "artist": "Kudos Productions",
   "image": "kaisa.jpg"
+ },
+ {
+  "name": "Kennen",
+  "title": "Heart of the Tempest",
+  "set": "Vendetta",
+  "domains": [
+   "Order",
+   "Chaos"
+  ],
+  "artist": "Envar Studio",
+  "image": "kennen.jpg"
  },
  {
   "name": "Kha'Zix",
@@ -339,28 +295,6 @@
   ],
   "artist": "Envar Studio",
   "image": "master_yi.jpg"
- },
- {
-  "name": "Master of Shadows",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Fury",
-   "Chaos"
-  ],
-  "artist": "Yh Shen",
-  "image": "master_of_shadows.jpg"
- },
- {
-  "name": "Matriarch of War",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Body",
-   "Order"
-  ],
-  "artist": "Envar Studio",
-  "image": "matriarch_of_war.jpg"
  },
  {
   "name": "Mel",
@@ -458,7 +392,7 @@
    "Fury",
    "Body"
   ],
-  "artist": "Envar Studio",
+  "artist": "Edgardo Monteon",
   "image": "renekton.jpg"
  },
  {
@@ -471,17 +405,6 @@
   ],
   "artist": "Envar Studio",
   "image": "rengar.jpg"
- },
- {
-  "name": "Rogue Assassin",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Fury",
-   "Calm"
-  ],
-  "artist": "Envar Studio",
-  "image": "rogue_assassin.jpg"
  },
  {
   "name": "Rumble",
@@ -513,7 +436,7 @@
    "Calm",
    "Order"
   ],
-  "artist": "Envar Studio",
+  "artist": "Oscar Vega",
   "image": "shen.jpg"
  },
  {
@@ -526,17 +449,6 @@
   ],
   "artist": "Zhongqi Li",
   "image": "sivir.jpg"
- },
- {
-  "name": "Soul's Reflection",
-  "title": "",
-  "set": "Vendetta",
-  "domains": [
-   "Mind",
-   "Chaos"
-  ],
-  "artist": "Envar Studio",
-  "image": "souls_reflection.jpg"
  },
  {
   "name": "Teemo",
@@ -603,17 +515,6 @@
   ],
   "artist": "TSWCK逍",
   "image": "yasuo.jpg"
- },
- {
-  "name": "Yordle, Kennen",
-  "title": "Heart of the Tempest",
-  "set": "Vendetta",
-  "domains": [
-   "Order",
-   "Chaos"
-  ],
-  "artist": "Envar Studio",
-  "image": "yordle_kennen.jpg"
  },
  {
   "name": "Zed",
