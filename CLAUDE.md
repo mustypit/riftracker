@@ -65,8 +65,10 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   each legend's card image from Riot's CDN (`cmsassets.rgpub.io`, allowed in the environment), crops
   the artwork and writes `assets/legends/<id>.jpg` + `legends.json`. The app merges `legends.json`
   into the built-in list at startup (`Legends.install`), so legends Riftcodex lacks (Radiance as of
-  Nov 2026) keep working. Using GitHub Actions to fetch Riftcodex was refused as a sandbox escape;
-  don't, unless the owner explicitly asks. API: `GET /cards?page=N&size=100` → `{items, total, page,
+  Nov 2026) keep working. **Automatic updates:** `.github/workflows/update-legends.yml` (approved
+  by the owner) runs `build_legend_assets.py --fetch` on GitHub every Monday and on demand, commits
+  changes to `main` and starts the APK build. It refuses to change anything if Riftcodex returns
+  fewer than 20 legends. Don't fetch Riftcodex through other workarounds from the dev machine. API: `GET /cards?page=N&size=100` → `{items, total, page,
   size, pages}`; a legend has `classification.type == "Legend"`, `classification.domain`,
   `set.set_id/label`, `media.image_url`, `metadata.{alternate_art, overnumbered, signature}`.
 - `stats/Stats.kt`: pure stats over finished matches.

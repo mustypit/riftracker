@@ -1,0 +1,51 @@
+# Refreshes legend art and data from Riftcodex (free Riftbound card API) every week, or on demand
+# from the Actions tab ("Run workflow"). Commits to main only when something changed, then starts
+# the APK build (pushes made by a workflow don't trigger other workflows; a manual run does).
+# Approved by the owner so new sets arrive without
+# anyone running scripts by hand (the cloud dev machines can't reach Riftcodex).
+name: Update legends
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays 06:17 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write   # to start the APK build after a change
+concurrency:
+  group: update-legends
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download legends from Riftcodex and crop their art
+        run: |
+          pip install --quiet pillow
+          python3 scripts/build_legend_assets.py --fetch
+      - name: Commit if anything changed
+        id: commit
+        run: |
+          git add app/src/main/assets/legends
+          if git diff --cached --quiet; then
+            echo "No changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git diff --cached --stat
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "Update legend art and data from Riftcodex"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build the APK with the new legends
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build.yml --ref main
+      - name: Summary
+        run: |
+          echo "### Legends" >> "$GITHUB_STEP_SUMMARY"
+          echo "Changed: ${{ steps.commit.outputs.changed }}" >> "$GITHUB_STEP_SUMMARY"
+          python3 -c "import json; d=json.load(open('app/src/main/assets/legends/legends.json')); print(f'{len(d)} legends, {sum(1 for x in d if x[\"image\"])} with art')" >> "$GITHUB_STEP_SUMMARY"

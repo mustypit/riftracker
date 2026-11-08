@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Turns Riftcodex legend cards into the app's legend library.
 
-  python3 scripts/build_legend_assets.py legends_raw.json
+  python3 scripts/build_legend_assets.py --fetch            # download from Riftcodex (CI does this)
+  python3 scripts/build_legend_assets.py legends_raw.json   # use a saved list
 
-legends_raw.json: a JSON list of Riftcodex card objects with classification.type == "Legend"
-(scripts/fetch-riftcodex-legends.ps1 makes it; Riftcodex refuses the cloud dev machines, so it's
-fetched from a home connection). For each champion this picks one legend card, downloads its image
-from Riot's CDN, crops the artwork (no frame, name bar or rules text) and writes:
+The saved list is a JSON list of Riftcodex card objects with classification.type == "Legend"
+(scripts/fetch-riftcodex-legends.ps1 makes one at home; Riftcodex refuses the cloud dev machines).
+The weekly GitHub workflow update-legends.yml runs --fetch. For each champion this picks one legend
+card, downloads its image from Riot's CDN, crops the artwork (no frame, name bar or rules text) and
+writes:
 
   app/src/main/assets/legends/<id>.jpg     the artwork, ~720 px
   app/src/main/assets/legends/legends.json name, title, set, domains, artist, image
@@ -19,9 +21,12 @@ from pathlib import Path
 
 from PIL import Image
 
+import os, time
+
 ROOT = Path(__file__).resolve().parent.parent
-import os
 OUT = Path(os.environ.get("LEGENDS_OUT", ROOT / "app/src/main/assets/legends"))
+API = "https://api.riftcodex.com/cards"
+UA = "RiftTracker legend importer (personal fan app; github.com/mustypit/riftracker)"
 PROMO_SETS = {"OPP", "PR", "JDG"}
 DOMAINS = {"Fury", "Calm", "Mind", "Body", "Chaos", "Order"}
 # Artwork area of a portrait Riftbound card, as fractions of width/height.
@@ -64,10 +69,34 @@ def pick(cards):
     return {name: sorted(cs, key=rank)[0] for name, cs in sorted(by_champ.items())}
 
 
+def get(url, tries=5):
+    """GET with a few retries (both Riftcodex and the CDN occasionally hiccup)."""
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return r.read()
+        except Exception as e:
+            if i == tries - 1:
+                raise
+            print(f"  retry {i + 1} for {url}: {e}")
+            time.sleep(3 * (i + 1))
+
+
+def fetch_legends():
+    """Every legend card on Riftcodex, page by page (100 cards per page)."""
+    legends, page, pages = [], 1, 1
+    while page <= pages:
+        data = json.loads(get(f"{API}?size=100&page={page}"))
+        pages = data.get("pages", 1)
+        legends += [c for c in data.get("items", []) if c.get("classification", {}).get("type") == "Legend"]
+        print(f"page {page} of {pages}: {len(legends)} legend cards so far")
+        page += 1
+    return legends
+
+
 def art(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "RiftTracker legend importer (personal fan app)"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        im = Image.open(io.BytesIO(r.read())).convert("RGB")
+    im = Image.open(io.BytesIO(get(url))).convert("RGB")
     w, h = im.size
     x0, y0, x1, y1 = ART_BOX
     im = im.crop((int(w * x0), int(h * y0), int(w * x1), int(h * y1)))
@@ -75,10 +104,18 @@ def art(url):
     return im
 
 
-def main(raw_path):
-    cards = json.loads(Path(raw_path).read_text(encoding="utf-8-sig"))
-    if isinstance(cards, dict):  # a single card, or a Riftcodex page
-        cards = cards.get("items", [cards])
+MIN_LEGENDS = 20  # fewer than this from --fetch means something's off: change nothing
+
+
+def main(source):
+    if source == "--fetch":
+        cards = fetch_legends()
+        if len(pick(cards)) < MIN_LEGENDS:
+            sys.exit(f"Only {len(pick(cards))} legends from Riftcodex; not touching the app's data.")
+    else:
+        cards = json.loads(Path(source).read_text(encoding="utf-8-sig"))
+        if isinstance(cards, dict):  # a single card, or a Riftcodex page
+            cards = cards.get("items", [cards])
     chosen = pick(cards)
     OUT.mkdir(parents=True, exist_ok=True)
     library = []
