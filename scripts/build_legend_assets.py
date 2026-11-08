@@ -35,14 +35,28 @@ ART_BOX = (0.17, 0.03, 0.97, 0.64)
 SET_ORDER = ["RAD", "VEN", "UNL", "SFD", "OGN", "OGS"]
 
 
-def champion(card):
-    """'Vi - Piltover Enforcer (Signature)' -> 'Vi'."""
-    return card["name"].split(" - ")[0].strip()
+def base_name(card):
+    """Card name without a trailing '(Signature)' / '(Alternate Art)'."""
+    return re.sub(r"\s*\([^)]*\)\s*$", "", card["name"]).strip()
 
 
 def title(card):
-    m = re.match(r"^[^-]+ - (.+?)(?: \(.*\))?$", card["name"])
-    return m.group(1).strip() if m else ""
+    """'Vi - Piltover Enforcer (Signature)' -> 'Piltover Enforcer'; a title-only name is the title."""
+    name = base_name(card)
+    return name.split(" - ", 1)[1].strip() if " - " in name else name
+
+
+def champion(card, champions, by_title):
+    """
+    The champion a legend card belongs to. Usually the part before ' - ' ('Vi - Piltover Enforcer');
+    'Yordle, Kennen - …' -> the part that's also a tag (Kennen). Some printings carry only the title
+    ('Master of Shadows'): then the champion tag, or the champion of another printing with that title.
+    """
+    name, tags = base_name(card), card.get("tags") or []
+    if " - " in name:
+        parts = [p.strip() for p in name.split(" - ", 1)[0].split(",")]
+        return next((p for p in reversed(parts) if p in tags), parts[-1])
+    return next((t for t in tags if t in champions), by_title.get(name.lower(), name))
 
 
 def image_id(name):
@@ -61,11 +75,14 @@ def rank(card):
 
 def pick(cards):
     """One legend card per champion."""
+    legends = [c for c in cards if c.get("classification", {}).get("type") == "Legend"]
+    # First pass: champions and titles from the cards named 'Champion - Title'.
+    named = [c for c in legends if " - " in base_name(c)]
+    champions = {champion(c, set(), {}) for c in named}
+    by_title = {title(c).lower(): champion(c, set(), {}) for c in named}
     by_champ = {}
-    for c in cards:
-        if c.get("classification", {}).get("type") != "Legend":
-            continue
-        by_champ.setdefault(champion(c), []).append(c)
+    for c in legends:
+        by_champ.setdefault(champion(c, champions, by_title), []).append(c)
     return {name: sorted(cs, key=rank)[0] for name, cs in sorted(by_champ.items())}
 
 
@@ -138,7 +155,15 @@ def main(source):
                 print(f"  no art for {name}: {e}")
         library.append(entry)
         print(f"{name:14} {entry['set']:12} {'/'.join(entry['domains']):12} {entry['image'] or '-'}")
-    (OUT / "legends.json").write_text(json.dumps(library, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    # Remove art this script made last time that no legend uses now. Images that were never in
+    # legends.json (added by hand, e.g. for a set Riftcodex lacks) are left alone.
+    index = OUT / "legends.json"
+    if index.exists():
+        before = {e.get("image") for e in json.loads(index.read_text(encoding="utf-8")) if e.get("image")}
+        for stale in before - {e["image"] for e in library if e["image"]}:
+            (OUT / stale).unlink(missing_ok=True)
+            print(f"  removed {stale}")
+    index.write_text(json.dumps(library, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{len(library)} legends -> {OUT}/legends.json")
 
 

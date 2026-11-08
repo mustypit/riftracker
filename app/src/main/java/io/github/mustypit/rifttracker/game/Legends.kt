@@ -78,7 +78,7 @@ object Legends {
 
     /** Riftcodex set labels that belong under one of the app's set headings. */
     private fun setHeading(label: String) = when {
-        label.startsWith("Origins") -> "Origins"
+        label.startsWith("Origins") || label.contains("Proving Grounds") -> "Origins"
         else -> label
     }
 

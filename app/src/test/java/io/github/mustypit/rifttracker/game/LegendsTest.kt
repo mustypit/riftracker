@@ -13,7 +13,7 @@ class LegendsTest {
         Legends.install(
             """[
               {"name": "Vi", "title": "Piltover Enforcer", "set": "Unleashed", "domains": ["Fury", "Order"], "artist": "J. Santoro", "image": "vi.jpg"},
-              {"name": "Garen", "title": "Might of Demacia", "set": "Origins: Proving Grounds", "domains": ["Body", "Order"]},
+              {"name": "Garen", "title": "Might of Demacia", "set": "Proving Grounds", "domains": ["Body", "Order"]},
               {"name": "Newcomer", "title": "Fresh Face", "set": "Some Future Set", "domains": ["Mind", "Colorless"]}
             ]""",
         )
