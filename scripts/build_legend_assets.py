@@ -262,7 +262,7 @@ def fetch_symbols():
             for m in re.finditer(r'(rb_exhaust|rb_might|rb_energy|exhaust|might)', src):
                 ctx = src[max(0, m.start() - 300): m.end() + 900]
                 if "<svg" in ctx or "path" in ctx or "viewBox" in ctx or "d:" in ctx:
-                    (out / f"code_{found:02d}_{name}.txt").write_text(ctx, encoding="utf-8")
+                    (out / f"code_{found:02d}_{name.strip('/').replace('/', '_')}.txt").write_text(ctx, encoding="utf-8")
                     found += 1
                     if found > 40:
                         break
