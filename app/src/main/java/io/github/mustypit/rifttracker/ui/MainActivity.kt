@@ -88,18 +88,30 @@ fun AppShell(vm: MainViewModel) {
             }
         },
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            when (top) {
-                is Screen.MatchDetail -> MatchDetailScreen(vm, top.id)
-                is Screen.LegendDetail -> LegendDetailScreen(vm, top.legend)
-                Screen.LogMatch -> LogMatchScreen(vm)
-                Screen.Settings -> SettingsScreen(vm)
-                null -> when (tab) {
-                    Tab.Play -> if (loaded) NewMatchScreen(vm)
-                    Tab.Matches -> MatchesScreen(vm)
-                    Tab.Legends -> LegendsScreen(vm)
+        // Screens slide in when opened and out when going back; tab switches crossfade.
+        androidx.compose.animation.AnimatedContent(
+            targetState = Destination(tab, top, stack.size),
+            modifier = Modifier.fillMaxSize().padding(padding),
+            transitionSpec = { screenTransition(initialState.depth, targetState.depth) },
+            contentKey = { it.tab to it.screen },
+            label = "screens",
+        ) { d ->
+            Box(Modifier.fillMaxSize().background(C.Paper)) {
+                when (val s = d.screen) {
+                    is Screen.MatchDetail -> MatchDetailScreen(vm, s.id)
+                    is Screen.LegendDetail -> LegendDetailScreen(vm, s.legend)
+                    Screen.LogMatch -> LogMatchScreen(vm)
+                    Screen.Settings -> SettingsScreen(vm)
+                    null -> when (d.tab) {
+                        Tab.Play -> if (loaded) NewMatchScreen(vm)
+                        Tab.Matches -> MatchesScreen(vm)
+                        Tab.Legends -> LegendsScreen(vm)
+                    }
                 }
             }
         }
     }
 }
+
+/** What fills the area above the tab bar: a tab's main screen, or a screen pushed on top. */
+private data class Destination(val tab: Tab, val screen: Screen?, val depth: Int)

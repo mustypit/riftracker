@@ -41,6 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -235,10 +236,15 @@ private fun kindIcon(kind: PointKind) = when (kind) {
 @Composable
 private fun ScoreChart(g: Game, oppLabel: String) {
     val rows = GameRules.chart(g)
+    val reveal = rowReveal(rows.size) // draws in row by row
     Column(Modifier.fillMaxWidth().semantics { contentDescription = "Score chart" }) {
-        rows.forEach { r ->
+        rows.forEachIndexed { i, r ->
             val lead = r.leader?.let(C::side) ?: C.Line
-            Row(Modifier.fillMaxWidth().height(38.dp), verticalAlignment = Alignment.CenterVertically) {
+            val p = (reveal - i).coerceIn(0f, 1f)
+            Row(
+                Modifier.fillMaxWidth().height(38.dp).graphicsLayer { alpha = p; translationY = (1f - p) * -12f },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(formatDuration(r.event.atMs), color = C.Muted, fontSize = 11.sp, modifier = Modifier.width(40.dp))
                 ChartLane(r.event.side == Side.ME, r.event.kind, C.Green, r.leader == Side.ME, Modifier.weight(1f))
                 // Centre: the leader's line with the score on it.
@@ -368,7 +374,7 @@ private fun BattlefieldStatRow(name: String, r: Record) {
             val rate = r.winRate
             if (r.total >= Stats.MIN_MATCHES_FOR_RATE && rate != null) {
                 Text(
-                    Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 18.sp, color = C.Black,
+                    countUpPercent(rate), fontWeight = FontWeight.Black, fontSize = 18.sp, color = C.Black,
                     modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Green else C.Red).padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             } else Text(Stats.rateOrHint(r).replace("match", "game"), color = C.Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -393,7 +399,7 @@ private fun StatRow(title: String, r: Record, sub: String? = null, avatar: Strin
         }
         if (enough && rate != null) {
             Text(
-                Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Black,
+                countUpPercent(rate), fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Black,
                 modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Green else C.Red).padding(horizontal = 10.dp, vertical = 4.dp),
             )
         } else {
@@ -420,7 +426,7 @@ fun LegendDetailScreen(vm: MainViewModel, legend: String) {
                     }
                 }
                 Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 8.dp)) {
-                    Text(if (d.record.total >= Stats.MIN_MATCHES_FOR_RATE) Stats.percent(d.record.winRate) else "–", color = Color.White, fontWeight = FontWeight.Black, fontSize = 52.sp, modifier = Modifier.weight(1f))
+                    Text(if (d.record.total >= Stats.MIN_MATCHES_FOR_RATE) countUpPercent(d.record.winRate) else "–", color = Color.White, fontWeight = FontWeight.Black, fontSize = 52.sp, modifier = Modifier.weight(1f))
                     Count(d.record.wins, "won", C.Green)
                     Count(d.record.losses, "lost", C.Red)
                     Count(d.record.draws, "drawn", Color.White)

@@ -199,15 +199,20 @@ private fun PlayerHalf(
         Column(Modifier.fillMaxSize().padding(top = 36.dp, bottom = OUTER_EDGE_MARGIN), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
             Spacer(Modifier.height(2.dp))
             // Tapping the score takes one point off (the middle bar then offers to undo it).
-            Text(
-                "$score",
-                style = TextStyle(fontSize = 140.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-5).sp, shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f)),
-                modifier = Modifier
+            // It rolls like a wheel: up when scoring, down when a point comes off.
+            RollingNumber(
+                score,
+                Modifier
                     .clip(RoundedCornerShape(24.dp))
                     .clickable(enabled = enabled && score > 0, onClickLabel = "take one point off") { onPoint(PointKind.CORRECTION) }
                     .padding(horizontal = 18.dp)
-                    .semantics { contentDescription = "${match.nameOf(side)} score $score" },
-            )
+                    .semantics(mergeDescendants = true) { contentDescription = "${match.nameOf(side)} score $score" },
+            ) { shown ->
+                Text(
+                    "$shown",
+                    style = TextStyle(fontSize = 140.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-5).sp, shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f)),
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(26.dp)) {
                 PointButton(RiftIcons.Conquer, "${match.nameOf(side)} CONQUER", c1, enabled) { onPoint(PointKind.CONQUER) }
                 PointButton(RiftIcons.Hold, "${match.nameOf(side)} HOLD", c1, enabled) { onPoint(PointKind.HOLD) }
@@ -303,10 +308,11 @@ private fun RoundStep(text: String, description: String, enabled: Boolean, onCli
 /** Round icon button tinted with the player's colour. */
 @Composable
 private fun PointButton(icon: ImageVector, description: String, color: Color, enabled: Boolean, onClick: () -> Unit) {
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(
-        Modifier.size(78.dp).clip(CircleShape).background(color.copy(alpha = if (enabled) 0.9f else 0.35f))
+        Modifier.size(78.dp).squishWhenPressed(source).clip(CircleShape).background(color.copy(alpha = if (enabled) 0.9f else 0.35f))
             .border(1.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
-            .clickable(enabled = enabled, onClick = onClick)
+            .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), enabled = enabled, onClick = onClick)
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(38.dp)) }
@@ -451,8 +457,10 @@ private fun Overlay(content: @Composable () -> Unit) {
 
 @Composable
 fun BigButton(text: String, color: Color, ink: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(
-        modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(16.dp)).background(color).clickable(onClick = onClick),
+        modifier.fillMaxWidth().height(52.dp).squishWhenPressed(source, 0.95f).clip(RoundedCornerShape(16.dp)).background(color)
+            .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Text(text, color = ink, fontWeight = FontWeight.Black, fontSize = 15.sp, letterSpacing = 0.6.sp, textAlign = TextAlign.Center) }
 }

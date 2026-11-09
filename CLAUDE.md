@@ -129,6 +129,13 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   explanatory sentences under settings, one-line empty states, no "(optional)" labels, dialogs with a
   title and buttons only. The ★ on a player button marks who lost the last game, without a caption.
   Don't add explanations back.
+- **Motion** (`Motion.kt`, all short): the score rolls like a wheel (`RollingNumber`: up = old
+  number down and out, new from the top; down = the reverse); a scored point's icon pops onto the
+  side track with a burst ring (not on reopen); point and big buttons squish when pressed
+  (`squishWhenPressed`); screens slide in/out by depth, tabs crossfade (`screenTransition` in
+  `AppShell`); score-chart rows draw in top to bottom (`rowReveal`); win rates count up
+  (`countUpPercent`). `AppTest.pointPopAnimationFrames` / `screenAnimationFrames` record frames to
+  `app/screenshots/anim/` (paused `mainClock`, 20 ms steps): turn them into a GIF to show the owner.
 - No ads or tracking. Everything stays on the phone.
 
 ## Conventions

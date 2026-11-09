@@ -418,14 +418,46 @@ open class AppTest {
             rule.mainClock.advanceTimeBy(20)
         }
         frames(4)
+        // Scoring: the button squishes, the number rolls up, the point pops onto the track.
         clock.addAndGet(40_000)
-        rule.onNode(hasContentDescription("You ABILITY")).performClick()
-        frames(30)
+        val ability = rule.onNode(hasContentDescription("You ABILITY"))
+        ability.performTouchInput { down(center) }
+        frames(6)
+        ability.performTouchInput { up() }
+        frames(26)
         clock.addAndGet(40_000)
         rule.onNode(hasContentDescription("You HOLD")).performClick()
-        frames(34)
+        frames(30)
+        // Taking a point off (tap the score): the number rolls down.
+        clock.addAndGet(40_000)
+        rule.onNode(hasContentDescription("You score 4")).performClick()
+        frames(30)
         rule.mainClock.autoAdvance = true
-        rule.onNode(hasContentDescription("You point 4")).assertExists()
+        rule.onNode(hasContentDescription("You score 3")).assertExists()
+    }
+
+    /** Records screen changes, the score chart drawing in and win rates counting up (screenshots/anim/). */
+    @Test
+    fun screenAnimationFrames() {
+        if (prefix.isNotEmpty()) return
+        seedHistory()
+        launch()
+        rule.waitFor("New match")
+        rule.mainClock.autoAdvance = false
+        var frame = 0
+        fun frames(count: Int) = repeat(count) {
+            rule.onRoot().captureRoboImage("screenshots/anim/screens_%03d.png".format(frame++))
+            rule.mainClock.advanceTimeBy(20)
+        }
+        fun tap(node: SemanticsNodeInteraction, count: Int) { node.performClick(); frames(count) }
+        frames(3)
+        tap(rule.onNode(hasText("Matches")), 14)          // tab: crossfade
+        tap(rule.onAllNodes(hasText("vs Garen"))[0], 40)   // open a match: slide in, chart draws in
+        tap(rule.onNode(hasContentDescription("Back")), 20) // back: slide out
+        tap(rule.onNode(hasText("Legends")), 40)           // tab: crossfade, win rates count up
+        tap(rule.onNode(hasText("Ahri")), 42)              // legend: slide in, big win rate counts up
+        rule.mainClock.autoAdvance = true
+        rule.waitFor("best run")
     }
 
     @Test
