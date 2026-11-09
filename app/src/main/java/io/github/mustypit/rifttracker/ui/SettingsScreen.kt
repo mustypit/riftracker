@@ -64,6 +64,13 @@ fun SettingsScreen(vm: MainViewModel) {
             Text("SETTINGS", style = Caps, color = C.Yellow)
             Text("Make it yours", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
         }
+        SectionLabel("Appearance")
+        val theme by vm.settings.theme.collectAsState()
+        Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
+            Text("Light or dark", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
+            Text("Phone follows your phone's setting.", color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp, bottom = 12.dp))
+            Segmented(ThemeMode.entries, theme, { it.label }, vm.settings::setTheme)
+        }
         SectionLabel("Scoring screen")
         Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
             Text("Background darkness", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
@@ -92,44 +99,20 @@ fun SettingsScreen(vm: MainViewModel) {
             }
         }
         SectionLabel("About")
-        val about = remember { AppInfo.read(context) }
+        val version = remember { AppInfo.version(context) }
         Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
-            Text("RiftTracker ${about.versionName} · build ${about.versionCode}", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
-            Text(
-                "Signing key " + (about.certSha256?.let { "${it.take(8)}…${it.takeLast(8)}" } ?: "unknown"),
-                color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp),
-            )
-            Text(
-                if (about.certSha256 == AppInfo.UPDATE_KEY_SHA256) "✓ Updates install over this copy"
-                else "⚠ Not the update key: the next build won't install over this copy",
-                color = if (about.certSha256 == AppInfo.UPDATE_KEY_SHA256) C.Teal else C.Coral,
-                fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp),
-            )
-            Text("Unofficial fan app, not affiliated with Riot Games. Card data from OpenRift.", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 10.dp))
+            Text("RiftTracker $version", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
+            Text("Unofficial fan app, not affiliated with Riot Games. Card data from OpenRift.", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
         }
         androidx.compose.foundation.layout.Spacer(Modifier.height(24.dp))
     }
 }
 
-/** Version and signing certificate of the installed app (to tell which key a copy has). */
+/** The installed app's version, e.g. "1.0 · build 57". */
 object AppInfo {
-    /** SHA-256 of the certificate every CI build must be signed with (checked in build.yml too). */
-    const val UPDATE_KEY_SHA256 = "f3a6406a295f2e5fd75a7706f49dbac721719c57164a3c0e5cf00684e4d84307"
-
-    data class Info(val versionName: String, val versionCode: Long, val certSha256: String?)
-
-    fun read(context: android.content.Context): Info {
-        val pm = context.packageManager
-        val info = runCatching {
-            if (android.os.Build.VERSION.SDK_INT >= 28) pm.getPackageInfo(context.packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES)
-            else @Suppress("DEPRECATION") pm.getPackageInfo(context.packageName, android.content.pm.PackageManager.GET_SIGNATURES)
-        }.getOrNull()
-        val sig = info?.let {
-            if (android.os.Build.VERSION.SDK_INT >= 28) it.signingInfo?.apkContentsSigners?.firstOrNull()
-            else @Suppress("DEPRECATION") it.signatures?.firstOrNull()
-        }
-        val sha = sig?.let { s -> java.security.MessageDigest.getInstance("SHA-256").digest(s.toByteArray()).joinToString("") { "%02x".format(it) } }
-        val code = info?.let { if (android.os.Build.VERSION.SDK_INT >= 28) it.longVersionCode else @Suppress("DEPRECATION") it.versionCode.toLong() } ?: 0
-        return Info(info?.versionName ?: "?", code, sha)
+    fun version(context: android.content.Context): String {
+        val info = runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull() ?: return "?"
+        val code = if (android.os.Build.VERSION.SDK_INT >= 28) info.longVersionCode else @Suppress("DEPRECATION") info.versionCode.toLong()
+        return "${info.versionName} · build $code"
     }
 }

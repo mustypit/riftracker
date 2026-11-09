@@ -36,7 +36,15 @@ class MainActivity : ComponentActivity() {
         // Legend and battlefield data from OpenRift, if the app was built with it (scripts/build_legend_assets.py).
         runCatching { assets.open("legends/legends.json").bufferedReader().use { Legends.install(it.readText()) } }
         runCatching { assets.open("battlefields/battlefields.json").bufferedReader().use { io.github.mustypit.rifttracker.game.Battlefields.install(it.readText()) } }
-        setContent { RiftTheme { AppShell(vm) } }
+        setContent {
+            val mode by vm.settings.theme.collectAsState()
+            val dark = when (mode) {
+                ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            RiftTheme(dark) { AppShell(vm) }
+        }
     }
 }
 

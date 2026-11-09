@@ -380,6 +380,25 @@ open class AppTest {
     }
 
     @Test
+    fun themeSetting() {
+        launch()
+        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        rule.waitFor("Light or dark")
+        val other = if (this is AppDarkTest) "Light" else "Dark"
+        click(other)
+        rule.waitForIdle()
+        shot("19c_settings_theme_switched")
+        // Kept after the app restarts, and the whole app uses it.
+        scenario?.close()
+        launch()
+        rule.waitForIdle()
+        shot("19d_new_match_theme_switched")
+        // The app now draws with the other palette (dark text on light, or the reverse).
+        val inkIsLight = C.Ink.red + C.Ink.green + C.Ink.blue > 1.5f
+        assertEquals(other == "Dark", inkIsLight)
+    }
+
+    @Test
     fun emptyHistory() {
         launch()
         click("Matches")

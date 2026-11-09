@@ -20,6 +20,9 @@ object Veil {
     }
 }
 
+/** Light or dark colours: follow the phone (default), or always one of them. */
+enum class ThemeMode(val label: String) { SYSTEM("Phone"), LIGHT("Light"), DARK("Dark") }
+
 /** App settings, kept on the phone. */
 class SettingsStore(context: Context) {
     private val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -33,7 +36,18 @@ class SettingsStore(context: Context) {
         prefs.edit().putFloat(KEY_DARKNESS, d).apply()
     }
 
+    private val _theme = MutableStateFlow(
+        ThemeMode.entries.firstOrNull { it.name == prefs.getString(KEY_THEME, null) } ?: ThemeMode.SYSTEM,
+    )
+    val theme: StateFlow<ThemeMode> = _theme.asStateFlow()
+
+    fun setTheme(mode: ThemeMode) {
+        _theme.value = mode
+        prefs.edit().putString(KEY_THEME, mode.name).apply()
+    }
+
     private companion object {
         const val KEY_DARKNESS = "veil_darkness"
+        const val KEY_THEME = "theme"
     }
 }

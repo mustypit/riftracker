@@ -38,7 +38,7 @@ report as artifacts.
 | Test | What it covers |
 |---|---|
 | `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
-| `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends |
+| `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends; the shipped files cover Radiance with art |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
 
@@ -56,26 +56,22 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   top of `sets` and its legends to `all`. Never rename a legend (matches store the name).
   Art: `app/src/main/assets/legends/<id>.webp|png|jpg` (id = `Legends.idOf(name)`, e.g.
   `kaisa`, `lee_sin`, `jarvan_iv`): the card's artwork only (no frame, name bar or text), ~720 px.
-  Riven and Mordekaiser art came from the owner's card images; a legend without art shows a monogram tile.
-- **Riftcodex** (free card API, no key) supplies legend art, domains and titles. It refuses the cloud
-  dev machines (the proxy's CONNECT gets 403 even when allowed), so: the owner runs
-  `scripts/fetch-riftcodex-legends.ps1` at home (Windows PowerShell, no installs) and sends
-  `legends_raw.json`; then here `python3 scripts/build_legend_assets.py legends_raw.json` downloads
-  each legend's card image from Riot's CDN (`cmsassets.rgpub.io`, allowed in the environment), crops
-  the artwork and writes `assets/legends/<id>.jpg` + `legends.json`. The app merges `legends.json`
-  into the built-in list at startup (`Legends.install`), so legends Riftcodex lacks keep working.
-  **Sets Riftcodex lacks** (Radiance as of Nov 2026) live in `assets/legends/extra.json` and
-  `assets/battlefields/extra.json` (same format, plus their `<id>.jpg`). They were imported once from
-  OpenRift's catalog (`openrift.app/api/v1/catalog`; image `openrift.app/media/cards/<imageId>-full.webp`,
-  champion name in the card's `tags`) through a temporary, owner-approved Action, since openrift.app is
-  blocked from the dev machine too. The weekly job never touches `extra.json`; the app loads
-  `<folder>.json` first, so Riftcodex data wins once it has those cards. Images in `extra.json` aren't
-  in the importer's index, so its stale-image cleanup leaves them alone. **Automatic updates:** `.github/workflows/update-legends.yml` (approved
-  by the owner) runs `build_legend_assets.py --fetch` on GitHub every Monday and on demand, commits
-  changes to `main` and starts the APK build. It refuses to change anything if Riftcodex returns
-  fewer than 20 legends. Don't fetch Riftcodex through other workarounds from the dev machine. API: `GET /cards?page=N&size=100` → `{items, total, page,
-  size, pages}`; a legend has `classification.type == "Legend"`, `classification.domain`,
-  `set.set_id/label`, `media.image_url`, `metadata.{alternate_art, overnumbered, signature}`.
+  A legend without art shows a monogram tile.
+- **OpenRift** (`openrift.app`, free card catalog, no key) supplies all legend and battlefield art,
+  domains and titles. The cloud dev machines can't reach it (blocked by the proxy), so
+  `.github/workflows/update-legends.yml` (approved by the owner) runs
+  `scripts/build_legend_assets.py --fetch` on GitHub every Monday and on demand: it downloads
+  `GET /api/v1/catalog`, picks each champion's / battlefield's **original normal printing** (never
+  overnumbered, alternate art, signed, promo-stamped or special-distribution; earliest English
+  release; main set over supplemental on the same day), downloads
+  `openrift.app/media/cards/<imageId>-full.webp`, crops the artwork and writes `assets/legends/<id>.jpg`
+  + `legends.json` and `assets/battlefields/<id>.jpg` + `battlefields.json`, commits to the branch
+  it ran on and starts the APK build. To try importer changes, push a branch and run the workflow
+  on it (`gh workflow run update-legends.yml --ref <branch>`), then look at every image before
+  merging. It refuses to change anything if it finds fewer than 20 legends. The champion of a legend
+  card is its tag whose `tagCategoryMap` category is `legend`; names use straight apostrophes. The app
+  merges `legends.json` into the built-in list at startup (`Legends.install`). Riftcodex was the
+  earlier source (it lagged behind on Radiance and mixed in overnumbered art); it's no longer used.
 - `stats/Stats.kt`: pure stats over finished matches.
 - `data/Db.kt`: Room, one row per match with the match as JSON (new fields get defaults when old
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it
@@ -105,7 +101,9 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   screen pops up: matches are reviewed from the Matches tab.
 - **Settings** (gear on New match, or the counter's menu): "Background darkness" slider for the veil
   over legend art (`Veil.alphas`, `SettingsStore`, SharedPreferences). 0 = the veil that passed the
-  readability check; it can only go darker. Default 0.35.
+  readability check; it can only go darker. Default 0.35. "Light or dark": Phone (default) / Light /
+  Dark (`ThemeMode`, applied in `MainActivity`). About shows only the version and the disclaimer
+  (the owner didn't want signing-key details shown to users).
 - **Extras panel** (Lotus-style): a handle at each half's inner edge, by the middle bar; drag from
   the centre towards your edge (or tap) to open, back to close. Holds XP for now (`Game.xp`); a
   badge shows XP while closed. Buttons keep `OUTER_EDGE_MARGIN` free at each half's outer edge for
@@ -115,10 +113,10 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (`GameRules.chart/breakdown/longestRun`).
 - **Battlefields**: each game stores the battlefield each player brought (`Game.battlefields`), picked
   (optional) on the "who goes first" card or later from the match review; stats per battlefield
-  (counted per game) in Legends → Fields. Library from Riftcodex via the same importer
+  (counted per game) in Legends → Fields. Library from OpenRift via the same importer
   (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
   and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
-- **Dark mode** follows the phone: colours are roles in `Theme.kt` (`C.Paper/Card/Ink/Muted/Line/
+- **Dark mode** follows the phone unless set in Settings: colours are roles in `Theme.kt` (`C.Paper/Card/Ink/Muted/Line/
   Track/Soft/Solid/OnSolid/Header`), each with a light and a dark value; `C.Black`, teal, coral and
   yellow are fixed. Use the roles in new UI, never `Color.White`/hex for surfaces or text.
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
@@ -138,7 +136,6 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `f3a6406a295f2e5fd75a7706f49dbac721719c57164a3c0e5cf00684e4d84307` (fails otherwise). Writing the
   key to `~/.android/debug.keystore` was ignored on GitHub runners: don't go back to that. Never
   change the key, the applicationId or the signing setup; `versionCode` = `GITHUB_RUN_NUMBER` of
-  the Build APK workflow (if it's ever renamed or recreated, add an offset). Settings → About shows
-  the installed copy's key and whether updates can install over it.
+  the Build APK workflow (if it's ever renamed or recreated, add an offset).
 - Develop on the branch the session names (or `main` for this repo while it's new); commit and
   push when done; don't open PRs unless asked.
