@@ -246,6 +246,16 @@ open class AppTest {
         rule.onNode(hasText("TAP TO UNDO", substring = true)).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("You score 7")).assertExists()
         rule.onNode(hasContentDescription("7 of 8 points")).assertExists()
+        // Tapping a point on the side track removes that point; the pill (or Undo) puts it back.
+        clock.addAndGet(40_000)
+        rule.onNode(hasContentDescription("You point 3")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You score 6")).assertExists()
+        rule.onNode(hasContentDescription("6 of 8 points")).assertExists()
+        rule.onNode(hasText("TAP TO UNDO", substring = true)).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You score 7")).assertExists()
+        rule.onNode(hasContentDescription("You point 3")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Undo")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("You score 7")).assertExists()
         // A score of 0 can't be tapped below zero.
         rule.onNode(hasContentDescription("Opponent score 0")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Opponent score 0")).assertExists()

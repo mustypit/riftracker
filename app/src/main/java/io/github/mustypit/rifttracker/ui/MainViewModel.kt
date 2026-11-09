@@ -136,6 +136,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val r = GameRules.add(g, side, kind, now)
         if (r is AddResult.Added) {
             _coin.value = null
+            _lastRemoved.value = null // undo now means "take back this point"
             _active.value = MatchRules.replaceCurrent(m, r.game)
             persist()
         }
@@ -144,8 +145,29 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun undo() {
         val m = _active.value ?: return
         val last = m.games.lastOrNull() ?: return
+        // If the last thing done was taking a point off the side track, put it back.
+        _lastRemoved.value?.let { (_, removed) ->
+            _lastRemoved.value = null
+            _active.value = MatchRules.replaceCurrent(m, GameRules.restorePoint(last, removed))
+            persist()
+            return
+        }
         // Undo on a game that hasn't had a point yet takes back starting it.
         _active.value = if (!last.isOver && last.events.isEmpty()) m.copy(games = m.games.dropLast(1)) else MatchRules.undo(m)
+        persist()
+    }
+
+    /** The last point taken off a side track, until something else happens (for undo). */
+    private val _lastRemoved = MutableStateFlow<Pair<Side, GameRules.Removed>?>(null)
+    val lastRemoved: StateFlow<Pair<Side, GameRules.Removed>?> = _lastRemoved.asStateFlow()
+
+    /** Tapping a point on the side track: removes [side]'s [n]-th point (0 = oldest). */
+    fun removePointAt(side: Side, n: Int) {
+        val m = _active.value ?: return
+        val g = m.games.lastOrNull() ?: return
+        val (game, removed) = GameRules.removePoint(g, side, n, now) ?: return
+        _active.value = MatchRules.replaceCurrent(m, game)
+        _lastRemoved.value = side to removed
         persist()
     }
 

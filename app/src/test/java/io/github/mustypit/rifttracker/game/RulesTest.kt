@@ -152,6 +152,41 @@ class GameRulesTest {
     }
 
     @Test
+    fun removingAPointFromTheSideTrackAndPuttingItBack() {
+        val t = Table()
+        t.press(ME, HOLD); t.press(OPP, CONQUER); t.press(ME, CONQUER); t.press(ME, ABILITY)
+        // Tap the 2nd of my points (the conquer): just that one goes.
+        val (g, removed) = GameRules.removePoint(t.game, ME, 1, now = 5)!!
+        assertEquals(listOf(HOLD, ABILITY), GameRules.scoredKinds(g, ME))
+        assertEquals(listOf(CONQUER), GameRules.scoredKinds(g, OPP))
+        assertEquals(CONQUER, removed.event.kind)
+        // Undo puts it back in the same place in the history.
+        assertEquals(t.game.events, GameRules.restorePoint(g, removed).events)
+        assertNull("no 9th point", GameRules.removePoint(t.game, ME, 8, 0))
+    }
+
+    @Test
+    fun removingTheWinningPointReopensTheGameAndUndoEndsItAgain() {
+        val t = Table()
+        repeat(8) { t.press(ME, HOLD) }
+        val (g, removed) = GameRules.removePoint(t.game, ME, 7, now = 99)!!
+        assertNull(g.outcome)
+        assertEquals(7, g.score(ME))
+        val back = GameRules.restorePoint(g, removed)
+        assertEquals(Outcome.WIN, back.outcome)
+    }
+
+    @Test
+    fun removingSkipsPointsAlreadyCancelledByACorrection() {
+        val t = Table()
+        t.press(ME, HOLD); t.press(ME, CONQUER); t.press(ME, CORRECTION); t.press(ME, ABILITY)
+        // Current points: hold, ability (the conquer was cancelled).
+        val (g, removed) = GameRules.removePoint(t.game, ME, 1, 0)!!
+        assertEquals(ABILITY, removed.event.kind)
+        assertEquals(listOf(HOLD), GameRules.scoredKinds(g, ME))
+    }
+
+    @Test
     fun aRecentCorrectionIsReportedForAFewSeconds() {
         val t = Table()
         t.press(ME, HOLD)

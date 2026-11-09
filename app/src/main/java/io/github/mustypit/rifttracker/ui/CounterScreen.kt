@@ -121,6 +121,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                     panelOpen = side in panels,
                     onPanelChange = { open -> panels = if (open) panels + side else panels - side },
                     onXp = { vm.adjustXp(side, it) },
+                    onRemovePoint = { vm.removePointAt(side, it) },
                 )
             }
         }
@@ -170,7 +171,7 @@ private fun playerColors(legendName: String, side: Side): Pair<Color, Color> {
 @Composable
 private fun PlayerHalf(
     match: Match, game: Game?, side: Side, enabled: Boolean, onPoint: (PointKind) -> Unit, modifier: Modifier,
-    darkness: Float, panelOpen: Boolean, onPanelChange: (Boolean) -> Unit, onXp: (Int) -> Unit,
+    darkness: Float, panelOpen: Boolean, onPanelChange: (Boolean) -> Unit, onXp: (Int) -> Unit, onRemovePoint: (Int) -> Unit,
 ) {
     val score = game?.score(side) ?: 0
     val legendName = if (side == Side.ME) match.myLegend else match.oppLegend
@@ -206,7 +207,10 @@ private fun PlayerHalf(
                 PointButton(RiftIcons.Ability, "${match.nameOf(side)} ABILITY", c1, enabled) { onPoint(PointKind.ABILITY) }
             }
         }
-        SideTrack(game?.let { GameRules.scoredKinds(it, side) }.orEmpty(), c1, Modifier.align(Alignment.CenterEnd).padding(end = 10.dp))
+        SideTrack(
+            game?.let { GameRules.scoredKinds(it, side) }.orEmpty(), c1, Modifier.align(Alignment.CenterEnd).padding(end = 10.dp),
+            name = match.nameOf(side), enabled = enabled, onRemove = onRemovePoint,
+        )
         // XP at a glance when the panel is closed.
         val xp = game?.xpOf(side) ?: 0
         if (xp > 0 && !panelOpen) {
@@ -304,7 +308,7 @@ private fun PointButton(icon: ImageVector, description: String, color: Color, en
  * the bottom. Each filled cell shows how that point was scored.
  */
 @Composable
-private fun SideTrack(kinds: List<PointKind>, color: Color, modifier: Modifier) {
+private fun SideTrack(kinds: List<PointKind>, color: Color, modifier: Modifier, name: String, enabled: Boolean, onRemove: (Int) -> Unit) {
     Column(
         modifier.clip(RoundedCornerShape(16.dp)).background(Color.Black.copy(alpha = 0.45f)).padding(4.dp)
             .semantics { contentDescription = "${kinds.size} of ${GameRules.VICTORY_SCORE} points" },
@@ -312,9 +316,11 @@ private fun SideTrack(kinds: List<PointKind>, color: Color, modifier: Modifier) 
     ) {
         for (i in GameRules.VICTORY_SCORE - 1 downTo 0) {
             val kind = kinds.getOrNull(i)
+            // Tapping a filled cell takes that point off (the middle bar offers to undo it).
             Box(
-                Modifier.size(width = 26.dp, height = 24.dp).clip(RoundedCornerShape(8.dp))
-                    .background(if (kind != null) color else Color.White.copy(alpha = 0.12f)),
+                Modifier.size(width = 28.dp, height = 26.dp).clip(RoundedCornerShape(8.dp))
+                    .background(if (kind != null) color else Color.White.copy(alpha = 0.12f))
+                    .let { if (kind != null) it.clickable(enabled = enabled, onClickLabel = "remove this point") { onRemove(i) }.semantics { contentDescription = "$name point ${i + 1}" } else it },
                 contentAlignment = Alignment.Center,
             ) {
                 if (kind != null) {
@@ -341,9 +347,13 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
         IconButton(onClick = vm::undo, enabled = game != null) { Icon(Icons.AutoMirrored.Filled.Undo, "Undo", tint = Color.White) }
         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
             // After a tap on a score took a point off, the pill offers to undo it for a few seconds.
-            val correction = GameRules.recentCorrection(game, maxOf(now, AppGraph.clock()))
+            val tick = maxOf(now, AppGraph.clock())
+            val removed by vm.lastRemoved.collectAsState()
+            val removedSide = removed?.takeIf { tick - it.second.at < 4000 }?.first
+            val correctionSide = GameRules.recentCorrection(game, tick)?.side ?: removedSide
+            val correction = correctionSide
             val label = when {
-                correction != null -> "−1 ${match.nameOf(correction.side).uppercase()} · TAP TO UNDO"
+                correctionSide != null -> "−1 ${match.nameOf(correctionSide).uppercase()} · TAP TO UNDO"
                 coin != null -> "COIN: ${if (coin == Side.ME) "YOU GO" else match.nameOf(Side.OPP).uppercase() + " GOES"} FIRST"
                 match.format == Format.BO3 -> "GAME ${match.games.size.coerceAtLeast(1)} · ${MatchRules.scoreLine(match)}"
                 else -> "FIRST TO ${GameRules.VICTORY_SCORE}"

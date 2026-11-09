@@ -60,6 +60,34 @@ object GameRules {
         return kinds.toList()
     }
 
+    /** A point taken off the side track, kept so it can be put back exactly where it was. */
+    data class Removed(val event: PointEvent, val index: Int, val at: Long)
+
+    /**
+     * Removes [side]'s [n]-th current point (0 = oldest, as on the side track), e.g. one logged as
+     * the wrong kind. The point is deleted from the history, and the game reopens if it had ended.
+     * Returns the new game and what was removed, or null if there's no such point.
+     */
+    fun removePoint(game: Game, side: Side, n: Int, now: Long): Pair<Game, Removed>? {
+        val stack = ArrayDeque<Int>() // event indices of [side]'s current points
+        game.events.forEachIndexed { i, e ->
+            if (e.side != side) return@forEachIndexed
+            if (e.delta > 0) stack.addLast(i) else if (stack.isNotEmpty()) stack.removeLast()
+        }
+        val index = stack.elementAtOrNull(n) ?: return null
+        val events = game.events.toMutableList()
+        val removed = events.removeAt(index)
+        return game.copy(events = events, outcome = null, endedAt = null) to Removed(removed, index, now)
+    }
+
+    /** Puts a removed point back where it was (undo). Re-ends the game if that point won it. */
+    fun restorePoint(game: Game, removed: Removed): Game {
+        val events = game.events.toMutableList().also { it.add(removed.index.coerceAtMost(it.size), removed.event) }
+        val g = game.copy(events = events)
+        val winner = Side.entries.firstOrNull { g.score(it) >= VICTORY_SCORE }
+        return if (winner == null) g else g.copy(outcome = if (winner == Side.ME) Outcome.WIN else Outcome.LOSS, endedAt = removed.at)
+    }
+
     /** Changes [side]'s XP by [delta], never below zero. Works after the game ended too (to fix it). */
     fun adjustXp(game: Game, side: Side, delta: Int): Game =
         game.copy(xp = game.xp + (side to (game.xpOf(side) + delta).coerceAtLeast(0)))

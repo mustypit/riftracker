@@ -82,7 +82,8 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   label, and three round icon-only point buttons (flag = conquer, shield = hold, spark = ability;
   `RiftIcons.kt`) filled with the legend's first domain colour. No −1 button and no pips under the
   score: a **side track** on the outer edge fills one cell per point with the icon of how it was
-  scored (`GameRules.scoredKinds`), and **tapping a score takes a point off**, after which the middle
+  scored (`GameRules.scoredKinds`); **tapping a filled cell removes that point** (`GameRules.removePoint`,
+  undo via the pill or the Undo button: `restorePoint`), and **tapping a score takes a point off**, after which the middle
   pill reads "−1 … · TAP TO UNDO" for 4 s (`GameRules.recentCorrection`). Without art: dark background washed with the two
   domain colours; without domains: the seat colour. Text on coloured buttons picks dark/white by
   luminance. Raw art behind the score failed the readability check (32% of pixels under 3:1); keep
