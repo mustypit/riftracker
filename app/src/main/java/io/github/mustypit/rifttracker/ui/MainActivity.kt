@@ -34,8 +34,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // Legend data from Riftcodex, if the app was built with it (scripts/build_legend_assets.py).
-        runCatching { assets.open("legends/legends.json").bufferedReader().use { Legends.install(it.readText()) } }
-        runCatching { assets.open("battlefields/battlefields.json").bufferedReader().use { io.github.mustypit.rifttracker.game.Battlefields.install(it.readText()) } }
+        // <folder>.json comes from Riftcodex (weekly job); extra.json holds sets it lacks (Radiance, from OpenRift).
+        fun read(path: String) = runCatching { assets.open(path).bufferedReader().use { it.readText() } }.getOrNull()
+        Legends.install(*listOfNotNull(read("legends/legends.json"), read("legends/extra.json")).toTypedArray())
+        io.github.mustypit.rifttracker.game.Battlefields.install(*listOfNotNull(read("battlefields/battlefields.json"), read("battlefields/extra.json")).toTypedArray())
         setContent { RiftTheme { AppShell(vm) } }
     }
 }

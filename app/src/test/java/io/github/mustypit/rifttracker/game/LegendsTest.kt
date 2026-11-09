@@ -31,6 +31,35 @@ class LegendsTest {
     }
 
     @Test
+    fun earlierFilesWinAndLaterOnesFillGaps() {
+        Legends.install(
+            """[{"name": "Ekko", "title": "From Riftcodex", "set": "Radiance", "domains": ["Fury", "Mind"]}]""",
+            """[{"name": "Ekko", "title": "From extra", "set": "Radiance", "domains": ["Calm"]},
+                {"name": "Ziggs", "title": "Hexplosives Expert", "set": "Radiance", "domains": ["fury", "chaos"]}]""",
+        )
+        assertEquals("From Riftcodex", Legends.byName("Ekko")!!.title)
+        assertEquals(listOf(Domain.FURY, Domain.CHAOS), Legends.byName("Ziggs")!!.domains)
+    }
+
+    /** The files the app ships: every built-in legend from the importer or extra.json has art and domains. */
+    @Test
+    fun bundledFilesCoverRadiance() {
+        val dir = java.io.File("src/main/assets/legends")
+        Legends.install(java.io.File(dir, "legends.json").readText(), java.io.File(dir, "extra.json").readText())
+        for (l in Legends.all.filter { it.set == "Radiance" }) {
+            assertTrue("${l.name} has domains", l.domains.size == 2)
+            assertTrue("${l.name} has a title", l.title.isNotBlank())
+            assertTrue("${l.name} has art", java.io.File(dir, "${l.id}.jpg").exists())
+        }
+        val bfDir = java.io.File("src/main/assets/battlefields")
+        Battlefields.install(java.io.File(bfDir, "battlefields.json").readText(), java.io.File(bfDir, "extra.json").readText())
+        val radiance = Battlefields.grouped("").firstOrNull { it.first == "Radiance" }?.second.orEmpty()
+        assertEquals(10, radiance.size)
+        assertTrue(radiance.all { java.io.File(bfDir, "${it.id}.jpg").exists() })
+        Battlefields.resetForTests()
+    }
+
+    @Test
     fun libraryIsConsistent() {
         assertEquals("names are unique", Legends.all.size, Legends.all.map { it.name.lowercase() }.toSet().size)
         assertEquals("image ids are unique", Legends.all.size, Legends.all.map { it.id }.toSet().size)

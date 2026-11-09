@@ -56,16 +56,21 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   top of `sets` and its legends to `all`. Never rename a legend (matches store the name).
   Art: `app/src/main/assets/legends/<id>.webp|png|jpg` (id = `Legends.idOf(name)`, e.g.
   `kaisa`, `lee_sin`, `jarvan_iv`): the card's artwork only (no frame, name bar or text), ~720 px.
-  Riven and Mordekaiser are in so far (from the owner's card images); others show a monogram tile.
-  Domains (`Domain`, card colours) are filled in for some legends.
+  Riven and Mordekaiser art came from the owner's card images; a legend without art shows a monogram tile.
 - **Riftcodex** (free card API, no key) supplies legend art, domains and titles. It refuses the cloud
   dev machines (the proxy's CONNECT gets 403 even when allowed), so: the owner runs
   `scripts/fetch-riftcodex-legends.ps1` at home (Windows PowerShell, no installs) and sends
   `legends_raw.json`; then here `python3 scripts/build_legend_assets.py legends_raw.json` downloads
   each legend's card image from Riot's CDN (`cmsassets.rgpub.io`, allowed in the environment), crops
   the artwork and writes `assets/legends/<id>.jpg` + `legends.json`. The app merges `legends.json`
-  into the built-in list at startup (`Legends.install`), so legends Riftcodex lacks (Radiance as of
-  Nov 2026) keep working. **Automatic updates:** `.github/workflows/update-legends.yml` (approved
+  into the built-in list at startup (`Legends.install`), so legends Riftcodex lacks keep working.
+  **Sets Riftcodex lacks** (Radiance as of Nov 2026) live in `assets/legends/extra.json` and
+  `assets/battlefields/extra.json` (same format, plus their `<id>.jpg`). They were imported once from
+  OpenRift's catalog (`openrift.app/api/v1/catalog`; image `openrift.app/media/cards/<imageId>-full.webp`,
+  champion name in the card's `tags`) through a temporary, owner-approved Action, since openrift.app is
+  blocked from the dev machine too. The weekly job never touches `extra.json`; the app loads
+  `<folder>.json` first, so Riftcodex data wins once it has those cards. Images in `extra.json` aren't
+  in the importer's index, so its stale-image cleanup leaves them alone. **Automatic updates:** `.github/workflows/update-legends.yml` (approved
   by the owner) runs `build_legend_assets.py --fetch` on GitHub every Monday and on demand, commits
   changes to `main` and starts the APK build. It refuses to change anything if Riftcodex returns
   fewer than 20 legends. Don't fetch Riftcodex through other workarounds from the dev machine. API: `GET /cards?page=N&size=100` → `{items, total, page,

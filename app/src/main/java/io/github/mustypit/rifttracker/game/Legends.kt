@@ -87,8 +87,13 @@ object Legends {
      * their domains, title and artist; legends the app doesn't know yet are added. Legends missing
      * from Riftcodex (a set it hasn't added yet) stay as they are.
      */
-    fun install(json: String) {
-        val entries = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromString<List<LegendEntry>>(json)
+    /**
+     * Merges legend files into the built-in list. Earlier files win for a name in several: pass
+     * `legends.json` (Riftcodex, rewritten weekly) before `extra.json` (sets Riftcodex lacks).
+     */
+    fun install(vararg jsons: String) {
+        val format = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val entries = jsons.flatMap { format.decodeFromString<List<LegendEntry>>(it) }.distinctBy { it.name.trim().lowercase() }
         val byKey = entries.associateBy { it.name.trim().lowercase() }
         fun domains(e: LegendEntry) = e.domains.mapNotNull { d -> Domain.entries.firstOrNull { it.name.equals(d, ignoreCase = true) } }
         val updated = builtIn.map { l ->

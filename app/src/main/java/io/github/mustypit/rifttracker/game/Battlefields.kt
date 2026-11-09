@@ -17,8 +17,10 @@ object Battlefields {
     @Volatile var all: List<Battlefield> = emptyList()
         private set
 
-    fun install(json: String) {
-        all = Json { ignoreUnknownKeys = true }.decodeFromString<List<BattlefieldEntry>>(json)
+    /** Loads the library from one or more files; earlier files win for a name in several. */
+    fun install(vararg jsons: String) {
+        val format = Json { ignoreUnknownKeys = true }
+        all = jsons.flatMap { format.decodeFromString<List<BattlefieldEntry>>(it) }
             .map { Battlefield(Legends.idOf(it.name), it.name.trim(), it.set.ifBlank { "Other" }, it.artist) }
             .distinctBy { it.name.lowercase() }
     }
