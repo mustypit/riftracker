@@ -245,6 +245,12 @@ def fetch_symbols():
             print("  js", js, e)
     for d in ["fury", "calm", "mind", "body", "chaos", "order", "colorless", "neutral", "rainbow"]:
         paths.add(f"/images/domains/{d}.webp")
+        paths.add(f"/images/domains/{d}.svg")
+        paths.add(f"/images/runes/{d}.svg")
+        paths.add(f"/images/rune_{d}.svg")
+    for n in ["might", "exhaust", "energy", "rainbow", "rune_rainbow", "power", "artist"]:
+        for pre in ["/images/", "/images/symbols/", "/images/icons/", "/images/tokens/"]:
+            paths.add(f"{pre}{n}.svg")
     print("symbol image paths:", sorted(paths))
     # Symbols drawn in code: dump the script text around rb_ tokens and symbol names.
     for js in re.findall(r'src="(/assets/[^"]+\.js)"', html)[:1]:
@@ -267,6 +273,9 @@ def fetch_symbols():
                     if found > 40:
                         break
         print("code snippets with svg near symbol names:", found, "chunks scanned:", len(sources))
+        for name, src in sources.items():
+            for m in re.finditer(r'images/\$\{[^`]{0,80}`', src):
+                print("  template path in", name, ":", src[max(0, m.start() - 200): m.end() + 40])
     for path in sorted(paths):
         try:
             data = get("https://openrift.app" + path, tries=2)
