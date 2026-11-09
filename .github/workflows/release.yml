@@ -1,0 +1,63 @@
+# Publishes a GitHub release from an APK the Build APK workflow already made (same file, same
+# signing key; nothing is rebuilt). Run it from the Actions tab ("Run workflow"): it takes the
+# latest successful build on main unless a run id is given.
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. v1.0"
+        required: true
+        default: "v1.0"
+      title:
+        description: "Release title"
+        required: true
+        default: "RiftTracker 1.0"
+      run_id:
+        description: "Build APK run id (empty = latest successful build on main)"
+        required: false
+permissions:
+  contents: write
+  actions: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Find the build
+        id: build
+        run: |
+          RUN="${{ inputs.run_id }}"
+          if [ -z "$RUN" ]; then
+            RUN=$(gh run list --workflow build.yml --branch main --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          fi
+          SHA=$(gh run view "$RUN" --json headSha -q .headSha)
+          echo "run=$RUN" >> "$GITHUB_OUTPUT"; echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Build run $RUN at $SHA"
+      - name: Download its APK
+        run: gh run download "${{ steps.build.outputs.run }}" -n rifttracker-apk -D apk && ls -l apk
+      - name: Check it's signed with the update key
+        run: |
+          APK=$(ls apk/*.apk | head -1)
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          CERT=$($APKSIGNER verify --print-certs "$APK" | grep "SHA-256 digest" | head -1 | awk '{print $NF}')
+          echo "APK certificate SHA-256: $CERT"
+          test "$CERT" = "f3a6406a295f2e5fd75a7706f49dbac721719c57164a3c0e5cf00684e4d84307"
+      - name: Publish the release
+        run: |
+          APK=$(ls apk/*.apk | head -1)
+          cp "$APK" RiftTracker-${{ inputs.tag }}.apk
+          cat > notes.md <<'EOF'
+          Unofficial Riftbound score tracker for Android. Not affiliated with Riot Games.
+
+          **Install:** download `RiftTracker-*.apk` below on your phone, open it, and allow installing from
+          your browser or file manager when Android asks. Play Protect may warn about an unknown developer;
+          that's normal for apps outside the Play Store.
+
+          Everything stays on your phone: the app has no internet access and no accounts. Later versions
+          install over this one and keep your matches.
+          EOF
+          gh release create "${{ inputs.tag }}" RiftTracker-${{ inputs.tag }}.apk \
+            --target "${{ steps.build.outputs.sha }}" --title "${{ inputs.title }}" --notes-file notes.md

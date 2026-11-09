@@ -154,5 +154,8 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   key to `~/.android/debug.keystore` was ignored on GitHub runners: don't go back to that. Never
   change the key, the applicationId or the signing setup; `versionCode` = `GITHUB_RUN_NUMBER` of
   the Build APK workflow (if it's ever renamed or recreated, add an offset).
+- Releases: `.github/workflows/release.yml` (run from Actions, inputs tag/title/run_id) takes a Build
+  APK run's artifact as is (no rebuild), checks the signing fingerprint and publishes a GitHub
+  release with `RiftTracker-<tag>.apk`. The repo is public, so release downloads need no account.
 - Develop on the branch the session names (or `main` for this repo while it's new); commit and
   push when done; don't open PRs unless asked.
