@@ -2,7 +2,6 @@ package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
@@ -21,18 +20,9 @@ object RiftIcons {
         fill("M3.1 19.6h6.8a1.1 1.1 0 0 1 0 2.2H3.1a1.1 1.1 0 0 1 0-2.2z")
     }
 
-    /** A shield with a highlight cut out: keeping a battlefield. */
+    /** A plain solid shield: keeping a battlefield. */
     val Hold = icon("hold") {
-        // Even-odd fill so the highlight band shows the button colour through it.
-        addPath(
-            addPathNodes(
-                "M12 1.8l8.2 3.1v6.3c0 5.2-3.4 9.3-8.2 11-4.8-1.7-8.2-5.8-8.2-11V4.9z" +
-                    "M12 5.1v1.9l4.1 1.55v2.75c0 2.7-1.6 5-4.1 6.2v2c3.6-1.3 6-4.5 6-8.2V7.1z",
-            ),
-            fill = SolidColor(Color.Black),
-            pathFillType = androidx.compose.ui.graphics.PathFillType.EvenOdd,
-            strokeLineJoin = StrokeJoin.Round,
-        )
+        fill("M12 1.8l8.2 3.1v6.3c0 5.2-3.4 9.3-8.2 11-4.8-1.7-8.2-5.8-8.2-11V4.9z")
     }
 
     /** A four-point spark with a small companion. */

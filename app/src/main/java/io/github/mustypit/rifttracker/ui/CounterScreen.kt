@@ -325,16 +325,13 @@ private fun SideTrack(kinds: List<PointKind>, colors: Pair<Color, Color>, modifi
             .semantics { contentDescription = "${kinds.size} of $n points" },
     ) {
         val h = maxHeight
-        // The bar: an empty groove, then the fill with a soft glow, anchored at the bottom.
-        Box(Modifier.align(Alignment.BottomEnd).padding(end = 4.dp).size(width = 8.dp, height = h).clip(RoundedCornerShape(4.dp)).background(Color.White.copy(alpha = 0.16f)))
+        // The bar: a slim grey groove for the part still to score, and the scored part as a wider
+        // gradient (legend's domain colours) that spills over the groove's edges. No separate glow.
+        Box(Modifier.align(Alignment.BottomEnd).padding(end = 7.dp).size(width = 8.dp, height = h).clip(RoundedCornerShape(4.dp)).background(Color.White.copy(alpha = 0.16f)))
         if (fill > 0f) {
             Box(
-                Modifier.align(Alignment.BottomEnd).padding(end = 1.dp).size(width = 14.dp, height = h * fill)
-                    .clip(RoundedCornerShape(7.dp)).background(c1.copy(alpha = 0.35f)),
-            )
-            Box(
-                Modifier.align(Alignment.BottomEnd).padding(end = 4.dp).size(width = 8.dp, height = h * fill)
-                    .clip(RoundedCornerShape(4.dp)).background(Brush.verticalGradient(listOf(c2, c1))),
+                Modifier.align(Alignment.BottomEnd).padding(end = 4.dp).size(width = 14.dp, height = h * fill)
+                    .clip(RoundedCornerShape(7.dp)).background(Brush.verticalGradient(listOf(c2, c1))),
             )
         }
         // The points: an icon beside the bar at each point's place, oldest at the bottom.
