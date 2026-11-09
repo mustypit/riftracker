@@ -36,10 +36,22 @@
   "image": "backalley_bar.jpg"
  },
  {
+  "name": "Bandle Scouts' Academy",
+  "set": "Radiance",
+  "artist": "Grafit Studio",
+  "image": "bandle_scouts_academy.jpg"
+ },
+ {
   "name": "Bandle Tree",
   "set": "Origins",
   "artist": "Kudos Productions",
   "image": "bandle_tree.jpg"
+ },
+ {
+  "name": "Baron Pit",
+  "set": "Unleashed",
+  "artist": "Fish Art Studio",
+  "image": "baron_pit.jpg"
  },
  {
   "name": "Black Flame Altar",
@@ -48,10 +60,40 @@
   "image": "black_flame_altar.jpg"
  },
  {
+  "name": "Black Market",
+  "set": "Radiance",
+  "artist": "Fish Art Studio",
+  "image": "black_market.jpg"
+ },
+ {
+  "name": "Black Rose Sanctum",
+  "set": "Radiance",
+  "artist": "Grafit Studio",
+  "image": "black_rose_sanctum.jpg"
+ },
+ {
+  "name": "Brush",
+  "set": "Unleashed",
+  "artist": "Kudos Productions",
+  "image": "brush.jpg"
+ },
+ {
+  "name": "Cosmic Vista",
+  "set": "Radiance",
+  "artist": "Fish Art Studio",
+  "image": "cosmic_vista.jpg"
+ },
+ {
   "name": "Dragon Roost",
   "set": "Vendetta",
   "artist": "Kudos Productions",
   "image": "dragon_roost.jpg"
+ },
+ {
+  "name": "Durand Memorial",
+  "set": "Radiance",
+  "artist": "Fish Art Studio",
+  "image": "durand_memorial.jpg"
  },
  {
   "name": "Dusk Rose Lab",
@@ -64,6 +106,12 @@
   "set": "Spiritforged",
   "artist": "Kudos Productions",
   "image": "emperors_dais.jpg"
+ },
+ {
+  "name": "Firelights' Hideout",
+  "set": "Radiance",
+  "artist": "Grafit Studio",
+  "image": "firelights_hideout.jpg"
  },
  {
   "name": "Forbidding Waste",
@@ -132,6 +180,12 @@
   "image": "heisho_shell_of_the_world.jpg"
  },
  {
+  "name": "Hunters' Circle",
+  "set": "Radiance",
+  "artist": "Fish Art Studio",
+  "image": "hunters_circle.jpg"
+ },
+ {
   "name": "Kinkou Temple",
   "set": "Vendetta",
   "artist": "Grafit Studio",
@@ -180,6 +234,12 @@
   "image": "ornns_forge.jpg"
  },
  {
+  "name": "Packed Amphitheater",
+  "set": "Radiance",
+  "artist": "Grafit Studio",
+  "image": "packed_amphitheater.jpg"
+ },
+ {
   "name": "Piltovan Forge",
   "set": "Vendetta",
   "artist": "Kudos Productions",
@@ -196,6 +256,12 @@
   "set": "Vendetta",
   "artist": "Polar Engine Studio",
   "image": "protective_sands.jpg"
+ },
+ {
+  "name": "Rakelstake",
+  "set": "Radiance",
+  "artist": "Fish Art Studio",
+  "image": "rakelstake.jpg"
  },
  {
   "name": "Ravenbloom Conservatory",
@@ -232,6 +298,12 @@
   "set": "Spiritforged",
   "artist": "Polar Engine Studio",
   "image": "rockfall_path.jpg"
+ },
+ {
+  "name": "Ruined Monastery",
+  "set": "Radiance",
+  "artist": "Grafit Studio",
+  "image": "ruined_monastery.jpg"
  },
  {
   "name": "Sandswept Tomb",
