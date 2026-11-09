@@ -273,6 +273,27 @@ def fetch_symbols():
                     if found > 40:
                         break
         print("code snippets with svg near symbol names:", found, "chunks scanned:", len(sources))
+        allpaths = set()
+        for c in chunks:
+            if c not in sources:
+                try:
+                    sources[c] = get("https://openrift.app/assets/" + c, tries=1).decode("utf-8", "replace")
+                except Exception:
+                    pass
+        for name, src in sources.items():
+            allpaths |= set(re.findall(r'/images/[A-Za-z0-9_\-/.${}]+', src))
+            for m in re.finditer(r'(rb_|token)[^\n]{0,40}(svg|src|img)', src):
+                print("  token render in", name, ":", src[max(0, m.start() - 250): m.end() + 250][:520])
+                break
+        print("all image paths in code:", sorted(allpaths))
+        for extra in ["exhaust", "exhausted", "tap", "rb_exhaust", "rotate", "symbols/exhaust", "icons/exhaust"]:
+            for ext in ("svg", "webp", "png"):
+                try:
+                    data = get(f"https://openrift.app/images/{extra}.{ext}", tries=1)
+                    if data[:5] != b"<!doc" and data[:5] != b"<!DOC":
+                        (out / f"images__{extra.replace('/', '__')}.{ext}").write_bytes(data); print("  got", extra, ext)
+                except Exception:
+                    pass
         for name, src in sources.items():
             for m in re.finditer(r'images/\$\{[^`]{0,80}`', src):
                 print("  template path in", name, ":", src[max(0, m.start() - 200): m.end() + 40])
