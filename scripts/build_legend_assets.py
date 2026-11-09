@@ -246,6 +246,27 @@ def fetch_symbols():
     for d in ["fury", "calm", "mind", "body", "chaos", "order", "colorless", "neutral", "rainbow"]:
         paths.add(f"/images/domains/{d}.webp")
     print("symbol image paths:", sorted(paths))
+    # Symbols drawn in code: dump the script text around rb_ tokens and symbol names.
+    for js in re.findall(r'src="(/assets/[^"]+\.js)"', html)[:1]:
+        main = get("https://openrift.app" + js).decode("utf-8", "replace")
+        chunks = set(re.findall(r'["\'`(./]([A-Za-z0-9_\-]+\.js)', main))
+        sources = {js: main}
+        for c in chunks:
+            if any(k in c.lower() for k in ("card", "rules", "text", "symbol", "icon", "rune", "might", "energy", "glyph", "token")):
+                try:
+                    sources[c] = get("https://openrift.app/assets/" + c, tries=2).decode("utf-8", "replace")
+                except Exception:
+                    pass
+        found = 0
+        for name, src in sources.items():
+            for m in re.finditer(r'(rb_exhaust|rb_might|rb_energy|exhaust|might)', src):
+                ctx = src[max(0, m.start() - 300): m.end() + 900]
+                if "<svg" in ctx or "path" in ctx or "viewBox" in ctx or "d:" in ctx:
+                    (out / f"code_{found:02d}_{name}.txt").write_text(ctx, encoding="utf-8")
+                    found += 1
+                    if found > 40:
+                        break
+        print("code snippets with svg near symbol names:", found, "chunks scanned:", len(sources))
     for path in sorted(paths):
         try:
             data = get("https://openrift.app" + path, tries=2)
