@@ -9,7 +9,7 @@ class LegendsTest {
     @org.junit.After fun reset() = Legends.resetForTests()
 
     @Test
-    fun riftcodexDataUpdatesKnownLegendsAndAddsNewOnes() {
+    fun importedDataUpdatesKnownLegendsAndAddsNewOnes() {
         Legends.install(
             """[
               {"name": "Vi", "title": "Piltover Enforcer", "set": "Unleashed", "domains": ["Fury", "Order"], "artist": "J. Santoro", "image": "vi.jpg"},
@@ -27,32 +27,21 @@ class LegendsTest {
         assertEquals("Some Future Set", n.set)
         assertEquals("unknown domains are dropped", listOf(Domain.MIND), n.domains)
         assertTrue(Legends.grouped("").any { it.first == "Some Future Set" })
-        assertEquals("legends Riftcodex lacks stay", listOf(Domain.FURY, Domain.ORDER), Legends.byName("Mordekaiser")!!.domains)
+        assertEquals("built-in legends missing from the file stay", listOf(Domain.FURY, Domain.ORDER), Legends.byName("Mordekaiser")!!.domains)
     }
 
-    @Test
-    fun earlierFilesWinAndLaterOnesFillGaps() {
-        Legends.install(
-            """[{"name": "Ekko", "title": "From Riftcodex", "set": "Radiance", "domains": ["Fury", "Mind"]}]""",
-            """[{"name": "Ekko", "title": "From extra", "set": "Radiance", "domains": ["Calm"]},
-                {"name": "Ziggs", "title": "Hexplosives Expert", "set": "Radiance", "domains": ["fury", "chaos"]}]""",
-        )
-        assertEquals("From Riftcodex", Legends.byName("Ekko")!!.title)
-        assertEquals(listOf(Domain.FURY, Domain.CHAOS), Legends.byName("Ziggs")!!.domains)
-    }
-
-    /** The files the app ships: every built-in legend from the importer or extra.json has art and domains. */
+    /** The files the app ships: every Radiance legend and battlefield has art and data. */
     @Test
     fun bundledFilesCoverRadiance() {
         val dir = java.io.File("src/main/assets/legends")
-        Legends.install(java.io.File(dir, "legends.json").readText(), java.io.File(dir, "extra.json").readText())
+        Legends.install(java.io.File(dir, "legends.json").readText())
         for (l in Legends.all.filter { it.set == "Radiance" }) {
             assertTrue("${l.name} has domains", l.domains.size == 2)
             assertTrue("${l.name} has a title", l.title.isNotBlank())
             assertTrue("${l.name} has art", java.io.File(dir, "${l.id}.jpg").exists())
         }
         val bfDir = java.io.File("src/main/assets/battlefields")
-        Battlefields.install(java.io.File(bfDir, "battlefields.json").readText(), java.io.File(bfDir, "extra.json").readText())
+        Battlefields.install(java.io.File(bfDir, "battlefields.json").readText())
         val radiance = Battlefields.grouped("").firstOrNull { it.first == "Radiance" }?.second.orEmpty()
         assertEquals(10, radiance.size)
         assertTrue(radiance.all { java.io.File(bfDir, "${it.id}.jpg").exists() })

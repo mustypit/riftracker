@@ -75,7 +75,7 @@ open class AppTest {
         AppGraph.random = Random(7)
         Zone.id = ZoneOffset.UTC
         runBlocking(Dispatchers.IO) { AppDb.get(context).clearAllTables() }
-        // A few real battlefields (the app adds the full Riftcodex list when it has it).
+        // A few real battlefields (the app adds the full OpenRift list when it has it).
         if (io.github.mustypit.rifttracker.game.Battlefields.all.isEmpty()) {
             io.github.mustypit.rifttracker.game.Battlefields.install(
                 """[{"name": "Altar of Blood", "set": "Vendetta"}, {"name": "Sunken Temple", "set": "Origins"},

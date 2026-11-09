@@ -105,7 +105,7 @@ fun SettingsScreen(vm: MainViewModel) {
                 color = if (about.certSha256 == AppInfo.UPDATE_KEY_SHA256) C.Teal else C.Coral,
                 fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp),
             )
-            Text("Unofficial fan app, not affiliated with Riot Games. Card data from Riftcodex.", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 10.dp))
+            Text("Unofficial fan app, not affiliated with Riot Games. Card data from OpenRift.", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 10.dp))
         }
         androidx.compose.foundation.layout.Spacer(Modifier.height(24.dp))
     }

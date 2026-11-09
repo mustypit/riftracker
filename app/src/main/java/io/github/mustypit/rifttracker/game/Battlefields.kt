@@ -10,17 +10,15 @@ data class Battlefield(val id: String, val name: String, val set: String, val ar
 data class BattlefieldEntry(val name: String, val set: String = "", val artist: String? = null, val image: String? = null)
 
 /**
- * The battlefield library, from Riftcodex (no built-in list: battlefields are many and change every
+ * The battlefield library, from OpenRift (no built-in list: battlefields are many and change every
  * set). Art: assets/battlefields/<id>.jpg. Games store the battlefield's name.
  */
 object Battlefields {
     @Volatile var all: List<Battlefield> = emptyList()
         private set
 
-    /** Loads the library from one or more files; earlier files win for a name in several. */
-    fun install(vararg jsons: String) {
-        val format = Json { ignoreUnknownKeys = true }
-        all = jsons.flatMap { format.decodeFromString<List<BattlefieldEntry>>(it) }
+    fun install(json: String) {
+        all = Json { ignoreUnknownKeys = true }.decodeFromString<List<BattlefieldEntry>>(json)
             .map { Battlefield(Legends.idOf(it.name), it.name.trim(), it.set.ifBlank { "Other" }, it.artist) }
             .distinctBy { it.name.lowercase() }
     }

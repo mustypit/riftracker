@@ -1,8 +1,9 @@
-# Refreshes legend art and data from Riftcodex (free Riftbound card API) every week, or on demand
+# Refreshes legend and battlefield art and data from OpenRift (free Riftbound card catalog) every week, or on demand
 # from the Actions tab ("Run workflow"). Commits to main only when something changed, then starts
 # the APK build (pushes made by a workflow don't trigger other workflows; a manual run does).
 # Approved by the owner so new sets arrive without
-# anyone running scripts by hand (the cloud dev machines can't reach Riftcodex).
+# anyone running scripts by hand (the cloud dev machines can't reach OpenRift).
+# Run from another branch, it commits to that branch and builds it (for trying importer changes).
 name: Update legends
 on:
   schedule:
@@ -21,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Download legends from Riftcodex and crop their art
+      - name: Download the catalog from OpenRift and crop the art
         run: |
           pip install --quiet pillow
           python3 scripts/build_legend_assets.py --fetch
@@ -35,7 +36,7 @@ jobs:
           else
             git diff --cached --stat
             git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit -m "Update legend and battlefield art and data from Riftcodex"
+              commit -m "Update legend and battlefield art and data from OpenRift"
             git push
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
@@ -43,7 +44,7 @@ jobs:
         if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run build.yml --ref main
+        run: gh workflow run build.yml --ref "${{ github.ref_name }}"
       - name: Summary
         run: |
           echo "### Legends" >> "$GITHUB_STEP_SUMMARY"

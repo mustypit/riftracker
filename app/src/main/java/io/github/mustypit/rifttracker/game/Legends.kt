@@ -10,7 +10,7 @@ data class Legend(
     val name: String,
     val set: String,
     val domains: List<Domain> = emptyList(),
-    /** The legend card's title, e.g. "The Exile" (from Riftcodex). */
+    /** The legend card's title, e.g. "The Exile" (from OpenRift). */
     val title: String = "",
     val artist: String? = null,
 )
@@ -46,7 +46,7 @@ object Legends {
 
     /**
      * Domain pairs known so far: from the cards themselves (Riven, Mordekaiser) and public set
-     * coverage. To be replaced by Riftcodex data; a legend without domains gets neutral colours.
+     * coverage. To be replaced by OpenRift data; a legend without domains gets neutral colours.
      */
     private val domainsOf: Map<String, List<Domain>> = mapOf(
         "Mordekaiser" to listOf(Domain.FURY, Domain.ORDER),
@@ -72,28 +72,23 @@ object Legends {
         set("Origins", "Ahri", "Annie", "Darius", "Garen", "Jinx", "Kai'Sa", "Lee Sin", "Leona", "Lux", "Miss Fortune", "Sett", "Teemo", "Viktor", "Volibear", "Yasuo"),
     ).flatten()
 
-    /** Built-in legends, updated with Riftcodex data once [install] has run. */
+    /** Built-in legends, updated with OpenRift data once [install] has run. */
     @Volatile var all: List<Legend> = builtIn
         private set
 
-    /** Riftcodex set labels that belong under one of the app's set headings. */
+    /** OpenRift set names that belong under one of the app's set headings. */
     private fun setHeading(label: String) = when {
         label.startsWith("Origins") || label.contains("Proving Grounds") -> "Origins"
         else -> label
     }
 
     /**
-     * Merges Riftcodex data (the contents of legends.json) into the built-in list: known legends get
+     * Merges OpenRift data (the contents of legends.json) into the built-in list: known legends get
      * their domains, title and artist; legends the app doesn't know yet are added. Legends missing
-     * from Riftcodex (a set it hasn't added yet) stay as they are.
+     * from OpenRift (a set it hasn't added yet) stay as they are.
      */
-    /**
-     * Merges legend files into the built-in list. Earlier files win for a name in several: pass
-     * `legends.json` (Riftcodex, rewritten weekly) before `extra.json` (sets Riftcodex lacks).
-     */
-    fun install(vararg jsons: String) {
-        val format = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-        val entries = jsons.flatMap { format.decodeFromString<List<LegendEntry>>(it) }.distinctBy { it.name.trim().lowercase() }
+    fun install(json: String) {
+        val entries = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromString<List<LegendEntry>>(json)
         val byKey = entries.associateBy { it.name.trim().lowercase() }
         fun domains(e: LegendEntry) = e.domains.mapNotNull { d -> Domain.entries.firstOrNull { it.name.equals(d, ignoreCase = true) } }
         val updated = builtIn.map { l ->
