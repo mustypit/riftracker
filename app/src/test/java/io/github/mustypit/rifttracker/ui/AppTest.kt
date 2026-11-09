@@ -135,14 +135,14 @@ open class AppTest {
     @Test
     fun playABestOfThreeFromSetupToSavedMatch() {
         launch()
-        rule.waitFor("Who's playing?")
+        rule.waitFor("New match")
         shot("01_new_match")
         rule.onNode(hasContentDescription("Your legend")).performClick(); rule.waitForIdle()
         rule.waitFor("RADIANCE")
         shot("01b_legend_picker")
         type("Search legends", "Riven")
         rule.onNode(hasContentDescription("Legend Riven")).performClick(); rule.waitForIdle()
-        type("Their name (optional)", "Morgan")
+        type("Their name", "Morgan")
         pickLegend("Their legend", "Mordekaiser")
         shot("02_new_match_filled")
         click("START")
@@ -197,7 +197,7 @@ open class AppTest {
         click("SAVE MATCH")
 
         // Straight back to New match, still filled in for a rematch; no review screen.
-        rule.waitFor("Who's playing?")
+        rule.waitFor("New match")
         rule.onNode(hasText("Riven")).assertExists()
         rule.onNode(hasText("Mordekaiser")).assertExists()
         shot("09_back_to_new_match")
@@ -262,7 +262,7 @@ open class AppTest {
         // Win, then take the winning point back: the game reopens.
         press("You", "HOLD")
         rule.waitFor("YOU WIN GAME 1")
-        click("Undo last point")
+        click("Undo")
         rule.onNode(hasContentDescription("You score 7")).assertExists()
     }
 
@@ -290,7 +290,7 @@ open class AppTest {
         rule.onNode(hasContentDescription("Match options")).performClick(); rule.waitForIdle()
         click("Abandon match")
         click("Abandon")
-        rule.waitFor("Who's playing?")
+        rule.waitFor("New match")
         assertTrue(saved().isEmpty())
         assertNull(runBlocking(Dispatchers.IO) { store.activeNow() })
     }
@@ -303,7 +303,7 @@ open class AppTest {
         click("START"); click("YOU")
         press("You", "HOLD", 2)
         rule.onNode(hasContentDescription("Match options")).performClick(); rule.waitForIdle()
-        click("End game as a draw")
+        click("Draw game")
         rule.waitFor("DRAW")
         click("SAVE MATCH")
         rule.waitUntil(10_000) { saved().isNotEmpty() }
@@ -328,7 +328,7 @@ open class AppTest {
         rule.waitFor("Morgan")
         shot("14_rivals")
         click("Fields")
-        rule.waitFor("YOUR BATTLEFIELDS · GAMES")
+        rule.waitFor("YOURS")
         shot("14b_battlefields")
 
         click("Yours")
@@ -340,8 +340,8 @@ open class AppTest {
     @Test
     fun logAPastMatch() {
         launch()
-        click("Log a match you already played")
-        rule.waitFor("Already played")
+        click("Log a past match")
+        rule.waitFor("Log a match")
         pickLegend("Your legend", "Diana")
         pickLegend("Their legend", "Irelia")
         click("Won")
@@ -351,7 +351,7 @@ open class AppTest {
         rule.onAllNodes(hasText("Won"))[2].scrollIfNeeded().performClick(); rule.waitForIdle()
         shot("16_log_match")
         click("SAVE")
-        rule.waitFor("Who's playing?")
+        rule.waitFor("New match")
         val m = saved().single()
         assertTrue(m.logged)
         assertEquals(listOf(Outcome.WIN, Outcome.LOSS, Outcome.WIN), m.games.map { it.outcome })
@@ -362,7 +362,7 @@ open class AppTest {
     fun backgroundDarknessSetting() {
         launch()
         rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
-        rule.waitFor("Background darkness")
+        rule.waitFor("SCORE BACKGROUND")
         shot("19_settings")
         rule.onNode(hasContentDescription("Background darkness"))
             .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(0.9f) }
@@ -383,7 +383,7 @@ open class AppTest {
     fun themeSetting() {
         launch()
         rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
-        rule.waitFor("Light or dark")
+        rule.waitFor("THEME")
         val other = if (this is AppDarkTest) "Light" else "Dark"
         click(other)
         rule.waitForIdle()

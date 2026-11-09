@@ -61,23 +61,13 @@ fun SettingsScreen(vm: MainViewModel) {
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         HeaderBlock(onBack = { vm.back() }) {
-            Text("SETTINGS", style = Caps, color = C.Yellow)
-            Text("Make it yours", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
+            Text("Settings", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
         }
-        SectionLabel("Appearance")
+        SectionLabel("Theme")
         val theme by vm.settings.theme.collectAsState()
+        Segmented(ThemeMode.entries, theme, { it.label }, vm.settings::setTheme, Modifier.padding(horizontal = 16.dp))
+        SectionLabel("Score background")
         Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
-            Text("Light or dark", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
-            Text("Phone follows your phone's setting.", color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp, bottom = 12.dp))
-            Segmented(ThemeMode.entries, theme, { it.label }, vm.settings::setTheme)
-        }
-        SectionLabel("Scoring screen")
-        Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
-            Text("Background darkness", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
-            Text(
-                "How much the legend art is dimmed behind the score. Even the lightest setting keeps the score easy to read.",
-                color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp, bottom = 12.dp),
-            )
             // Live preview, drawn exactly like a half of the scoring screen.
             Box(Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFF0C0C0C)), contentAlignment = Alignment.Center) {
                 if (previewArt != null) {
@@ -92,18 +82,14 @@ fun SettingsScreen(vm: MainViewModel) {
                 colors = SliderDefaults.colors(thumbColor = C.Ink, activeTrackColor = C.Ink, inactiveTrackColor = C.Line),
                 modifier = Modifier.padding(top = 8.dp).semantics { contentDescription = "Background darkness" },
             )
-            Row(Modifier.fillMaxWidth()) {
-                Text("Lighter", color = C.Muted, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                Text("${Math.round(darkness * 100)}%", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                Text("Darker", color = C.Muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
-            }
+            Text("${Math.round(darkness * 100)}%", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = C.Muted, modifier = Modifier.align(Alignment.CenterHorizontally))
         }
-        SectionLabel("About")
         val version = remember { AppInfo.version(context) }
-        Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
-            Text("RiftTracker $version", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
-            Text("Unofficial fan app, not affiliated with Riot Games. Card data from OpenRift.", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
-        }
+        Text(
+            "RiftTracker $version\nFan app, not affiliated with Riot Games · cards: OpenRift",
+            color = C.Muted, fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 28.dp),
+        )
         androidx.compose.foundation.layout.Spacer(Modifier.height(24.dp))
     }
 }

@@ -390,7 +390,7 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
         Box {
             IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Match options", tint = Color.White) }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                DropdownMenuItem(text = { Text("End game as a draw") }, enabled = running, onClick = { menu = false; vm.drawGame() })
+                DropdownMenuItem(text = { Text("Draw game") }, enabled = running, onClick = { menu = false; vm.drawGame() })
                 DropdownMenuItem(text = { Text("Abandon match") }, onClick = { menu = false; confirmAbandon = true })
                 DropdownMenuItem(text = { Text("Settings") }, onClick = { menu = false; vm.push(Screen.Settings) })
             }
@@ -400,9 +400,8 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
         AlertDialog(
             onDismissRequest = { confirmAbandon = false },
             title = { Text("Abandon this match?") },
-            text = { Text("It won't be saved to your history.") },
             confirmButton = { TextButton(onClick = { confirmAbandon = false; vm.abandonMatch() }) { Text("Abandon") } },
-            dismissButton = { TextButton(onClick = { confirmAbandon = false }) { Text("Keep playing") } },
+            dismissButton = { TextButton(onClick = { confirmAbandon = false }) { Text("Cancel") } },
         )
     }
 }
@@ -430,18 +429,12 @@ fun BigButton(text: String, color: Color, ink: Color, modifier: Modifier = Modif
 private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, battlefieldSlots: @Composable () -> Unit) {
     val suggested = MatchRules.suggestedFirst(match)
     Overlay {
-        Text(if (match.games.isEmpty()) "WHO GOES FIRST?" else "GAME ${match.games.size + 1}: WHO GOES FIRST?", style = Caps.copy(fontSize = 14.sp), color = C.Ink)
-        if (suggested != null) {
-            Text(
-                "${match.nameOf(suggested)} lost the last game, so ${if (suggested == Side.ME) "you pick" else "they pick"}.",
-                color = C.Muted, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
-            )
-        }
+        Text(if (match.games.isEmpty()) "WHO GOES FIRST?" else "GAME ${match.games.size + 1} · WHO GOES FIRST?", style = Caps.copy(fontSize = 14.sp), color = C.Ink)
         battlefieldSlots()
         Spacer(Modifier.height(16.dp))
-        BigButton("YOU", playerColors(match.myLegend, Side.ME).first, inkOn(playerColors(match.myLegend, Side.ME).first)) { onChoose(Side.ME) }
+        BigButton("YOU" + if (suggested == Side.ME) " ★" else "", playerColors(match.myLegend, Side.ME).first, inkOn(playerColors(match.myLegend, Side.ME).first)) { onChoose(Side.ME) }
         Spacer(Modifier.height(10.dp))
-        BigButton(match.nameOf(Side.OPP).uppercase(), playerColors(match.oppLegend, Side.OPP).first, inkOn(playerColors(match.oppLegend, Side.OPP).first)) { onChoose(Side.OPP) }
+        BigButton(match.nameOf(Side.OPP).uppercase() + if (suggested == Side.OPP) " ★" else "", playerColors(match.oppLegend, Side.OPP).first, inkOn(playerColors(match.oppLegend, Side.OPP).first)) { onChoose(Side.OPP) }
         Spacer(Modifier.height(10.dp))
         BigButton("FLIP A COIN", C.Solid, C.OnSolid) { onChoose(null) }
     }
@@ -468,7 +461,7 @@ private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () 
         }
         Spacer(Modifier.height(18.dp))
         if (decided) BigButton("SAVE MATCH", C.Solid, C.OnSolid, onClick = onNext)
-        else Text("Next game: who goes first?", style = Caps, color = C.Muted)
+        else Text("Who goes first?", style = Caps, color = C.Muted)
         if (!decided) {
             val suggested = MatchRules.suggestedFirst(match)
             battlefieldSlots()
@@ -477,8 +470,7 @@ private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () 
                 BigButton("YOU" + if (suggested == Side.ME) " ★" else "", playerColors(match.myLegend, Side.ME).first, inkOn(playerColors(match.myLegend, Side.ME).first), Modifier.weight(1f)) { onNextGame(Side.ME) }
                 BigButton(match.nameOf(Side.OPP).uppercase() + if (suggested == Side.OPP) " ★" else "", playerColors(match.oppLegend, Side.OPP).first, inkOn(playerColors(match.oppLegend, Side.OPP).first), Modifier.weight(1f)) { onNextGame(Side.OPP) }
             }
-            if (suggested != null) Text("★ lost the last game", color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
         }
-        TextButton(onClick = onUndo, modifier = Modifier.padding(top = 6.dp)) { Text("Undo last point", color = C.Muted) }
+        TextButton(onClick = onUndo, modifier = Modifier.padding(top = 6.dp)) { Text("Undo", color = C.Muted) }
     }
 }

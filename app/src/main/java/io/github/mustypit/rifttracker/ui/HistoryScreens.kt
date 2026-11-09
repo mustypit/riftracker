@@ -104,7 +104,7 @@ fun MatchesScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
             }
         }
         item { PeriodChips(vm) }
-        if (matches.isEmpty()) item { EmptyState("No matches yet", "Finished matches from the Play tab show up here. You can also log one you already played with +.", Modifier.fillMaxWidth()) }
+        if (matches.isEmpty()) item { EmptyState("No matches yet", "Finished matches show up here.", Modifier.fillMaxWidth()) }
         months.forEach { month ->
             item(key = "m${month.month}") {
                 Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -201,7 +201,6 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete this match?") },
-            text = { Text("It's removed from your history and stats.") },
             confirmButton = { TextButton(onClick = { confirmDelete = false; vm.deleteMatch(m.id) }) { Text("Delete") } },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
@@ -329,27 +328,27 @@ fun LegendsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
         item { PeriodChips(vm) }
         when (tab) {
             LegendTab.Legends -> {
-                if (mine.isEmpty()) item { EmptyState("No legends yet", "Play or log a match to see how each legend does.", Modifier.fillMaxWidth()) }
+                if (mine.isEmpty()) item { EmptyState("No legends yet", "Play a match to see stats.", Modifier.fillMaxWidth()) }
                 items(mine, key = { "l" + it.legend }) { s -> StatRow(s.legend, s.record, avatar = s.legend, onClick = { vm.push(Screen.LegendDetail(s.legend)) }) }
             }
             LegendTab.Opponents -> {
                 val opp = Stats.byOppLegend(matches)
-                if (opp.isEmpty()) item { EmptyState("Nothing yet", "Your record against each legend shows up here.", Modifier.fillMaxWidth()) }
+                if (opp.isEmpty()) item { EmptyState("Nothing yet", "Play a match to see stats.", Modifier.fillMaxWidth()) }
                 items(opp, key = { "o" + it.legend }) { s -> StatRow("vs ${s.legend}", s.record, avatar = s.legend) }
             }
             LegendTab.Rivals -> {
                 val rivals = Stats.rivals(matches)
-                if (rivals.isEmpty()) item { EmptyState("No rivals yet", "Add your opponent's name when you start a match to track your record against them.", Modifier.fillMaxWidth()) }
+                if (rivals.isEmpty()) item { EmptyState("No rivals yet", "Name your opponent when starting a match.", Modifier.fillMaxWidth()) }
                 items(rivals, key = { "r" + it.name }) { s -> StatRow(s.name, s.record, sub = s.legends.joinToString(", ")) }
             }
             LegendTab.Battlefields -> {
                 // Counted per game: each game of a best-of-3 can use a different battlefield.
                 val mine = Stats.byBattlefield(matches, Side.ME)
                 val theirs = Stats.byBattlefield(matches, Side.OPP)
-                if (mine.isEmpty() && theirs.isEmpty()) item { EmptyState("No battlefields yet", "Pick battlefields on the “who goes first” card, or add them to a game from its match.", Modifier.fillMaxWidth()) }
-                if (mine.isNotEmpty()) item { SectionLabel("Your battlefields · games") }
+                if (mine.isEmpty() && theirs.isEmpty()) item { EmptyState("No battlefields yet", "Pick them before each game.", Modifier.fillMaxWidth()) }
+                if (mine.isNotEmpty()) item { SectionLabel("Yours") }
                 items(mine, key = { "bm" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
-                if (theirs.isNotEmpty()) item { SectionLabel("Against these battlefields · games") }
+                if (theirs.isNotEmpty()) item { SectionLabel("Against") }
                 items(theirs, key = { "bo" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
             }
         }
@@ -427,7 +426,7 @@ fun LegendDetailScreen(vm: MainViewModel, legend: String) {
                     Count(d.record.draws, "drawn", Color.White)
                 }
                 Text(
-                    if (d.record.total >= Stats.MIN_MATCHES_FOR_RATE) "win rate, a draw counts a third" else Stats.rateOrHint(d.record) + " for a win rate",
+                    if (d.record.total >= Stats.MIN_MATCHES_FOR_RATE) "win rate" else Stats.rateOrHint(d.record) + " to go",
                     color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp,
                 )
             }

@@ -125,6 +125,10 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - Deferred: decks with versions, battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
   game, central menu button, clean panels); ask the owner for a screen recording.
+- **Minimal UI copy** (owner's request): short one-line headers ("New match", "Settings"), no
+  explanatory sentences under settings, one-line empty states, no "(optional)" labels, dialogs with a
+  title and buttons only. The ★ on a player button marks who lost the last game, without a caption.
+  Don't add explanations back.
 - No ads or tracking. Everything stays on the phone.
 
 ## Conventions

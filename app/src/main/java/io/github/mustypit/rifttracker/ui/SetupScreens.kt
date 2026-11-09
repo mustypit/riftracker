@@ -47,7 +47,7 @@ private fun MatchFields(format: Format, onFormat: (Format) -> Unit, my: String, 
     SectionLabel("You")
     LegendSlot("Your legend", my, onClick = { onPick(Pick.MINE) })
     SectionLabel("Opponent")
-    RiftTextField("Their name (optional)", name, onName, Modifier.padding(horizontal = 20.dp))
+    RiftTextField("Their name", name, onName, Modifier.padding(horizontal = 20.dp))
     Spacer(Modifier.height(10.dp))
     LegendSlot("Their legend", opp, onClick = { onPick(Pick.THEIRS) })
 }
@@ -83,8 +83,7 @@ fun NewMatchScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
         HeaderBlock {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("NEW MATCH", style = Caps, color = C.Yellow)
-                    Text("Who's playing?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
+                    Text("New match", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
                 }
                 androidx.compose.material3.IconButton(onClick = { vm.push(Screen.Settings) }) {
                     androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.Settings, "Settings", tint = Color.White)
@@ -99,7 +98,7 @@ fun NewMatchScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
             }
         }
         Text(
-            "Log a match you already played",
+            "Log a past match",
             color = C.Muted, fontWeight = FontWeight.Bold, fontSize = 14.sp,
             modifier = Modifier.align(Alignment.CenterHorizontally).clickable { vm.push(Screen.LogMatch) }.padding(16.dp),
         )
@@ -124,8 +123,7 @@ fun LogMatchScreen(vm: MainViewModel) {
     Box(Modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding()) {
         HeaderBlock(onBack = { vm.back() }) {
-            Text("LOG A MATCH", style = Caps, color = C.Yellow)
-            Text("Already played", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
+            Text("Log a match", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
         }
         MatchFields(format, { format = it }, my, name, { name = it }, opp, { pick = it })
         SectionLabel("Games")
@@ -144,7 +142,7 @@ fun LogMatchScreen(vm: MainViewModel) {
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 8.dp)) {
-                    Text("Went first:", color = C.Muted, fontSize = 13.sp)
+                    Text("First:", color = C.Muted, fontSize = 13.sp)
                     Chip("You", firsts[i] == Side.ME) { firsts[i] = if (firsts[i] == Side.ME) null else Side.ME }
                     Chip("Them", firsts[i] == Side.OPP) { firsts[i] = if (firsts[i] == Side.OPP) null else Side.OPP }
                 }

@@ -81,7 +81,7 @@ fun BattlefieldSlot(label: String, value: String?, onClick: () -> Unit, modifier
         }
         Column(Modifier.weight(1f).padding(start = 12.dp)) {
             Text(label.uppercase(), style = Caps.copy(fontSize = 10.sp), color = C.Muted)
-            Text(value ?: "Choose (optional)", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = if (value == null) C.Muted else C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(value ?: "Choose", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = if (value == null) C.Muted else C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
