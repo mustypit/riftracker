@@ -165,6 +165,71 @@ def main(source):
             print(f"  battlefield {name:30} {p.get('shortCode', ''):10} {s.get('name', ''):16} {image or '-'}")
         write_index(BF_OUT, bf_library)
 
+    if os.environ.get("CARDS") == "1":
+        write_cards(catalog)
+
+
+CARDS_OUT = OUT.parent / "cards"
+CARD_WIDTH = 400  # px; the whole card (frame and text), for the card library
+TOKEN = re.compile(r":rb_[a-z0-9_]+:")
+
+
+def write_cards(catalog):
+    """
+    The card library: every card's original normal printing as assets/cards/cards.json, and its
+    whole-card image as assets/cards/<slug>.webp. CARD_IMAGES_LIMIT=n (env) saves images for an
+    even sample of n cards only (for trying things out).
+    """
+    sets = {s["id"]: s for s in catalog["sets"]}
+    cards = {c["id"]: c for c in as_list(catalog["cards"])}
+    best = {}
+    for p in as_list(catalog["printings"]):
+        c = cards.get(p.get("cardId"))
+        if not c or not p.get("images"):
+            continue
+        if c["id"] not in best or rank(p, sets) < rank(best[c["id"]], sets):
+            best[c["id"]] = p
+    library, tokens = [], {}
+    for cid, p in best.items():
+        c, s = cards[cid], sets.get(p.get("setId"), {})
+        text = p.get("printedRulesText") or ""
+        for t in TOKEN.findall(text):
+            tokens[t] = tokens.get(t, 0) + 1
+        library.append({
+            "slug": c["slug"], "name": clean(c["name"]), "type": (c.get("types") or ["other"])[0],
+            "superTypes": c.get("superTypes") or [], "domains": c.get("domains") or [],
+            "energy": c.get("energy"), "power": c.get("power"), "might": c.get("might"),
+            "keywords": c.get("keywords") or [], "tags": [clean(t) for t in c.get("tags") or []],
+            "text": text, "set": s.get("name", ""), "code": p.get("shortCode"), "rarity": p.get("rarity"),
+            "artist": p.get("artist"), "maxCopies": c.get("maxCopiesOverride"), "banned": bool(c.get("bans")),
+            "imageId": p["images"][0]["imageId"],
+        })
+    library.sort(key=lambda e: (e["set"], e["code"] or "", e["name"]))
+    limit = int(os.environ.get("CARD_IMAGES_LIMIT", "0") or 0)
+    chosen = library if not limit else library[:: max(1, len(library) // limit)][:limit]
+    CARDS_OUT.mkdir(parents=True, exist_ok=True)
+    for e in chosen:
+        try:
+            im = Image.open(io.BytesIO(get(IMAGE.format(e["imageId"])))).convert("RGB")
+            if im.width > im.height:  # landscape battlefields: keep them landscape, same width budget
+                im.thumbnail((CARD_WIDTH * 1.4, CARD_WIDTH))
+            else:
+                im.thumbnail((CARD_WIDTH, CARD_WIDTH * 1.4))
+            im.save(CARDS_OUT / f"{e['slug']}.webp", quality=78, method=6)
+            e["image"] = f"{e['slug']}.webp"
+        except Exception as ex:
+            print(f"  no image for {e['slug']}: {ex}")
+    for e in library:
+        e.setdefault("image", None)
+        del e["imageId"]
+    (CARDS_OUT / "cards.json").write_text(json.dumps(library, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    by_type = {}
+    for e in library:
+        by_type[e["type"]] = by_type.get(e["type"], 0) + 1
+    print(f"{len(library)} cards -> {CARDS_OUT / 'cards.json'}, {sum(1 for e in library if e['image'])} images; by type {by_type}")
+    print("rules-text symbols:", json.dumps(dict(sorted(tokens.items(), key=lambda kv: -kv[1]))))
+    print("enums:", json.dumps({k: [x.get("slug") for x in v] if isinstance(v, list) else v for k, v in catalog.get("enums", {}).items()})[:3000])
+
 
 if __name__ == "__main__":
     main(sys.argv[1])

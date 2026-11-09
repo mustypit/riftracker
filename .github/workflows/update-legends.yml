@@ -23,13 +23,16 @@ jobs:
         with:
           python-version: "3.12"
       - name: Download the catalog from OpenRift and crop the art
+        env:
+          CARDS: ${{ github.ref_name == 'card-library' && '1' || '' }}
+          CARD_IMAGES_LIMIT: ${{ github.ref_name == 'card-library' && '80' || '' }}
         run: |
           pip install --quiet pillow
           python3 scripts/build_legend_assets.py --fetch
       - name: Commit if anything changed
         id: commit
         run: |
-          git add app/src/main/assets/legends app/src/main/assets/battlefields
+          git add app/src/main/assets/legends app/src/main/assets/battlefields $([ -d app/src/main/assets/cards ] && echo app/src/main/assets/cards)
           if git diff --cached --quiet; then
             echo "No changes."
             echo "changed=false" >> "$GITHUB_OUTPUT"
