@@ -99,8 +99,10 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - **Settings** (gear on New match, or the counter's menu): "Background darkness" slider for the veil
   over legend art (`Veil.alphas`, `SettingsStore`, SharedPreferences). 0 = the veil that passed the
   readability check; it can only go darker. Default 0.35.
-- **Pull-up panels**: a handle at the bottom of each half opens extra counters (XP for now, stored
-  per game in `Game.xp`); a badge shows XP while closed.
+- **Extras panel** (Lotus-style): a handle at each half's inner edge, by the middle bar; drag from
+  the centre towards your edge (or tap) to open, back to close. Holds XP for now (`Game.xp`); a
+  badge shows XP while closed. Buttons keep `OUTER_EDGE_MARGIN` free at each half's outer edge for
+  the home bar / camera notch.
 - **Match review score chart** (`ScoreChart`): lanes per player, running score on a line coloured by
   the leader, lead changes outlined, breakdown by point kind, lead changes and longest run
   (`GameRules.chart/breakdown/longestRun`).

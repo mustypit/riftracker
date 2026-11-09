@@ -185,8 +185,11 @@ private fun PlayerHalf(
         }
         // The veil: darkest behind the score, lighter towards the edges so the art shows (Settings).
         Box(Modifier.matchParentSize().legendVeil(darkness))
-        Column(Modifier.fillMaxSize().padding(top = 18.dp, bottom = 26.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
-            Spacer(Modifier.height(4.dp))
+        // Top (the inner edge, by the middle bar) leaves room for the panel handle; the bottom (the
+        // outer edge) keeps the buttons clear of the phone's home bar, or the camera notch on the
+        // opponent's side.
+        Column(Modifier.fillMaxSize().padding(top = 36.dp, bottom = OUTER_EDGE_MARGIN), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
+            Spacer(Modifier.height(2.dp))
             // Tapping the score takes one point off (the middle bar then offers to undo it).
             Text(
                 "$score",
@@ -197,7 +200,7 @@ private fun PlayerHalf(
                     .padding(horizontal = 18.dp)
                     .semantics { contentDescription = "${match.nameOf(side)} score $score" },
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(26.dp)) {
                 PointButton(RiftIcons.Conquer, "${match.nameOf(side)} CONQUER", c1, enabled) { onPoint(PointKind.CONQUER) }
                 PointButton(RiftIcons.Hold, "${match.nameOf(side)} HOLD", c1, enabled) { onPoint(PointKind.HOLD) }
                 PointButton(RiftIcons.Ability, "${match.nameOf(side)} ABILITY", c1, enabled) { onPoint(PointKind.ABILITY) }
@@ -209,42 +212,54 @@ private fun PlayerHalf(
         if (xp > 0 && !panelOpen) {
             Text(
                 "XP $xp", style = Caps, color = Color.White,
-                modifier = Modifier.align(Alignment.TopStart).padding(14.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.5f))
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 14.dp, top = 42.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.5f))
                     .padding(horizontal = 10.dp, vertical = 5.dp).semantics { contentDescription = "${match.nameOf(side)} XP $xp" },
             )
         }
-        PullUpPanel(
+        PullDownPanel(
             open = panelOpen, onOpenChange = onPanelChange, color = c1, name = match.nameOf(side),
-            modifier = Modifier.align(Alignment.BottomCenter),
+            modifier = Modifier.align(Alignment.TopCenter),
         ) {
             CounterRow("XP", xp, "${match.nameOf(side)} XP", enabled = game != null, onChange = onXp)
         }
     }
 }
 
+/** Space kept free at a half's outer edge: the home bar (bottom) or camera notch (top). */
+private val OUTER_EDGE_MARGIN = 58.dp
+
 /**
- * The hidden panel at the bottom of a half: a handle on the edge; tap it or swipe up to open,
- * swipe down or tap the handle again to close. Holds extra counters (XP for now).
+ * The hidden panel of a half, Lotus-style: a handle at the half's inner edge, right by the middle
+ * bar. Drag from the centre of the screen towards your edge (or tap the handle) to open it; it
+ * slides out from the centre. Drag back towards the centre, or tap the handle, to close.
+ * Holds extra counters (XP for now). Directions are in the half's own frame, so the opponent's
+ * upside-down half works the same way for them.
  */
 @Composable
-private fun PullUpPanel(open: Boolean, onOpenChange: (Boolean) -> Unit, color: Color, name: String, modifier: Modifier, content: @Composable () -> Unit) {
+private fun PullDownPanel(open: Boolean, onOpenChange: (Boolean) -> Unit, color: Color, name: String, modifier: Modifier, content: @Composable () -> Unit) {
     val drag = Modifier.draggable(
         orientation = Orientation.Vertical,
         state = rememberDraggableState { },
-        onDragStopped = { velocity -> if (velocity < -50f) onOpenChange(true) else if (velocity > 50f) onOpenChange(false) },
+        onDragStopped = { velocity -> if (velocity > 50f) onOpenChange(true) else if (velocity < -50f) onOpenChange(false) },
     )
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        AnimatedVisibility(open, enter = expandVertically(expandFrom = Alignment.Top), exit = shrinkVertically(shrinkTowards = Alignment.Top)) {
+            Column(
+                Modifier.fillMaxWidth().then(drag).background(Color(0xF2141414))
+                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 6.dp),
+            ) { content() }
+        }
+        // The handle: a wide strip so it's easy to grab, with a pill showing where to pull.
         Box(
-            Modifier.fillMaxWidth().height(26.dp).then(drag)
+            Modifier.fillMaxWidth().height(34.dp).then(drag)
                 .clickable(onClickLabel = if (open) "close" else "open") { onOpenChange(!open) }
                 .semantics { contentDescription = if (open) "Hide $name extras" else "Show $name extras" },
             contentAlignment = Alignment.Center,
-        ) { Box(Modifier.size(width = 54.dp, height = 5.dp).clip(RoundedCornerShape(3.dp)).background(Color.White.copy(alpha = 0.6f))) }
-        AnimatedVisibility(open, enter = expandVertically(expandFrom = Alignment.Top), exit = shrinkVertically(shrinkTowards = Alignment.Top)) {
-            Column(
-                Modifier.fillMaxWidth().then(drag).background(Color(0xF2141414)).border(1.dp, color.copy(alpha = 0.5f))
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-            ) { content() }
+        ) {
+            Box(
+                Modifier.size(width = 64.dp, height = 6.dp).clip(RoundedCornerShape(3.dp))
+                    .background(if (open) color else Color.White.copy(alpha = 0.65f)),
+            )
         }
     }
 }
@@ -276,12 +291,12 @@ private fun RoundStep(text: String, description: String, enabled: Boolean, onCli
 @Composable
 private fun PointButton(icon: ImageVector, description: String, color: Color, enabled: Boolean, onClick: () -> Unit) {
     Box(
-        Modifier.size(64.dp).clip(CircleShape).background(color.copy(alpha = if (enabled) 0.9f else 0.35f))
+        Modifier.size(78.dp).clip(CircleShape).background(color.copy(alpha = if (enabled) 0.9f else 0.35f))
             .border(1.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
             .clickable(enabled = enabled, onClick = onClick)
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
-    ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(30.dp)) }
+    ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(38.dp)) }
 }
 
 /**

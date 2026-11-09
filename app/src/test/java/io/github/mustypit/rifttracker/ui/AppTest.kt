@@ -13,6 +13,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -168,7 +170,8 @@ open class AppTest {
         rule.onNode(hasText("TAP TO UNDO", substring = true)).assertExists()
         shot("05_counter_game")
         // The hidden panel: open it from the handle, add 2 XP, close it; the XP shows as a badge.
-        rule.onNode(hasContentDescription("Show You extras")).performClick(); rule.waitForIdle()
+        // Drag from the centre (the handle by the middle bar) towards your edge to open it.
+        rule.onNode(hasContentDescription("Show You extras")).performTouchInput { swipeDown(startY = top, endY = top + 400f) }; rule.waitForIdle()
         rule.onNode(hasContentDescription("You XP plus")).performClick()
         rule.onNode(hasContentDescription("You XP plus")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("You XP 2")).assertExists()
