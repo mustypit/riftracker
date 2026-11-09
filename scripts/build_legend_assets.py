@@ -167,6 +167,7 @@ def main(source):
 
     if os.environ.get("CARDS") == "1":
         write_cards(catalog)
+        fetch_symbols()
 
 
 CARDS_OUT = OUT.parent / "cards"
@@ -229,6 +230,28 @@ def write_cards(catalog):
     print(f"{len(library)} cards -> {CARDS_OUT / 'cards.json'}, {sum(1 for e in library if e['image'])} images; by type {by_type}")
     print("rules-text symbols:", json.dumps(dict(sorted(tokens.items(), key=lambda kv: -kv[1]))))
     print("enums:", json.dumps({k: [x.get("slug") for x in v] if isinstance(v, list) else v for k, v in catalog.get("enums", {}).items()})[:3000])
+
+
+def fetch_symbols():
+    """Reference images of OpenRift's rules-text symbols, for redrawing them (not shipped in the app)."""
+    out = ROOT / "design/openrift-symbols"
+    out.mkdir(parents=True, exist_ok=True)
+    html = get("https://openrift.app/").decode("utf-8", "replace")
+    paths = set(re.findall(r'/images/[A-Za-z0-9_\-/]+\.(?:webp|png|svg)', html))
+    for js in re.findall(r'src="(/assets/[^"]+\.js)"', html):
+        try:
+            paths |= set(re.findall(r'/images/[A-Za-z0-9_\-/]+\.(?:webp|png|svg)', get("https://openrift.app" + js).decode("utf-8", "replace")))
+        except Exception as e:
+            print("  js", js, e)
+    for d in ["fury", "calm", "mind", "body", "chaos", "order", "colorless", "neutral", "rainbow"]:
+        paths.add(f"/images/domains/{d}.webp")
+    print("symbol image paths:", sorted(paths))
+    for path in sorted(paths):
+        try:
+            data = get("https://openrift.app" + path, tries=2)
+            (out / path.strip("/").replace("/", "__")).write_bytes(data)
+        except Exception as e:
+            print("  no", path, e)
 
 
 if __name__ == "__main__":
