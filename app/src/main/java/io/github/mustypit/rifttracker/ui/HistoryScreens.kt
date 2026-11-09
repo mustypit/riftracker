@@ -240,7 +240,7 @@ private fun ScoreChart(g: Game, oppLabel: String) {
             val lead = r.leader?.let(C::side) ?: C.Line
             Row(Modifier.fillMaxWidth().height(38.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(formatDuration(r.event.atMs), color = C.Muted, fontSize = 11.sp, modifier = Modifier.width(40.dp))
-                ChartLane(r.event.side == Side.ME, r.event.kind, C.Teal, r.leader == Side.ME, Modifier.weight(1f))
+                ChartLane(r.event.side == Side.ME, r.event.kind, C.Green, r.leader == Side.ME, Modifier.weight(1f))
                 // Centre: the leader's line with the score on it.
                 Box(Modifier.width(66.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
                     Box(Modifier.width(4.dp).fillMaxHeight().background(lead))
@@ -251,12 +251,12 @@ private fun ScoreChart(g: Game, oppLabel: String) {
                             .padding(horizontal = 7.dp, vertical = 2.dp),
                     )
                 }
-                ChartLane(r.event.side == Side.OPP, r.event.kind, C.Coral, r.leader == Side.OPP, Modifier.weight(1f))
+                ChartLane(r.event.side == Side.OPP, r.event.kind, C.Red, r.leader == Side.OPP, Modifier.weight(1f))
             }
         }
         Spacer(Modifier.height(12.dp))
-        BreakdownRow("YOU", GameRules.breakdown(g, Side.ME), C.Teal)
-        BreakdownRow(oppLabel.uppercase(), GameRules.breakdown(g, Side.OPP), C.Coral)
+        BreakdownRow("YOU", GameRules.breakdown(g, Side.ME), C.Green)
+        BreakdownRow(oppLabel.uppercase(), GameRules.breakdown(g, Side.OPP), C.Red)
         val changes = rows.filter { it.leadChange }
         val run = GameRules.longestRun(g)
         Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
@@ -369,7 +369,7 @@ private fun BattlefieldStatRow(name: String, r: Record) {
             if (r.total >= Stats.MIN_MATCHES_FOR_RATE && rate != null) {
                 Text(
                     Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 18.sp, color = C.Black,
-                    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Teal else C.Coral).padding(horizontal = 10.dp, vertical = 4.dp),
+                    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Green else C.Red).padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             } else Text(Stats.rateOrHint(r).replace("match", "game"), color = C.Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
@@ -394,7 +394,7 @@ private fun StatRow(title: String, r: Record, sub: String? = null, avatar: Strin
         if (enough && rate != null) {
             Text(
                 Stats.percent(rate), fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Black,
-                modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Teal else C.Coral).padding(horizontal = 10.dp, vertical = 4.dp),
+                modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (rate >= 0.5) C.Green else C.Red).padding(horizontal = 10.dp, vertical = 4.dp),
             )
         } else {
             Text(Stats.rateOrHint(r), color = C.Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -421,8 +421,8 @@ fun LegendDetailScreen(vm: MainViewModel, legend: String) {
                 }
                 Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 8.dp)) {
                     Text(if (d.record.total >= Stats.MIN_MATCHES_FOR_RATE) Stats.percent(d.record.winRate) else "–", color = Color.White, fontWeight = FontWeight.Black, fontSize = 52.sp, modifier = Modifier.weight(1f))
-                    Count(d.record.wins, "won", C.Teal)
-                    Count(d.record.losses, "lost", C.Coral)
+                    Count(d.record.wins, "won", C.Green)
+                    Count(d.record.losses, "lost", C.Red)
                     Count(d.record.draws, "drawn", Color.White)
                 }
                 Text(

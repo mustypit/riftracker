@@ -77,8 +77,8 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it
   survives the app closing. A real schema change still needs a version bump and a migration
   (never destructive: it's the user's history).
-- `ui/`: Compose, look "bold blocks" (`Theme.kt`: black bars, yellow highlights; teal = you and
-  coral = opponent in lists). The counter uses design **B** (chosen from measured mockups): each half
+- `ui/`: Compose, look "bold blocks" (`Theme.kt`: black bars, yellow highlights; green `C.Green` #3FAE63 = you and wins,
+  red `C.Red` #E2483A = opponent and losses: the Calm/Fury card colours, chosen by the owner). The counter uses design **B** (chosen from measured mockups): each half
   shows the legend's art with a dark radial veil, strongest behind the score, white digits, no name
   label, and three round icon-only point buttons (flag = conquer, shield = hold, spark = ability;
   `RiftIcons.kt`) filled with the legend's first domain colour. No −1 button and no pips under the
@@ -117,7 +117,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
   and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
 - **Dark mode** follows the phone unless set in Settings: colours are roles in `Theme.kt` (`C.Paper/Card/Ink/Muted/Line/
-  Track/Soft/Solid/OnSolid/Header`), each with a light and a dark value; `C.Black`, teal, coral and
+  Track/Soft/Solid/OnSolid/Header`), each with a light and a dark value; `C.Black`, green, red and
   yellow are fixed. Use the roles in new UI, never `Color.White`/hex for surfaces or text.
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
 - The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.

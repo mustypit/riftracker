@@ -57,10 +57,10 @@ private val DarkPalette = Palette(
  */
 object C {
     // Fixed, same in both modes.
-    val Teal = Color(0xFF21C4A7)
-    val TealInk = Color(0xFF03231D)
-    val Coral = Color(0xFFFF6B4A)
-    val CoralInk = Color(0xFF2A0C05)
+    val Green = Color(0xFF3FAE63)
+    val GreenInk = Color(0xFF06210F)
+    val Red = Color(0xFFE2483A)
+    val RedInk = Color(0xFF2A0805)
     val Yellow = Color(0xFFFFE14A)
     /** Always black: the counter's bars and dark text on coloured fills. */
     val Black = Color(0xFF111111)
@@ -83,15 +83,15 @@ object C {
 
     fun use(dark: Boolean) { palette = if (dark) DarkPalette else LightPalette }
 
-    fun side(s: Side) = if (s == Side.ME) Teal else Coral
-    fun sideInk(s: Side) = if (s == Side.ME) TealInk else CoralInk
-    fun outcome(o: Outcome) = when (o) { Outcome.WIN -> Teal; Outcome.LOSS -> Coral; Outcome.DRAW -> DrawGrey }
+    fun side(s: Side) = if (s == Side.ME) Green else Red
+    fun sideInk(s: Side) = if (s == Side.ME) GreenInk else RedInk
+    fun outcome(o: Outcome) = when (o) { Outcome.WIN -> Green; Outcome.LOSS -> Red; Outcome.DRAW -> DrawGrey }
 }
 
 private fun scheme(p: Palette, dark: Boolean) = (if (dark) darkColorScheme() else lightColorScheme()).copy(
     primary = p.solid, onPrimary = p.onSolid,
-    secondary = C.Teal, onSecondary = C.TealInk,
-    tertiary = C.Coral,
+    secondary = C.Green, onSecondary = C.GreenInk,
+    tertiary = C.Red,
     background = p.paper, onBackground = p.ink,
     surface = p.paper, onSurface = p.ink,
     surfaceVariant = p.track, onSurfaceVariant = p.muted,

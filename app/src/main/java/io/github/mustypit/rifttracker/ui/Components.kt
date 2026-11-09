@@ -127,8 +127,8 @@ fun MatchRow(m: Match, onClick: () -> Unit, showMyLegend: Boolean = true) {
 fun EmptyState(title: String, body: String, modifier: Modifier = Modifier) {
     Column(modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Box(Modifier.size(28.dp, 44.dp).clip(RoundedCornerShape(6.dp)).background(C.Coral))
-            Box(Modifier.size(28.dp, 44.dp).clip(RoundedCornerShape(6.dp)).background(C.Teal))
+            Box(Modifier.size(28.dp, 44.dp).clip(RoundedCornerShape(6.dp)).background(C.Red))
+            Box(Modifier.size(28.dp, 44.dp).clip(RoundedCornerShape(6.dp)).background(C.Green))
         }
         Text(title, fontWeight = FontWeight.Black, fontSize = 18.sp, modifier = Modifier.padding(top = 14.dp))
         Text(body, color = C.Muted, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
