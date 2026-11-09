@@ -460,6 +460,55 @@ open class AppTest {
         rule.waitFor("best run")
     }
 
+    /** Card images load off the main thread; give them a moment before a screenshot. */
+    private fun settleImages() { repeat(3) { Thread.sleep(250); rule.mainClock.advanceTimeBy(50); rule.waitForIdle() } }
+
+    @Test
+    fun cardLibrary() {
+        launch()
+        click("Cards")
+        rule.waitFor("Search cards")
+        settleImages()
+        shot("20_cards")
+        rule.onNode(hasContentDescription("Fury filter")).performClick()
+        rule.onNode(hasContentDescription("Mind filter")).performClick()
+        click("Units")
+        settleImages()
+        shot("20b_cards_filtered")
+        type("Search cards", "Kai'Sa")
+        rule.onNode(hasContentDescription("Card Kai'Sa, Survivor")).performClick(); rule.waitForIdle()
+        rule.waitFor("Energy")
+        settleImages()
+        shot("21_card")
+        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+        // Filters are kept after looking at a card.
+        rule.onNode(hasContentDescription("Fury filter on")).assertExists()
+        rule.onNode(hasContentDescription("Card Kai'Sa, Survivor")).assertExists()
+    }
+
+    /** Records browsing the card library (screenshots/anim/cards_*). */
+    @Test
+    fun cardLibraryFrames() {
+        if (prefix.isNotEmpty()) return
+        launch()
+        click("Cards")
+        rule.waitFor("Search cards")
+        settleImages()
+        rule.mainClock.autoAdvance = false
+        var frame = 0
+        fun frames(count: Int, settle: Boolean = false) = repeat(count) {
+            if (settle && it % 4 == 0) Thread.sleep(120)
+            rule.onRoot().captureRoboImage("screenshots/anim/cards_%03d.png".format(frame++))
+            rule.mainClock.advanceTimeBy(20)
+        }
+        frames(10)
+        rule.onNode(hasContentDescription("Calm filter")).performClick(); frames(8, true)
+        rule.onNode(hasText("Units")).performClick(); frames(14, true)
+        rule.onNode(hasContentDescription("Card Entrenched Boar")).performClick(); frames(34, true)
+        rule.onNode(hasContentDescription("Back")).performClick(); frames(24, true)
+        rule.mainClock.autoAdvance = true
+    }
+
     @Test
     fun emptyHistory() {
         launch()

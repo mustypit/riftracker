@@ -31,13 +31,14 @@ object AppGraph {
     var random: Random = Random.Default
 }
 
-enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Legends("Legends") }
+enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Cards("Cards"), Legends("Legends") }
 
 sealed interface Screen {
     data class MatchDetail(val id: Long) : Screen
     data class LegendDetail(val legend: String) : Screen
     data object LogMatch : Screen
     data object Settings : Screen
+    data class CardDetail(val slug: String) : Screen
 }
 
 /** Values to start a match with (rematch fills them in). */
@@ -67,6 +68,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val coin: StateFlow<Side?> = _coin.asStateFlow()
 
     val setup = MutableStateFlow(MatchSetup())
+
+    // Card library: filters and scroll position survive opening a card and coming back.
+    val cardQuery = MutableStateFlow("")
+    val cardDomains = MutableStateFlow<Set<io.github.mustypit.rifttracker.game.Domain>>(emptySet())
+    val cardType = MutableStateFlow(io.github.mustypit.rifttracker.game.CardType.ALL)
+    val cardsGrid = androidx.compose.foundation.lazy.grid.LazyGridState()
 
     private val saving = Mutex()
 

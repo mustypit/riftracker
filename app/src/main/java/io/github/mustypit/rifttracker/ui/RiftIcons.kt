@@ -44,4 +44,16 @@ object RiftIcons {
         line("M13.5 18.5L18.5 13.5") // its crossguard
         line("M5.5 13.5L10.5 18.5")  // and this one's
     }
+
+    /** Two cards, the front one outlined: the Cards tab. Kept as simple as the other tab icons. */
+    val Cards = icon("cards") {
+        addPath(
+            addPathNodes("M9 3.5h9A2 2 0 0 1 20 5.5v12A2 2 0 0 1 18 19.5H9A2 2 0 0 1 7 17.5v-12A2 2 0 0 1 9 3.5z"), fill = null,
+            stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f,
+        )
+        addPath(
+            addPathNodes("M4.5 7v11.5A2.5 2.5 0 0 0 7 21h8"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f,
+            strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round,
+        )
+    }
 }

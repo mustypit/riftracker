@@ -39,6 +39,7 @@ report as artifacts.
 |---|---|
 | `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
 | `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends; the shipped files cover Radiance with art |
+| `game/CardsTest` | Shipped card library: complete with pictures, filters, search, set order, every rules-text symbol drawable |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
 
@@ -72,6 +73,17 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   card is its tag whose `tagCategoryMap` category is `legend`; names use straight apostrophes. The app
   merges `legends.json` into the built-in list at startup (`Legends.install`). Riftcodex was the
   earlier source (it lagged behind on Radiance and mixed in overnumbered art); it's no longer used.
+- **Card library** (Cards tab): `game/Cards.kt` (`Card`, `Cards.browse` filters by search/domains/type,
+  grouped by set newest first; `RulesText.parse` splits OpenRift markup `[Keyword]`, `_(reminder)_`,
+  `:rb_…:` into words and symbols) over `assets/cards/cards.json` + `assets/cards/<slug>.webp` (whole
+  card, 400 px, ~31 MB for ~1,100 cards; written by the importer, every card's original normal
+  printing). `ui/CardsScreen.kt`: concept "A" grid (3 columns, battlefields full width), domain and
+  type chips, card page (`Screen.CardDetail`) with energy/runes/might tiles and rules text with
+  inline symbols. Images decode off the main thread (`CardArt`, LruCache). Filters and scroll live in
+  `MainViewModel` so they survive opening a card. Symbols: `ui/RiftSymbols.kt`, generated from
+  `design/symbols/*.svg` (domain emblems traced from OpenRift's images, might and the any-domain
+  rune from OpenRift's SVGs, exhaust redrawn on a trace of the printed card; energy drawn in code as a
+  white disc with a dark rim). Owner wants these as close to the printed symbols as possible.
 - `stats/Stats.kt`: pure stats over finished matches.
 - `data/Db.kt`: Room, one row per match with the match as JSON (new fields get defaults when old
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it
@@ -122,7 +134,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
 - The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
-- Deferred: decks with versions, battlefield tracking, XP/levels. Not wanted: 4-player boards,
+- Next: a deck builder on top of the card library (owner asked; rules to confirm first). Deferred: decks with versions in matches, battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
   game, central menu button, clean panels); ask the owner for a screen recording.
 - **Minimal UI copy** (owner's request): short one-line headers ("New match", "Settings"), no

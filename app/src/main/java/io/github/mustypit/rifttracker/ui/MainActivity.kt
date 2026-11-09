@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Legend and battlefield data from OpenRift, if the app was built with it (scripts/build_legend_assets.py).
         runCatching { assets.open("legends/legends.json").bufferedReader().use { Legends.install(it.readText()) } }
+        runCatching { assets.open("cards/cards.json").bufferedReader().use { io.github.mustypit.rifttracker.game.Cards.install(it.readText()) } }
         runCatching { assets.open("battlefields/battlefields.json").bufferedReader().use { io.github.mustypit.rifttracker.game.Battlefields.install(it.readText()) } }
         setContent {
             val mode by vm.settings.theme.collectAsState()
@@ -77,7 +78,7 @@ fun AppShell(vm: MainViewModel) {
                         onClick = { vm.selectTab(t) },
                         icon = {
                             Icon(
-                                when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Legends -> Icons.Default.BarChart },
+                                when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Legends -> Icons.Default.BarChart },
                                 null,
                             )
                         },
@@ -102,9 +103,11 @@ fun AppShell(vm: MainViewModel) {
                     is Screen.LegendDetail -> LegendDetailScreen(vm, s.legend)
                     Screen.LogMatch -> LogMatchScreen(vm)
                     Screen.Settings -> SettingsScreen(vm)
+                    is Screen.CardDetail -> CardDetailScreen(vm, s.slug)
                     null -> when (d.tab) {
                         Tab.Play -> if (loaded) NewMatchScreen(vm)
                         Tab.Matches -> MatchesScreen(vm)
+                        Tab.Cards -> CardsScreen(vm)
                         Tab.Legends -> LegendsScreen(vm)
                     }
                 }
