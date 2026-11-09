@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.animation.expandVertically
@@ -310,10 +312,14 @@ private fun PointButton(icon: ImageVector, description: String, color: Color, en
     ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(38.dp)) }
 }
 
+/** How long the burst ring around a newly scored point lasts. */
+private const val POP_RING_MS = 420
+
 /**
  * The progress track down the outer edge (design "C"): a slim glowing bar that fills smoothly from
  * the bottom in the legend's two domain colours, with each point's icon floating beside it at its
  * place on the bar. Tapping an icon takes that point off (the middle bar offers to undo it).
+ * A newly scored point's icon pops in (springs from nothing, overshoots) with a burst ring.
  */
 @Composable
 private fun SideTrack(kinds: List<PointKind>, colors: Pair<Color, Color>, modifier: Modifier, name: String, enabled: Boolean, onRemove: (Int) -> Unit) {
@@ -334,18 +340,44 @@ private fun SideTrack(kinds: List<PointKind>, colors: Pair<Color, Color>, modifi
                     .clip(RoundedCornerShape(7.dp)).background(Brush.verticalGradient(listOf(c2, c1))),
             )
         }
-        // The points: an icon beside the bar at each point's place, oldest at the bottom.
+        // The points: an icon beside the bar at each point's place, oldest at the bottom. A point
+        // scored while the track is on screen pops in (icons already there when it opens don't).
+        val shown = remember { androidx.compose.runtime.mutableIntStateOf(kinds.size) }
         kinds.forEachIndexed { i, kind ->
             val icon = when (kind) { PointKind.CONQUER -> RiftIcons.Conquer; PointKind.HOLD -> RiftIcons.Hold; else -> RiftIcons.Ability }
             val y = h * (1f - (i + 0.5f) / n) - 13.dp
-            Box(
-                Modifier.offset(y = y).align(Alignment.TopStart).padding(start = 2.dp).size(26.dp).clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.6f)).border(1.dp, c1.copy(alpha = 0.7f), CircleShape)
-                    .clickable(enabled = enabled, onClickLabel = "remove this point") { onRemove(i) }
-                    .semantics { contentDescription = "$name point ${i + 1}" },
-                contentAlignment = Alignment.Center,
-            ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(14.dp)) }
+            androidx.compose.runtime.key(i) {
+                val isNew = i >= shown.intValue
+                val pop = remember { androidx.compose.animation.core.Animatable(if (isNew) 0f else 1f) }
+                val ring = remember { androidx.compose.animation.core.Animatable(if (isNew) 0f else 1f) }
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    if (pop.value < 1f) {
+                        launch { ring.animateTo(1f, tween(POP_RING_MS)) }
+                        pop.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.42f, stiffness = 520f))
+                    }
+                }
+                Box(Modifier.offset(y = y).align(Alignment.TopStart).padding(start = 2.dp).size(26.dp), contentAlignment = Alignment.Center) {
+                    // A ring that bursts outward and fades as the icon lands.
+                    if (ring.value < 1f) {
+                        Box(
+                            Modifier.size(26.dp).graphicsLayer {
+                                val r = ring.value; scaleX = 1f + 0.9f * r; scaleY = scaleX; alpha = (1f - r) * 0.9f
+                            }.border(2.dp, c1, CircleShape),
+                        )
+                    }
+                    Box(
+                        Modifier.size(26.dp)
+                            .graphicsLayer { scaleX = pop.value; scaleY = pop.value; alpha = pop.value.coerceIn(0f, 1f) }
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.6f)).border(1.dp, c1.copy(alpha = 0.7f), CircleShape)
+                            .clickable(enabled = enabled, onClickLabel = "remove this point") { onRemove(i) }
+                            .semantics { contentDescription = "$name point ${i + 1}" },
+                        contentAlignment = Alignment.Center,
+                    ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(14.dp)) }
+                }
+            }
         }
+        androidx.compose.runtime.SideEffect { shown.intValue = kinds.size }
     }
 }
 

@@ -398,6 +398,36 @@ open class AppTest {
         assertEquals(other == "Dark", inkIsLight)
     }
 
+    /** Records the side track's pop frame by frame (screenshots/anim/), for checking the animation. */
+    @Test
+    fun pointPopAnimationFrames() {
+        if (prefix.isNotEmpty()) return // once is enough
+        launch()
+        rule.waitFor("New match")
+        pickLegend("Your legend", "Riven")
+        type("Their name", "Morgan")
+        pickLegend("Their legend", "Mordekaiser")
+        click("START")
+        rule.waitFor("WHO GOES FIRST?")
+        click("YOU")
+        press("You", "HOLD"); press("You", "CONQUER")
+        rule.mainClock.autoAdvance = false
+        var frame = 0
+        fun frames(count: Int) = repeat(count) {
+            rule.onRoot().captureRoboImage("screenshots/anim/pop_%03d.png".format(frame++))
+            rule.mainClock.advanceTimeBy(20)
+        }
+        frames(4)
+        clock.addAndGet(40_000)
+        rule.onNode(hasContentDescription("You ABILITY")).performClick()
+        frames(30)
+        clock.addAndGet(40_000)
+        rule.onNode(hasContentDescription("You HOLD")).performClick()
+        frames(34)
+        rule.mainClock.autoAdvance = true
+        rule.onNode(hasContentDescription("You point 4")).assertExists()
+    }
+
     @Test
     fun emptyHistory() {
         launch()
