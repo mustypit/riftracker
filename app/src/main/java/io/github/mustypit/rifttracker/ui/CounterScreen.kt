@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
@@ -198,31 +199,44 @@ private fun PlayerHalf(
         // opponent's side.
         Column(Modifier.fillMaxSize().padding(top = 36.dp, bottom = OUTER_EDGE_MARGIN), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
             Spacer(Modifier.height(2.dp))
-            // Tapping the score takes one point off (the middle bar then offers to undo it).
-            // It rolls like a wheel: up when scoring, down when a point comes off.
-            RollingNumber(
-                score,
-                Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .clickable(enabled = enabled && score > 0, onClickLabel = "take one point off") { onPoint(PointKind.CORRECTION) }
-                    .padding(horizontal = 18.dp)
-                    .semantics(mergeDescendants = true) { contentDescription = "${match.nameOf(side)} score $score" },
-            ) { shown ->
-                Text(
-                    "$shown",
-                    style = TextStyle(fontSize = 140.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-5).sp, shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f)),
-                )
-            }
             Row(horizontalArrangement = Arrangement.spacedBy(26.dp)) {
                 PointButton(RiftIcons.Conquer, "${match.nameOf(side)} CONQUER", c1, enabled) { onPoint(PointKind.CONQUER) }
                 PointButton(RiftIcons.Hold, "${match.nameOf(side)} HOLD", c1, enabled) { onPoint(PointKind.HOLD) }
                 PointButton(RiftIcons.Ability, "${match.nameOf(side)} ABILITY", c1, enabled) { onPoint(PointKind.ABILITY) }
             }
         }
+        // The score, centred SCORE_CENTRE of the way down from the inner edge (owner's layout).
+        // Tapping it takes one point off (the middle bar then offers to undo it).
+        // It rolls like a wheel: up when scoring, down when a point comes off.
+        RollingNumber(
+            score,
+            Modifier
+                .layout { m, c ->
+                    val p = m.measure(c.copy(minWidth = 0, minHeight = 0))
+                    layout(c.maxWidth, c.maxHeight) { p.place((c.maxWidth - p.width) / 2, (c.maxHeight * SCORE_CENTRE).toInt() - p.height / 2) }
+                }
+                .clip(RoundedCornerShape(24.dp))
+                .clickable(enabled = enabled && score > 0, onClickLabel = "take one point off") { onPoint(PointKind.CORRECTION) }
+                .padding(horizontal = 18.dp)
+                .semantics(mergeDescendants = true) { contentDescription = "${match.nameOf(side)} score $score" },
+        ) { shown ->
+            Text(
+                "$shown",
+                style = TextStyle(
+                    fontSize = SCORE_SIZE, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-6).sp,
+                    shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f),
+                    // Only the digits' own height, so the bigger number keeps clear of the panel handle.
+                    lineHeight = SCORE_SIZE * 0.82f,
+                    lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
+                        androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center, androidx.compose.ui.text.style.LineHeightStyle.Trim.Both,
+                    ),
+                ),
+            )
+        }
         SideTrack(
             game?.let { GameRules.scoredKinds(it, side) }.orEmpty(), c1 to c2,
             // Between the panel handle (inner edge) and the buttons, so it never runs into them.
-            Modifier.align(Alignment.TopEnd).padding(top = 46.dp, bottom = OUTER_EDGE_MARGIN + 96.dp, end = 8.dp),
+            Modifier.align(Alignment.TopEnd).padding(top = 22.dp, bottom = OUTER_EDGE_MARGIN + 120.dp, end = 17.dp),
             name = match.nameOf(side), enabled = enabled, onRemove = onRemovePoint,
         )
         // XP at a glance when the panel is closed.
@@ -230,7 +244,7 @@ private fun PlayerHalf(
         if (xp > 0 && !panelOpen) {
             Text(
                 "XP $xp", style = Caps, color = Color.White,
-                modifier = Modifier.align(Alignment.TopStart).padding(start = 14.dp, top = 42.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.5f))
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 36.dp, top = 20.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.5f))
                     .padding(horizontal = 10.dp, vertical = 5.dp).semantics { contentDescription = "${match.nameOf(side)} XP $xp" },
             )
         }
@@ -242,6 +256,10 @@ private fun PlayerHalf(
         }
     }
 }
+
+/** The score: size, and where its centre sits (fraction of the half from the inner edge). Owner's layout. */
+private val SCORE_SIZE = 189.sp
+private const val SCORE_CENTRE = 0.36f
 
 /** Space kept free at a half's outer edge: the home bar (bottom) or camera notch (top). */
 private val OUTER_EDGE_MARGIN = 58.dp

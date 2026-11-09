@@ -129,6 +129,12 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   explanatory sentences under settings, one-line empty states, no "(optional)" labels, dialogs with a
   title and buttons only. The ★ on a player button marks who lost the last game, without a caption.
   Don't add explanations back.
+- **Counter layout** is the owner's, made in the "Scoring layout" editor artifact
+  (claude.ai/artifact/YcBpvMzscdAD2BFuJx8e8A; saved to its `layouts/latest` doc, read with
+  ArtifactData; dp centres inside a 360x378 half, y from the middle bar): score 189 sp centred 36%
+  down the half (`SCORE_SIZE`, `SCORE_CENTRE`), side track `top 22 / bottom OUTER_EDGE_MARGIN+120 /
+  end 17`, XP badge `start 36 / top 20`, buttons and handle unchanged. For layout changes, ask the
+  owner to edit and save there, then read the doc.
 - **Motion** (`Motion.kt`, all short): the score rolls like a wheel (`RollingNumber`: up = old
   number down and out, new from the top; down = the reverse); a scored point's icon pops onto the
   side track with a burst ring (not on reopen); point and big buttons squish when pressed
