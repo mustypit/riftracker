@@ -14,6 +14,7 @@ frame, name bar or rules text) and writes:
   app/src/main/assets/legends/<id>.jpg     the artwork, ~720 px
   app/src/main/assets/legends/legends.json name, title, set, domains, artist, image
   app/src/main/assets/battlefields/<id>.jpg + battlefields.json (name, set, artist, image)
+  app/src/main/assets/cards/<slug>.webp + cards.json: every card (the card library), whole card
 
 Catalog: GET https://openrift.app/api/v1/catalog -> {sets: [...], cards: {id: card}, printings:
 {id: printing}, tagCategoryMap: {tag: category}, ...}. A card has name, types (["legend"],
@@ -165,9 +166,7 @@ def main(source):
             print(f"  battlefield {name:30} {p.get('shortCode', ''):10} {s.get('name', ''):16} {image or '-'}")
         write_index(BF_OUT, bf_library)
 
-    if os.environ.get("CARDS") == "1":
-        write_cards(catalog)
-        fetch_symbols()
+    write_cards(catalog)
 
 
 CARDS_OUT = OUT.parent / "cards"
@@ -230,79 +229,6 @@ def write_cards(catalog):
     print(f"{len(library)} cards -> {CARDS_OUT / 'cards.json'}, {sum(1 for e in library if e['image'])} images; by type {by_type}")
     print("rules-text symbols:", json.dumps(dict(sorted(tokens.items(), key=lambda kv: -kv[1]))))
     print("enums:", json.dumps({k: [x.get("slug") for x in v] if isinstance(v, list) else v for k, v in catalog.get("enums", {}).items()})[:3000])
-
-
-def fetch_symbols():
-    """Reference images of OpenRift's rules-text symbols, for redrawing them (not shipped in the app)."""
-    out = ROOT / "design/openrift-symbols"
-    out.mkdir(parents=True, exist_ok=True)
-    html = get("https://openrift.app/").decode("utf-8", "replace")
-    paths = set(re.findall(r'/images/[A-Za-z0-9_\-/]+\.(?:webp|png|svg)', html))
-    for js in re.findall(r'src="(/assets/[^"]+\.js)"', html):
-        try:
-            paths |= set(re.findall(r'/images/[A-Za-z0-9_\-/]+\.(?:webp|png|svg)', get("https://openrift.app" + js).decode("utf-8", "replace")))
-        except Exception as e:
-            print("  js", js, e)
-    for d in ["fury", "calm", "mind", "body", "chaos", "order", "colorless", "neutral", "rainbow"]:
-        paths.add(f"/images/domains/{d}.webp")
-        paths.add(f"/images/domains/{d}.svg")
-        paths.add(f"/images/runes/{d}.svg")
-        paths.add(f"/images/rune_{d}.svg")
-    for n in ["might", "exhaust", "energy", "rainbow", "rune_rainbow", "power", "artist"]:
-        for pre in ["/images/", "/images/symbols/", "/images/icons/", "/images/tokens/"]:
-            paths.add(f"{pre}{n}.svg")
-    print("symbol image paths:", sorted(paths))
-    # Symbols drawn in code: dump the script text around rb_ tokens and symbol names.
-    for js in re.findall(r'src="(/assets/[^"]+\.js)"', html)[:1]:
-        main = get("https://openrift.app" + js).decode("utf-8", "replace")
-        chunks = set(re.findall(r'["\'`(./]([A-Za-z0-9_\-]+\.js)', main))
-        sources = {js: main}
-        for c in chunks:
-            if any(k in c.lower() for k in ("card", "rules", "text", "symbol", "icon", "rune", "might", "energy", "glyph", "token")):
-                try:
-                    sources[c] = get("https://openrift.app/assets/" + c, tries=2).decode("utf-8", "replace")
-                except Exception:
-                    pass
-        found = 0
-        for name, src in sources.items():
-            for m in re.finditer(r'(rb_exhaust|rb_might|rb_energy|exhaust|might)', src):
-                ctx = src[max(0, m.start() - 300): m.end() + 900]
-                if "<svg" in ctx or "path" in ctx or "viewBox" in ctx or "d:" in ctx:
-                    (out / f"code_{found:02d}_{name.strip('/').replace('/', '_')}.txt").write_text(ctx, encoding="utf-8")
-                    found += 1
-                    if found > 40:
-                        break
-        print("code snippets with svg near symbol names:", found, "chunks scanned:", len(sources))
-        allpaths = set()
-        for c in chunks:
-            if c not in sources:
-                try:
-                    sources[c] = get("https://openrift.app/assets/" + c, tries=1).decode("utf-8", "replace")
-                except Exception:
-                    pass
-        for name, src in sources.items():
-            allpaths |= set(re.findall(r'/images/[A-Za-z0-9_\-/.${}]+', src))
-            for m in re.finditer(r'(rb_|token)[^\n]{0,40}(svg|src|img)', src):
-                print("  token render in", name, ":", src[max(0, m.start() - 250): m.end() + 250][:520])
-                break
-        print("all image paths in code:", sorted(allpaths))
-        for extra in ["exhaust", "exhausted", "tap", "rb_exhaust", "rotate", "symbols/exhaust", "icons/exhaust"]:
-            for ext in ("svg", "webp", "png"):
-                try:
-                    data = get(f"https://openrift.app/images/{extra}.{ext}", tries=1)
-                    if data[:5] != b"<!doc" and data[:5] != b"<!DOC":
-                        (out / f"images__{extra.replace('/', '__')}.{ext}").write_bytes(data); print("  got", extra, ext)
-                except Exception:
-                    pass
-        for name, src in sources.items():
-            for m in re.finditer(r'images/\$\{[^`]{0,80}`', src):
-                print("  template path in", name, ":", src[max(0, m.start() - 200): m.end() + 40])
-    for path in sorted(paths):
-        try:
-            data = get("https://openrift.app" + path, tries=2)
-            (out / path.strip("/").replace("/", "__")).write_bytes(data)
-        except Exception as e:
-            print("  no", path, e)
 
 
 if __name__ == "__main__":
