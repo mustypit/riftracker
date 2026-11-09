@@ -2,6 +2,10 @@ package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.gestures.Orientation
@@ -28,6 +32,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -208,7 +213,9 @@ private fun PlayerHalf(
             }
         }
         SideTrack(
-            game?.let { GameRules.scoredKinds(it, side) }.orEmpty(), c1, Modifier.align(Alignment.CenterEnd).padding(end = 10.dp),
+            game?.let { GameRules.scoredKinds(it, side) }.orEmpty(), c1 to c2,
+            // Between the panel handle (inner edge) and the buttons, so it never runs into them.
+            Modifier.align(Alignment.TopEnd).padding(top = 46.dp, bottom = OUTER_EDGE_MARGIN + 96.dp, end = 8.dp),
             name = match.nameOf(side), enabled = enabled, onRemove = onRemovePoint,
         )
         // XP at a glance when the panel is closed.
@@ -304,30 +311,43 @@ private fun PointButton(icon: ImageVector, description: String, color: Color, en
 }
 
 /**
- * The progress track down the outer edge: one cell per point up to the victory score, filling from
- * the bottom. Each filled cell shows how that point was scored.
+ * The progress track down the outer edge (design "C"): a slim glowing bar that fills smoothly from
+ * the bottom in the legend's two domain colours, with each point's icon floating beside it at its
+ * place on the bar. Tapping an icon takes that point off (the middle bar offers to undo it).
  */
 @Composable
-private fun SideTrack(kinds: List<PointKind>, color: Color, modifier: Modifier, name: String, enabled: Boolean, onRemove: (Int) -> Unit) {
-    Column(
-        modifier.clip(RoundedCornerShape(16.dp)).background(Color.Black.copy(alpha = 0.45f)).padding(4.dp)
-            .semantics { contentDescription = "${kinds.size} of ${GameRules.VICTORY_SCORE} points" },
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+private fun SideTrack(kinds: List<PointKind>, colors: Pair<Color, Color>, modifier: Modifier, name: String, enabled: Boolean, onRemove: (Int) -> Unit) {
+    val n = GameRules.VICTORY_SCORE
+    val fill by animateFloatAsState((kinds.size.toFloat() / n).coerceIn(0f, 1f), animationSpec = tween(450), label = "track fill")
+    val (c1, c2) = colors
+    BoxWithConstraints(
+        modifier.width(50.dp).fillMaxHeight()
+            .semantics { contentDescription = "${kinds.size} of $n points" },
     ) {
-        for (i in GameRules.VICTORY_SCORE - 1 downTo 0) {
-            val kind = kinds.getOrNull(i)
-            // Tapping a filled cell takes that point off (the middle bar offers to undo it).
+        val h = maxHeight
+        // The bar: an empty groove, then the fill with a soft glow, anchored at the bottom.
+        Box(Modifier.align(Alignment.BottomEnd).padding(end = 4.dp).size(width = 8.dp, height = h).clip(RoundedCornerShape(4.dp)).background(Color.White.copy(alpha = 0.16f)))
+        if (fill > 0f) {
             Box(
-                Modifier.size(width = 28.dp, height = 26.dp).clip(RoundedCornerShape(8.dp))
-                    .background(if (kind != null) color else Color.White.copy(alpha = 0.12f))
-                    .let { if (kind != null) it.clickable(enabled = enabled, onClickLabel = "remove this point") { onRemove(i) }.semantics { contentDescription = "$name point ${i + 1}" } else it },
+                Modifier.align(Alignment.BottomEnd).padding(end = 1.dp).size(width = 14.dp, height = h * fill)
+                    .clip(RoundedCornerShape(7.dp)).background(c1.copy(alpha = 0.35f)),
+            )
+            Box(
+                Modifier.align(Alignment.BottomEnd).padding(end = 4.dp).size(width = 8.dp, height = h * fill)
+                    .clip(RoundedCornerShape(4.dp)).background(Brush.verticalGradient(listOf(c2, c1))),
+            )
+        }
+        // The points: an icon beside the bar at each point's place, oldest at the bottom.
+        kinds.forEachIndexed { i, kind ->
+            val icon = when (kind) { PointKind.CONQUER -> RiftIcons.Conquer; PointKind.HOLD -> RiftIcons.Hold; else -> RiftIcons.Ability }
+            val y = h * (1f - (i + 0.5f) / n) - 13.dp
+            Box(
+                Modifier.offset(y = y).align(Alignment.TopStart).padding(start = 2.dp).size(26.dp).clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f)).border(1.dp, c1.copy(alpha = 0.7f), CircleShape)
+                    .clickable(enabled = enabled, onClickLabel = "remove this point") { onRemove(i) }
+                    .semantics { contentDescription = "$name point ${i + 1}" },
                 contentAlignment = Alignment.Center,
-            ) {
-                if (kind != null) {
-                    val icon = when (kind) { PointKind.CONQUER -> RiftIcons.Conquer; PointKind.HOLD -> RiftIcons.Hold; else -> RiftIcons.Ability }
-                    Icon(icon, null, tint = Color.White, modifier = Modifier.size(14.dp))
-                }
-            }
+            ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(14.dp)) }
         }
     }
 }
