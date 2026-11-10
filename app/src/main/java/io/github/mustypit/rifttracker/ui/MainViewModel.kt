@@ -232,6 +232,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val deckDrafts: StateFlow<Map<Long, io.github.mustypit.rifttracker.game.Deck>> = _deckDrafts.asStateFlow()
     private val deckSaving = Mutex()
 
+    /** The deck screen's View · Group · Sort, kept while the app runs. */
+    val deckView = MutableStateFlow(DeckView.List)
+    val deckGroup = MutableStateFlow(DeckGroup.Type)
+    val deckSort = MutableStateFlow(DeckSort.Energy)
+
     fun deck(id: Long): io.github.mustypit.rifttracker.game.Deck? = _deckDrafts.value[id] ?: decks.value.firstOrNull { it.id == id }
 
     /** Creates a deck, saves it and opens it. */

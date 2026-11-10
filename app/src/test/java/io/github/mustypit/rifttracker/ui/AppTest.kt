@@ -647,10 +647,11 @@ open class AppTest {
         settleImages()
         shot("25_deck_main")
         // Views of the main deck.
-        click("Grid"); settleImages(); shot("25b_deck_grid")
-        click("Split"); settleImages(); shot("25c_deck_split")
-        click("Stacks"); settleImages(); shot("25d_deck_stacks")
-        click("List")
+        pick("View", "Grid"); settleImages(); shot("25b_deck_grid")
+        pick("View", "Stacks"); settleImages(); shot("25d_deck_stacks")
+        pick("View", "Stacks (split)"); settleImages(); shot("25c_deck_split")
+        pick("Group", "Cost"); settleImages(); shot("25e_deck_split_by_cost")
+        pick("View", "List"); pick("Group", "Type")
         // Runes (on the same page): + on Fury takes one from Mind; always 12.
         rule.onNode(hasContentDescription("More fury runes")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("fury runes 7")).assertExists()
@@ -739,7 +740,10 @@ open class AppTest {
         repeat(2) { rule.onNode(hasContentDescription("More mind runes")).performClick(); frames("deckrunes", 12) }
         // 3. Views crossfade.
         frame = 0; frames("deckviews", 3, true)
-        listOf("Grid", "Split", "Stacks", "List").forEach { v -> rule.onNode(hasText(v)).performClick(); frames("deckviews", 16, true) }
+        listOf("Grid", "Stacks", "Stacks (split)", "List").forEach { v ->
+            rule.onNode(hasContentDescription("View")).performClick(); frames("deckviews", 8, true)
+            rule.onAllNodes(hasText(v)).onLast().performClick(); frames("deckviews", 16, true)
+        }
         rule.mainClock.autoAdvance = true
     }
 

@@ -116,9 +116,10 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   Text export/import (`toText`/`fromText`). Stored in Room table `decks` (JSON per row, DB version 2,
   `MIGRATION_1_2` only creates the table; `MigrationTest` opens a v1 file with a match). UI:
   `ui/DecksScreen.kt` (list, new deck: legend then champion, rename/paste overlays). The deck screen is
-  **one scrolling page** (owner): counts, the rune bar (+ on each side, slides and rolls), main deck
-  with views **List · Grid · Split (grid by type) · Stacks (by cost)**, battlefields showing their
-  rules text, then stats (curve with average, power vs runes + Match, copy as text). Adding cards:
+  **one scrolling page** (owner): counts; a Moxfield-style toolbar of three dropdowns **View** (List ·
+  Grid · Stacks · Stacks (split) = every copy) · **Group** (Type · Cost · None) · **Sort** (Energy ·
+  Name), kept in `MainViewModel` while the app runs; the main deck; then runes (bar, + on each side,
+  slides and rolls), battlefields showing their rules text, then stats (curve with average, power vs runes + Match, copy as text). Adding cards:
   `CardsScreen(deckId=…)` (library limited to allowed cards, tap adds, "n×" badge pops, a "−" on cards
   in the deck takes one out, counts dock). Motion: counts and copy numbers roll, curve bars grow,
   views crossfade, + buttons squish. `AppTest.deckAnimationFrames` records `anim/deck*` frames. `MainViewModel.editDeck` keeps drafts and saves after each
