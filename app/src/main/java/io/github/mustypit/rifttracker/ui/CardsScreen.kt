@@ -1,8 +1,13 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package io.github.mustypit.rifttracker.ui
 
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.foundation.Image
+import io.github.mustypit.rifttracker.game.DeckRules
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -176,38 +181,47 @@ fun RulesTextView(text: String, modifier: Modifier = Modifier, fontSize: TextUni
 private val typeLabel = mapOf("unit" to "Unit", "spell" to "Spell", "gear" to "Gear", "legend" to "Legend", "battlefield" to "Battlefield", "rune" to "Rune")
 
 @Composable
-fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
+fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? = null) {
     val q by vm.cardSearch.collectAsState()
     val filtersOpen by vm.cardFiltersOpen.collectAsState()
-    val results = remember(q, Cards.all) { Cards.search(q) }
+    // Adding cards to a deck: the same library, limited to cards the deck may hold; tap adds a copy.
+    val drafts by vm.deckDrafts.collectAsState()
+    val allDecks by vm.decks.collectAsState()
+    val deck = deckId?.let { id -> drafts[id] ?: allDecks.firstOrNull { it.id == id } }
+    val deckDomains = deck?.let { DeckRules.domains(it) }.orEmpty()
+    val all = remember(q, Cards.all) { Cards.search(q) }
+    val results = if (deck == null) all else all.filter { DeckRules.allowed(deck, it) }
+    val grid = if (deckId == null) vm.cardsGrid else androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     fun update(f: (CardQuery) -> CardQuery) { vm.cardSearch.value = f(vm.cardSearch.value) }
     androidx.activity.compose.BackHandler(enabled = filtersOpen) { vm.cardFiltersOpen.value = false }
 
     Box(modifier.fillMaxSize()) {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3), state = vm.cardsGrid, modifier = Modifier.fillMaxSize(),
+            columns = GridCells.Fixed(3), state = grid, modifier = Modifier.fillMaxSize().padding(bottom = if (deck != null) 72.dp else 0.dp),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }, key = "header") {
                 Column(Modifier.fullBleed(16.dp)) {
-                    HeaderBlock { RiftTextField("Search cards", q.text, { t -> update { it.copy(text = t) } }) }
+                    HeaderBlock(onBack = deck?.let { { vm.back() } }) { RiftTextField("Search cards", q.text, { t -> update { it.copy(text = t) } }) }
                     Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Domain.entries.forEach { d ->
                                 val on = d in q.domains
+                                val usable = deck == null || d in deckDomains
                                 Box(
-                                    Modifier.weight(1f).height(38.dp).clip(RoundedCornerShape(12.dp))
+                                    Modifier.weight(1f).height(38.dp).graphicsLayer { alpha = if (usable) 1f else 0.25f }.clip(RoundedCornerShape(12.dp))
                                         .background(if (on) Color(d.argb) else C.Card)
                                         .border(1.5.dp, if (on) Color(d.argb) else C.Line, RoundedCornerShape(12.dp))
-                                        .clickable { update { it.copy(domains = if (on) it.domains - d else it.domains + d) } }
+                                        .clickable(enabled = usable) { update { it.copy(domains = if (on) it.domains - d else it.domains + d) } }
                                         .semantics { contentDescription = "${d.name.lowercase().replaceFirstChar { it.uppercase() }} filter" + if (on) " on" else "" },
                                     contentAlignment = Alignment.Center,
                                 ) { Icon(RiftSymbols.rune(d), null, tint = if (on) Color.White else Color(d.argb), modifier = Modifier.size(20.dp)) }
                             }
                         }
                         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            CardType.entries.forEach { t -> Chip(t.label, t == q.type) { update { it.copy(type = t) } } }
+                            CardType.entries.filter { deck == null || it in setOf(CardType.ALL, CardType.UNITS, CardType.SPELLS, CardType.GEAR) }
+                                .forEach { t -> Chip(t.label, t == q.type) { update { it.copy(type = t) } } }
                         }
                         // Active filters, each removable, then the way in to add more.
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -235,12 +249,32 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                 EmptyState("No cards", "Try fewer filters.", Modifier.fillMaxWidth())
             }
             items(results, key = { it.slug }, span = { GridItemSpan(if (it.landscape) maxLineSpan else 1) }) { c ->
-                CardImage(
-                    c,
-                    Modifier.shadow(2.dp, RoundedCornerShape(7.dp))
-                        .clickable { vm.push(Screen.CardDetail(c.slug)) }
-                        .semantics { contentDescription = "Card ${c.name}" },
-                )
+                Box {
+                    CardImage(
+                        c,
+                        Modifier.shadow(2.dp, RoundedCornerShape(7.dp))
+                            .combinedClickable(
+                                onClick = { if (deck != null) vm.editDeck(deck.id) { DeckRules.add(it, c) } else vm.push(Screen.CardDetail(c.slug)) },
+                                onLongClick = { vm.push(Screen.CardDetail(c.slug)) },
+                            )
+                            .semantics { contentDescription = "Card ${c.name}" },
+                    )
+                    val n = deck?.count(c.slug) ?: 0
+                    if (n > 0) Text(
+                        "$n×", color = C.OnAccent, fontWeight = FontWeight.Black, fontSize = 13.sp,
+                        modifier = Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp).clip(RoundedCornerShape(9.dp))
+                            .background(C.Accent).padding(horizontal = 7.dp, vertical = 2.dp).semantics { contentDescription = "$n in deck" },
+                    )
+                }
+            }
+        }
+        if (deck != null) {
+            Row(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(72.dp).background(C.Card).padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                DeckCounts(deck, Modifier.weight(1f))
+                Text("Done", fontWeight = FontWeight.Black, color = C.OnSolid, modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(C.Solid).clickable { vm.back() }.padding(horizontal = 16.dp, vertical = 10.dp))
             }
         }
         if (filtersOpen) FilterSheet(q, results.size, ::update) { vm.cardFiltersOpen.value = false }
@@ -440,7 +474,7 @@ private fun MultiPicker(
 }
 
 /** Lets a grid item reach past the grid's side padding (the header runs edge to edge). */
-private fun Modifier.fullBleed(side: Dp): Modifier = layout { m, c ->
+internal fun Modifier.fullBleed(side: Dp): Modifier = layout { m, c ->
     val extra = (side * 2).roundToPx()
     val p = m.measure(c.copy(minWidth = c.maxWidth + extra, maxWidth = c.maxWidth + extra))
     layout(c.maxWidth, p.height) { p.place(-side.roundToPx(), 0) }

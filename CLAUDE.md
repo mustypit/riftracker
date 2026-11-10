@@ -40,6 +40,8 @@ report as artifacts.
 | `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
 | `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends; the shipped files cover Radiance with art |
 | `game/CardsTest` | Shipped card library: complete with pictures, filters, search, sorting, stats rows (each comparison, might between 4 and 6, power 0), keywords (all must match), name-only search, rules text (any word order, symbols as words), tags, every rules-text symbol drawable |
+| `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label, runes stay 12, stats, match runes, text round trip |
+| `data/MigrationTest` | A version-1 database keeps its matches when the decks table is added |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
 
@@ -102,6 +104,21 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `design/symbols/*.svg` (domain emblems traced from OpenRift's images, might and the any-domain
   rune from OpenRift's SVGs, exhaust redrawn on a trace of the printed card; energy drawn in code as a
   white disc with a dark rim). Owner wants these as close to the printed symbols as possible.
+- **Deck builder** (Decks tab, owner-approved mockup v3): `game/Decks.kt`: `Deck` (legend slug, chosen
+  champion slug, main slug→copies incl. the champion, runes Domain→count, battlefield names) and
+  `DeckRules` (pure): Riftbound rules: legend (its only tag = its champion), chosen champion = a champion
+  unit with that tag, 40-card main (≤3 copies or `maxCopies`, ≤3 signature cards of the deck's
+  champion, only the legend's two domains, no tokens), 12 runes in those domains, 3 different
+  battlefields. Unfinished/illegal decks are allowed and labelled (`problems()`: "37/40", "Off-domain",
+  "Runes n/12", "Fields n/3"…). Runes: "+" on a side takes one from the other (always 12), divider
+  draggable. Stats: stacks by cost, energy curve with its average, power symbols per domain (two-domain
+  cards split evenly) and "Match" (runes in that ratio); no power "curve" (no Riftbound tool has one).
+  Text export/import (`toText`/`fromText`). Stored in Room table `decks` (JSON per row, DB version 2,
+  `MIGRATION_1_2` only creates the table; `MigrationTest` opens a v1 file with a match). UI:
+  `ui/DecksScreen.kt` (list, new deck: legend then champion, deck screen Main/Runes/Fields/Stats,
+  rename/paste overlays) and `CardsScreen(deckId=…)` for adding cards (library limited to allowed
+  cards, tap adds, "n×" badge, counts dock). `MainViewModel.editDeck` keeps drafts and saves after each
+  change. No banlist yet (data has `banned`; owner postponed). Decks aren't linked to matches yet.
 - `stats/Stats.kt`: pure stats over finished matches.
 - `data/Db.kt`: Room, one row per match with the match as JSON (new fields get defaults when old
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it
@@ -164,7 +181,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
 - The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
-- Next: a deck builder on top of the card library (owner asked; rules to confirm first). Deferred: decks with versions in matches, battlefield tracking, XP/levels. Not wanted: 4-player boards,
+- Next: link decks to matches (per-deck records), banlist in the deck builder, deck versions. Deferred: battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
   game, central menu button, clean panels); ask the owner for a screen recording.
 - **Minimal UI copy** (owner's request): short one-line headers ("New match", "Settings"), no

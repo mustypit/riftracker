@@ -79,11 +79,11 @@ fun AppShell(vm: MainViewModel) {
                         onClick = { vm.selectTab(t) },
                         icon = {
                             Icon(
-                                when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Legends -> Icons.Default.BarChart },
+                                when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Decks -> RiftIcons.Deck; Tab.Legends -> Icons.Default.BarChart },
                                 null,
                             )
                         },
-                        label = { Text(t.label) },
+                        label = { Text(t.label, maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(indicatorColor = C.Accent, selectedIconColor = C.OnAccent, selectedTextColor = C.Ink, unselectedIconColor = C.Muted, unselectedTextColor = C.Muted),
                     )
                 }
@@ -105,10 +105,14 @@ fun AppShell(vm: MainViewModel) {
                     Screen.LogMatch -> LogMatchScreen(vm)
                     Screen.Settings -> SettingsScreen(vm)
                     is Screen.CardDetail -> CardDetailScreen(vm, s.slug)
+                    Screen.NewDeck -> NewDeckScreen(vm)
+                    is Screen.DeckDetail -> DeckScreen(vm, s.id)
+                    is Screen.DeckAddCards -> CardsScreen(vm, deckId = s.id)
                     null -> when (d.tab) {
                         Tab.Play -> if (loaded) NewMatchScreen(vm)
                         Tab.Matches -> MatchesScreen(vm)
                         Tab.Cards -> CardsScreen(vm)
+                        Tab.Decks -> DecksScreen(vm)
                         Tab.Legends -> LegendsScreen(vm)
                     }
                 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
@@ -593,6 +594,91 @@ open class AppTest {
         rule.waitFor("New match")
         assertEquals(Accents.fromHue(200f).toArgb(), C.Accent.toArgb())
         shot("19f_new_match_accent")
+    }
+
+    @Test
+    fun deckBuilder() {
+        launch()
+        click("Decks")
+        rule.waitFor("+ New deck")
+        shot("22_decks_empty")
+        click("+ New deck")
+        type("Search legends", "Kai")
+        rule.onNode(hasContentDescription("Legend Daughter of the Void")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Champion Kai'Sa, Survivor")).performClick(); rule.waitForIdle()
+        settleImages()
+        shot("23_new_deck")
+        click("START BUILDING")
+        rule.waitFor("Kai'Sa deck")
+        rule.onNode(hasContentDescription("Main 1 of 40")).assertExists()
+        // Add cards from the library: only Fury/Mind cards are offered; tapping adds a copy.
+        click("+ Add cards")
+        rule.waitFor("Search cards")
+        val legend = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Daughter of the Void" }
+        val champion = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Kai'Sa, Survivor" }
+        val probe = io.github.mustypit.rifttracker.game.DeckRules.newDeck(legend, champion)
+        val picks = io.github.mustypit.rifttracker.game.Cards.all
+            .filter { io.github.mustypit.rifttracker.game.DeckRules.allowed(probe, it) && !it.isChampion && !io.github.mustypit.rifttracker.game.DeckRules.isSignature(it) && (it.energy ?: 9) <= 3 }
+            .distinctBy { it.name }.let { all -> listOf(all.first { (it.power ?: 0) > 0 && it.energy == 2 }) + all.filter { (it.energy ?: 0) == 2 && (it.power ?: 0) == 0 }.take(1) + all.filter { it.energy == 3 }.take(1) }
+        picks.forEach { c ->
+            rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).performTextClearance()
+            type("Search cards", c.name)
+            repeat(4) { rule.onNode(hasContentDescription("Card ${c.name}")).performClick(); rule.waitForIdle() }
+            rule.onNode(hasContentDescription("3 in deck")).assertExists()
+        }
+        rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).performTextClearance(); rule.waitForIdle()
+        val offDomain = io.github.mustypit.rifttracker.game.Cards.all.first { it.type == "unit" && it.domainList == listOf(io.github.mustypit.rifttracker.game.Domain.CALM) }
+        type("Search cards", offDomain.name)
+        rule.onAllNodes(hasContentDescription("Card ${offDomain.name}")).assertCountEquals(0)
+        rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).performTextClearance(); rule.waitForIdle()
+        settleImages()
+        shot("24_deck_add_cards")
+        click("Done")
+        rule.onNode(hasContentDescription("Main 10 of 40")).assertExists()
+        settleImages()
+        shot("25_deck_main")
+        // Runes: + on Fury takes one from Mind; always 12.
+        click("Runes")
+        rule.onNode(hasContentDescription("More fury runes")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("fury runes 7")).assertExists()
+        rule.onNode(hasContentDescription("mind runes 5")).assertExists()
+        shot("26_deck_runes")
+        // Fields
+        click("Fields")
+        click("+ Battlefield")
+        type("Search battlefields", "Cosmic")
+        rule.onNode(hasContentDescription("Battlefield Cosmic Vista")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Fields 1 of 3")).assertExists()
+        settleImages()
+        shot("27_deck_fields")
+        // Stats, match runes, copy as text
+        click("Stats")
+        rule.waitFor("POWER")
+        settleImages()
+        shot("28_deck_stats")
+        click("Match")
+        click("Copy as text")
+        val clip = (context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip!!.getItemAt(0).text.toString()
+        assertTrue(clip, clip.startsWith("Legend: Daughter of the Void"))
+        assertTrue(clip.contains("3 ${picks.first().name}"))
+        // Back on the list, the unfinished deck is labelled.
+        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+        rule.waitFor("10/40")
+        // Paste it back as a new deck.
+        click("Paste a list")
+        rule.onNode(hasSetTextAction() and hasText("Deck list", substring = true)).performTextInput(clip); rule.waitForIdle()
+        click("IMPORT")
+        rule.waitFor("Imported deck")
+        rule.onNode(hasContentDescription("Main 10 of 40")).assertExists()
+        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+        settleImages()
+        shot("29_decks")
+        // Kept after a restart.
+        scenario?.close()
+        launch()
+        click("Decks")
+        rule.waitFor("Kai'Sa deck")
+        rule.waitFor("Imported deck")
     }
 
     @Test

@@ -56,4 +56,10 @@ object RiftIcons {
             strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round,
         )
     }
+
+    /** A stack of three cards seen from the side: the Decks tab. */
+    val Deck = icon("deck") {
+        addPath(addPathNodes("M6 4.5h12A1.5 1.5 0 0 1 19.5 6v7A1.5 1.5 0 0 1 18 14.5H6A1.5 1.5 0 0 1 4.5 13V6A1.5 1.5 0 0 1 6 4.5z"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f)
+        addPath(addPathNodes("M5 17.5h14M6.5 20.5h11"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f, strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round)
+    }
 }

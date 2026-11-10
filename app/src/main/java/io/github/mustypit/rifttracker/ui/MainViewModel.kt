@@ -31,7 +31,7 @@ object AppGraph {
     var random: Random = Random.Default
 }
 
-enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Cards("Cards"), Legends("Legends") }
+enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Cards("Cards"), Decks("Decks"), Legends("Legends") }
 
 sealed interface Screen {
     data class MatchDetail(val id: Long) : Screen
@@ -39,6 +39,9 @@ sealed interface Screen {
     data object LogMatch : Screen
     data object Settings : Screen
     data class CardDetail(val slug: String) : Screen
+    data object NewDeck : Screen
+    data class DeckDetail(val id: Long) : Screen
+    data class DeckAddCards(val id: Long) : Screen
 }
 
 /** Values to start a match with (rematch fills them in). */
@@ -46,6 +49,7 @@ data class MatchSetup(val format: Format = Format.BO3, val myLegend: String = ""
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val store = MatchStore(AppDb.get(app).matches())
+    private val deckStore = io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(app).decks())
     private val now get() = AppGraph.clock()
     val settings = SettingsStore(app)
 
@@ -217,6 +221,43 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _tab.value = Tab.Play
         _stack.value = emptyList()
         if (_active.value == null) startMatch(MatchSetup(m.format, m.myLegend, m.oppName, m.oppLegend))
+    }
+
+    // Decks
+
+    val decks: StateFlow<List<io.github.mustypit.rifttracker.game.Deck>> = deckStore.all.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** Latest edits of open decks, shown at once and saved in the background (like the match). */
+    private val _deckDrafts = MutableStateFlow<Map<Long, io.github.mustypit.rifttracker.game.Deck>>(emptyMap())
+    val deckDrafts: StateFlow<Map<Long, io.github.mustypit.rifttracker.game.Deck>> = _deckDrafts.asStateFlow()
+    private val deckSaving = Mutex()
+
+    fun deck(id: Long): io.github.mustypit.rifttracker.game.Deck? = _deckDrafts.value[id] ?: decks.value.firstOrNull { it.id == id }
+
+    /** Creates a deck, saves it and opens it. */
+    fun createDeck(d: io.github.mustypit.rifttracker.game.Deck, replaceTop: Boolean = true) = viewModelScope.launch {
+        val saved = deckSaving.withLock { deckStore.save(d.copy(id = 0, updatedAt = now)) }
+        _deckDrafts.update { it + (saved.id to saved) }
+        _stack.value = (if (replaceTop) _stack.value.dropLast(1) else _stack.value) + Screen.DeckDetail(saved.id)
+    }
+
+    fun editDeck(id: Long, f: (io.github.mustypit.rifttracker.game.Deck) -> io.github.mustypit.rifttracker.game.Deck) {
+        val cur = deck(id) ?: return
+        val next = f(cur).copy(id = id, updatedAt = now)
+        if (next == cur) return
+        _deckDrafts.update { it + (id to next) }
+        viewModelScope.launch { deckSaving.withLock { deckStore.save(_deckDrafts.value[id] ?: next) } }
+    }
+
+    fun duplicateDeck(id: Long) {
+        val d = deck(id) ?: return
+        createDeck(d.copy(name = d.name + " (copy)"))
+    }
+
+    fun deleteDeck(id: Long) = viewModelScope.launch {
+        deckSaving.withLock { deckStore.delete(id) }
+        _deckDrafts.update { it - id }
+        back()
     }
 
     // History

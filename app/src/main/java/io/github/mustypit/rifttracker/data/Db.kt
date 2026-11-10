@@ -51,15 +51,47 @@ interface MatchDao {
     suspend fun delete(id: Long)
 }
 
-@Database(entities = [MatchEntity::class], version = 1, exportSchema = true)
+/** One row per deck, the deck as JSON (like matches). */
+@Entity(tableName = "decks")
+data class DeckEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val updatedAt: Long,
+    val json: String,
+)
+
+@Dao
+interface DeckDao {
+    @Query("SELECT * FROM decks ORDER BY updatedAt DESC")
+    fun observeAll(): Flow<List<DeckEntity>>
+
+    @Insert
+    suspend fun insert(d: DeckEntity): Long
+
+    @Update
+    suspend fun update(d: DeckEntity)
+
+    @Query("DELETE FROM decks WHERE id = :id")
+    suspend fun delete(id: Long)
+}
+
+/** Version 2 adds the decks table; matches are untouched. */
+val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+    override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `decks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `updatedAt` INTEGER NOT NULL, `json` TEXT NOT NULL)")
+    }
+}
+
+@Database(entities = [MatchEntity::class, DeckEntity::class], version = 2, exportSchema = true)
 abstract class AppDb : RoomDatabase() {
     abstract fun matches(): MatchDao
+    abstract fun decks(): DeckDao
 
     companion object {
         @Volatile private var instance: AppDb? = null
 
         fun get(context: Context): AppDb = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, AppDb::class.java, "rifttracker.db")
+                .addMigrations(MIGRATION_1_2)
                 .build().also { instance = it }
         }
 
@@ -85,6 +117,21 @@ class MatchStore(private val dao: MatchDao) {
     /** Inserts a new match (id 0) or updates it; returns it with its id. */
     suspend fun save(m: Match): Match =
         if (m.id == 0L) m.copy(id = dao.insert(encode(m))) else m.also { dao.update(encode(it)) }
+
+    suspend fun delete(id: Long) = dao.delete(id)
+}
+
+/** Decks in and out of the database. */
+class DeckStore(private val dao: DeckDao) {
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+
+    private fun decode(e: DeckEntity) = json.decodeFromString<io.github.mustypit.rifttracker.game.Deck>(e.json).copy(id = e.id, updatedAt = e.updatedAt)
+    private fun encode(d: io.github.mustypit.rifttracker.game.Deck) = DeckEntity(id = d.id, updatedAt = d.updatedAt, json = json.encodeToString(d.copy(id = 0)))
+
+    val all: Flow<List<io.github.mustypit.rifttracker.game.Deck>> = dao.observeAll().map { list -> list.map(::decode) }
+
+    suspend fun save(d: io.github.mustypit.rifttracker.game.Deck): io.github.mustypit.rifttracker.game.Deck =
+        if (d.id == 0L) d.copy(id = dao.insert(encode(d))) else d.also { dao.update(encode(it)) }
 
     suspend fun delete(id: Long) = dao.delete(id)
 }
