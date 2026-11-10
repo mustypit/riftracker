@@ -50,6 +50,12 @@ object Stats {
     const val MIN_MATCHES_FOR_RATE = 3
     const val SESSION_GAP_MS = 3 * 60 * 60 * 1000L
 
+    /** Matches played with the deck [deckId] (by the snapshot each match keeps). */
+    fun deckMatches(matches: List<Match>, deckId: Long): List<Match> = matches.filter { it.deck?.id == deckId }.sortedByDescending { it.startedAt }
+
+    /** The last [n] results, newest first. */
+    fun form(matches: List<Match>, n: Int = 5): List<Outcome> = matches.sortedByDescending { it.startedAt }.take(n).map { MatchRules.result(it) }
+
     fun record(matches: List<Match>) = matches.fold(Record()) { r, m -> r + MatchRules.result(m) }
 
     fun inPeriod(matches: List<Match>, period: Period, now: Long): List<Match> {

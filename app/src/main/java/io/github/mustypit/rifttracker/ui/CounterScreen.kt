@@ -86,7 +86,7 @@ import io.github.mustypit.rifttracker.game.Side
 import io.github.mustypit.rifttracker.game.formatDuration
 import kotlinx.coroutines.delay
 
-private fun Match.nameOf(side: Side) = if (side == Side.ME) "You" else oppName.ifBlank { "Opponent" }
+private fun Match.nameOf(side: Side) = if (side == Side.ME) "You" else oppName.ifBlank { oppLegend.ifBlank { "Opponent" } }
 
 /**
  * The table view: phone flat between the players, the opponent's half upside down.
@@ -139,9 +139,31 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
         val battlefieldSlots: @Composable () -> Unit = {
             if (Battlefields.all.isNotEmpty()) {
                 Spacer(Modifier.height(14.dp))
-                BattlefieldSlot("Your battlefield", pending[Side.ME], onClick = { picking = Side.ME })
+                val deckFields = match.deck?.battlefields.orEmpty().filter { Battlefields.byName(it) != null }
+                if (deckFields.isNotEmpty()) {
+                    // The deck's battlefields, one tap each; "…" picks any other.
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                        deckFields.take(3).forEach { name ->
+                            val on = pending[Side.ME] == name
+                            Column(
+                                Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(C.Card)
+                                    .border(if (on) 2.5.dp else 1.5.dp, if (on) C.Accent else C.Line, RoundedCornerShape(10.dp))
+                                    .clickable { vm.pickPendingBattlefield(Side.ME, if (on) null else name) }
+                                    .semantics(mergeDescendants = true) { contentDescription = "Your battlefield $name" + if (on) " on" else "" },
+                            ) {
+                                BattlefieldThumb(name, Modifier.fillMaxWidth().height(42.dp), corner = 0)
+                                Text(name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = C.Ink, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp))
+                            }
+                        }
+                        Box(
+                            Modifier.width(36.dp).height(66.dp).clip(RoundedCornerShape(10.dp)).border(1.5.dp, C.Line, RoundedCornerShape(10.dp))
+                                .clickable { picking = Side.ME }.semantics { contentDescription = "Other battlefield" },
+                            contentAlignment = Alignment.Center,
+                        ) { Text("…", color = C.Muted, fontWeight = FontWeight.Black) }
+                    }
+                } else BattlefieldSlot("Your battlefield", pending[Side.ME], onClick = { picking = Side.ME })
                 Spacer(Modifier.height(8.dp))
-                BattlefieldSlot("${match.nameOf(Side.OPP)}'s battlefield", pending[Side.OPP], onClick = { picking = Side.OPP })
+                BattlefieldSlot("Their battlefield", pending[Side.OPP], onClick = { picking = Side.OPP })
             }
         }
         when {

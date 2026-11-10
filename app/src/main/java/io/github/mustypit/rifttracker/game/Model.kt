@@ -59,9 +59,11 @@ data class Match(
     val games: List<Game> = emptyList(),
     /** Entered afterwards from the Matches tab rather than counted live: no point log or times. */
     val logged: Boolean = false,
+    /** The deck played, as it was when the match started (later edits don't change it). */
+    val deck: Deck? = null,
 ) {
     val isFinished get() = endedAt != null
     fun durationMs(now: Long): Long = (endedAt ?: now) - startedAt
-    /** "Morgan (Jinx)", or just the legend when there's no name. */
+    /** "Morgan (Jinx)" for old matches that have a name; otherwise the legend. */
     val opponentLabel get() = if (oppName.isBlank()) oppLegend else "$oppName ($oppLegend)"
 }

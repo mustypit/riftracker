@@ -123,7 +123,15 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `CardsScreen(deckId=…)` (library limited to allowed cards, tap adds, "n×" badge pops, a "−" on cards
   in the deck takes one out, counts dock). Motion: counts and copy numbers roll, curve bars grow,
   views crossfade, + buttons squish. `AppTest.deckAnimationFrames` records `anim/deck*` frames. `MainViewModel.editDeck` keeps drafts and saves after each
-  change. No banlist yet (data has `banned`; owner postponed). Decks aren't linked to matches yet.
+  change. No banlist yet (data has `banned`; owner postponed).
+- **Decks in matches**: `Match.deck` is a snapshot of the deck when the match started (JSON field,
+  old rows null; later edits don't rewrite history). New match / Log a match: with saved decks, the
+  "Your deck" slot opens a deck picker (recent first, "Just a legend" for the old flow) and sets the
+  legend (`legendNameOf`); without decks the old legend slot shows. Who goes first offers the deck's
+  battlefields as one-tap tiles ("…" for any other). Decks tab rows show record, rate and last five;
+  the deck page starts with its record (bar, going first/second, by opponent legend, latest matches);
+  match review shows a deck chip that opens the deck. **No opponent names** (owner): the field is
+  gone, the opponent is their legend (`nameOf(OPP)`), the Rivals tab is gone; old matches keep names.
 - `stats/Stats.kt`: pure stats over finished matches.
 - `data/Db.kt`: Room, one row per match with the match as JSON (new fields get defaults when old
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it

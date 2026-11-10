@@ -151,6 +151,19 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
                 }
                 Text(MatchRules.scoreLine(m), fontWeight = FontWeight.Black, fontSize = 56.sp, color = C.Black)
                 Text("${m.myLegend} vs ${m.opponentLabel}", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = C.Black)
+                m.deck?.let { d ->
+                    val decks by vm.decks.collectAsState()
+                    val live = decks.any { it.id == d.id }
+                    Row(
+                        Modifier.padding(top = 6.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = 0.16f))
+                            .clickable(enabled = live) { vm.push(Screen.DeckDetail(d.id)) }.padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp)
+                            .semantics(mergeDescendants = true) { contentDescription = "Deck ${d.name}" },
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        LegendAvatar(m.myLegend, 22.dp)
+                        Text(d.name + if (live) " ›" else "", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.Black)
+                    }
+                }
                 val time = Instant.ofEpochMilli(m.startedAt).atZone(Zone.id).format(dateTimeFmt)
                 Text(listOfNotNull(m.format.label, time, if (m.logged) "logged" else "\u23F1 " + formatDuration(m.durationMs(m.startedAt))).joinToString(" · "), color = C.Black.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
             }
@@ -165,7 +178,7 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
                     }
                     val facts = listOfNotNull(
                         when (g.outcome) { Outcome.WIN -> "Won"; Outcome.LOSS -> "Lost"; Outcome.DRAW -> "Draw"; null -> null },
-                        g.wentFirst?.let { if (it == Side.ME) "you went first" else "${m.oppName.ifBlank { "they" }} went first" },
+                        g.wentFirst?.let { if (it == Side.ME) "you went first" else "${m.oppName.ifBlank { m.oppLegend }} went first" },
                         if (m.logged) null else "\u23F1 " + formatDuration(g.durationMs(g.startedAt)),
                     )
                     Text(facts.joinToString(" · "), color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
@@ -173,7 +186,7 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
                     if (Battlefields.all.isNotEmpty() || g.battlefields.isNotEmpty()) {
                         Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             GameBattlefield("You", g.battlefieldOf(Side.ME), Modifier.weight(1f)) { editing = i to Side.ME }
-                            GameBattlefield(m.oppName.ifBlank { "Them" }, g.battlefieldOf(Side.OPP), Modifier.weight(1f)) { editing = i to Side.OPP }
+                            GameBattlefield(m.oppName.ifBlank { m.oppLegend }, g.battlefieldOf(Side.OPP), Modifier.weight(1f)) { editing = i to Side.OPP }
                         }
                     }
                     if (g.events.isNotEmpty()) {
@@ -308,7 +321,7 @@ private fun BreakdownRow(who: String, counts: Map<PointKind, Int>, color: Color)
 
 // ---------------------------------------------------------------- Legends
 
-enum class LegendTab(val label: String) { Legends("Yours"), Opponents("Against"), Rivals("Rivals"), Battlefields("Fields") }
+enum class LegendTab(val label: String) { Legends("Yours"), Opponents("Against"), Battlefields("Fields") }
 
 @Composable
 fun LegendsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
@@ -341,11 +354,6 @@ fun LegendsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                 val opp = Stats.byOppLegend(matches)
                 if (opp.isEmpty()) item { EmptyState("Nothing yet", "Play a match to see stats.", Modifier.fillMaxWidth()) }
                 items(opp, key = { "o" + it.legend }) { s -> StatRow("vs ${s.legend}", s.record, avatar = s.legend) }
-            }
-            LegendTab.Rivals -> {
-                val rivals = Stats.rivals(matches)
-                if (rivals.isEmpty()) item { EmptyState("No rivals yet", "Name your opponent when starting a match.", Modifier.fillMaxWidth()) }
-                items(rivals, key = { "r" + it.name }) { s -> StatRow(s.name, s.record, sub = s.legends.joinToString(", ")) }
             }
             LegendTab.Battlefields -> {
                 // Counted per game: each game of a best-of-3 can use a different battlefield.

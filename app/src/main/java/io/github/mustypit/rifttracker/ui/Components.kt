@@ -111,7 +111,7 @@ fun MatchRow(m: Match, onClick: () -> Unit, showMyLegend: Boolean = true) {
         LegendAvatar(m.oppLegend, 40.dp, Modifier.padding(start = 12.dp))
         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
             Text("vs ${m.oppLegend}", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val sub = listOfNotNull(m.myLegend.takeIf { showMyLegend }, m.oppName.ifBlank { null }, m.format.label).joinToString(" · ")
+            val sub = listOfNotNull(m.deck?.name ?: m.myLegend.takeIf { showMyLegend }, m.oppName.ifBlank { null }, m.format.label).joinToString(" · ")
             Text(sub, color = C.Muted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(end = 14.dp)) {

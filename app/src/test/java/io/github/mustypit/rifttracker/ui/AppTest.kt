@@ -152,7 +152,6 @@ open class AppTest {
         shot("01b_legend_picker")
         type("Search legends", "Riven")
         rule.onNode(hasContentDescription("Legend Riven")).performClick(); rule.waitForIdle()
-        type("Their name", "Morgan")
         pickLegend("Their legend", "Mordekaiser")
         shot("02_new_match_filled")
         click("START")
@@ -164,7 +163,7 @@ open class AppTest {
         shot("03a_battlefield_picker")
         type("Search battlefields", "Altar of")
         rule.onNode(hasContentDescription("Battlefield Altar of Blood")).performClick(); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Morgan's battlefield")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Their battlefield")).performClick(); rule.waitForIdle()
         type("Search battlefields", "Sunken")
         rule.onNode(hasContentDescription("Battlefield Sunken Temple")).performClick(); rule.waitForIdle()
         shot("03_who_goes_first")
@@ -172,11 +171,11 @@ open class AppTest {
         shot("04_counter_start")
 
         // Game 1: a back-and-forth, then the winning point by conquering (asks first).
-        press("You", "HOLD"); press("Morgan", "CONQUER"); press("Morgan", "HOLD")
-        press("You", "CONQUER", 2); press("Morgan", "ABILITY"); press("You", "HOLD", 2)
+        press("You", "HOLD"); press("Mordekaiser", "CONQUER"); press("Mordekaiser", "HOLD")
+        press("You", "CONQUER", 2); press("Mordekaiser", "ABILITY"); press("You", "HOLD", 2)
         // Tapping a score takes a point off; the middle pill offers to undo it.
         clock.addAndGet(40_000)
-        rule.onNode(hasContentDescription("Morgan score 3")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Mordekaiser score 3")).performClick(); rule.waitForIdle()
         rule.onNode(hasText("TAP TO UNDO", substring = true)).assertExists()
         shot("05_counter_game")
         // The hidden panel: open it from the handle, add 2 XP, close it; the XP shows as a badge.
@@ -194,13 +193,13 @@ open class AppTest {
         shot("07_game_won")
 
         // Game 2: Morgan lost, so they're suggested to go first; they win by holding.
-        click("MORGAN ★")
-        press("Morgan", "HOLD", 8)
-        rule.waitFor("MORGAN WINS GAME 2")
+        click("MORDEKAISER ★")
+        press("Mordekaiser", "HOLD", 8)
+        rule.waitFor("MORDEKAISER WINS GAME 2")
 
         // Game 3: you go first and win; the match is decided.
         click("YOU ★")
-        press("Morgan", "HOLD", 3)
+        press("Mordekaiser", "HOLD", 3)
         press("You", "ABILITY", 8)
         rule.waitFor("Match won 2–1")
         shot("08_match_won")
@@ -220,7 +219,7 @@ open class AppTest {
         assertEquals(2, m.games[0].score(Side.OPP)) // 3 points minus the correction
         assertTrue(m.games[0].events.any { it.kind == PointKind.CORRECTION })
         assertEquals("XP is saved with the game", 2, m.games[0].xpOf(Side.ME))
-        assertEquals("Morgan", m.oppName)
+        assertEquals("", m.oppName)
         assertNull(runBlocking(Dispatchers.IO) { store.activeNow() })
 
         // The review is still there, from Matches.
@@ -247,9 +246,9 @@ open class AppTest {
         click("START"); click("YOU")
         press("You", "HOLD", 7)
         rule.onNode(hasContentDescription("You score 7")).assertExists()
-        press("Opponent", "HOLD")
+        press("Jinx", "HOLD")
         rule.onNode(hasContentDescription("Undo")).performClick(); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Opponent score 0")).assertExists()
+        rule.onNode(hasContentDescription("Jinx score 0")).assertExists()
         // A stray tap on a score takes a point off; tapping the pill puts it back.
         rule.onNode(hasContentDescription("You score 7")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("You score 6")).assertExists()
@@ -267,8 +266,8 @@ open class AppTest {
         rule.onNode(hasContentDescription("Undo")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("You score 7")).assertExists()
         // A score of 0 can't be tapped below zero.
-        rule.onNode(hasContentDescription("Opponent score 0")).performClick(); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Opponent score 0")).assertExists()
+        rule.onNode(hasContentDescription("Jinx score 0")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Jinx score 0")).assertExists()
         // Win, then take the winning point back: the game reopens.
         press("You", "HOLD")
         rule.waitFor("YOU WIN GAME 1")
@@ -285,7 +284,7 @@ open class AppTest {
         rule.waitFor("COIN:", substring = true)
         shot("10_coin_flip")
         press("You", "HOLD", 3)
-        press("Opponent", "CONQUER", 2)
+        press("Zed", "CONQUER", 2)
         Thread.sleep(300) // let the save land
         rule.waitForIdle()
 
@@ -293,7 +292,7 @@ open class AppTest {
         scenario?.close()
         launch()
         rule.waitUntilAtLeastOneExists(hasContentDescription("You score 3"), 10_000)
-        rule.onNode(hasContentDescription("Opponent score 2")).assertExists()
+        rule.onNode(hasContentDescription("Zed score 2")).assertExists()
         rule.onNode(hasText("FIRST TO 8")).assertExists()
 
         // Abandon it: nothing saved.
@@ -334,9 +333,6 @@ open class AppTest {
         click("Against")
         rule.waitFor("vs Jinx")
         shot("13_against")
-        click("Rivals")
-        rule.waitFor("Morgan")
-        shot("14_rivals")
         click("Fields")
         rule.waitFor("YOURS")
         shot("14b_battlefields")
@@ -415,7 +411,6 @@ open class AppTest {
         launch()
         rule.waitFor("New match")
         pickLegend("Your legend", "Riven")
-        type("Their name", "Morgan")
         pickLegend("Their legend", "Mordekaiser")
         click("START")
         rule.waitFor("WHO GOES FIRST?")
@@ -745,6 +740,58 @@ open class AppTest {
             rule.onAllNodes(hasText(v)).onLast().performClick(); frames("deckviews", 16, true)
         }
         rule.mainClock.autoAdvance = true
+    }
+
+    @Test
+    fun decksInMatches() {
+        // A saved deck with three battlefields.
+        if (io.github.mustypit.rifttracker.game.Cards.all.isEmpty()) io.github.mustypit.rifttracker.game.Cards.install(java.io.File("src/main/assets/cards/cards.json").readText())
+        val legend = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Daughter of the Void" }
+        val champion = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Kai'Sa, Survivor" }
+        val fields = io.github.mustypit.rifttracker.game.Battlefields.all.take(3).map { it.name }
+        runBlocking(Dispatchers.IO) {
+            io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(context).decks())
+                .save(io.github.mustypit.rifttracker.game.DeckRules.newDeck(legend, champion, "Kai'Sa Tempo").copy(battlefields = fields, updatedAt = clock.get()))
+        }
+        launch()
+        rule.waitFor("New match")
+        click("Best of 1")
+        rule.onNode(hasContentDescription("Your deck")).performClick(); rule.waitForIdle()
+        rule.waitFor("Just a legend")
+        shot("30_pick_deck")
+        rule.onNode(hasContentDescription("Pick deck Kai'Sa Tempo")).performClick(); rule.waitForIdle()
+        pickLegend("Their legend", "Mordekaiser")
+        settleImages()
+        shot("31_new_match_deck")
+        click("START")
+        rule.waitFor("WHO GOES FIRST?")
+        rule.onNode(hasContentDescription("Your battlefield ${fields[1]}")).performClick(); rule.waitForIdle()
+        screenShot("32_first_deck_fields")
+        click("YOU")
+        press("You", "CONQUER", 8)
+        click("SAVE MATCH")
+        rule.waitFor("New match")
+        val m = saved().single()
+        assertEquals("Kai'Sa Tempo", m.deck?.name)
+        assertEquals(fields[1], m.games.single().battlefieldOf(io.github.mustypit.rifttracker.game.Side.ME))
+        assertEquals("Kai'Sa", m.myLegend)
+        // The deck shows its record on the Decks tab and on its page.
+        click("Decks")
+        rule.waitFor("1–0")
+        settleImages()
+        shot("33_decks_record")
+        rule.onNode(hasContentDescription("Deck Kai'Sa Tempo")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Deck record 1–0")).assertExists()
+        settleImages()
+        shot("34_deck_record")
+        // The match review links back to the deck.
+        rule.onNode(hasContentDescription("Back")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
+        click("Matches")
+        rule.onNode(hasText("vs Mordekaiser")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Deck Kai'Sa Tempo")).assertExists()
+        shot("35_match_deck_chip")
+        rule.onNode(hasContentDescription("Deck Kai'Sa Tempo")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Deck record 1–0")).assertExists()
     }
 
     @Test

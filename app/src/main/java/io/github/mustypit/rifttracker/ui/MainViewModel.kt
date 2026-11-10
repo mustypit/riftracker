@@ -45,7 +45,7 @@ sealed interface Screen {
 }
 
 /** Values to start a match with (rematch fills them in). */
-data class MatchSetup(val format: Format = Format.BO3, val myLegend: String = "", val oppName: String = "", val oppLegend: String = "")
+data class MatchSetup(val format: Format = Format.BO3, val myLegend: String = "", val oppLegend: String = "", val deckId: Long? = null)
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val store = MatchStore(AppDb.get(app).matches())
@@ -109,7 +109,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun startMatch(s: MatchSetup) {
         setup.value = s
-        _active.value = Match(format = s.format, myLegend = s.myLegend.trim(), oppName = s.oppName.trim(), oppLegend = s.oppLegend.trim(), startedAt = now)
+        _active.value = Match(format = s.format, myLegend = s.myLegend.trim(), oppLegend = s.oppLegend.trim(), startedAt = now, deck = s.deckId?.let(::deck))
         persist()
     }
 
@@ -220,7 +220,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun rematch(m: Match) {
         _tab.value = Tab.Play
         _stack.value = emptyList()
-        if (_active.value == null) startMatch(MatchSetup(m.format, m.myLegend, m.oppName, m.oppLegend))
+        if (_active.value == null) startMatch(MatchSetup(m.format, m.myLegend, m.oppLegend, m.deck?.id?.takeIf { id -> deck(id) != null }))
     }
 
     // Decks
@@ -268,7 +268,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     // History
 
     fun logMatch(s: MatchSetup, results: List<Outcome>, firsts: List<Side?>) = viewModelScope.launch {
-        store.save(MatchRules.logged(s.format, s.myLegend.trim(), s.oppName.trim(), s.oppLegend.trim(), results, firsts, now))
+        store.save(MatchRules.logged(s.format, s.myLegend.trim(), "", s.oppLegend.trim(), results, firsts, now).copy(deck = s.deckId?.let(::deck)))
         back()
     }
 

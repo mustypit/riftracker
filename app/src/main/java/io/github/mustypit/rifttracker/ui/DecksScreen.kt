@@ -125,10 +125,11 @@ fun DecksScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
     val drafts by vm.deckDrafts.collectAsState()
     var pasting by remember { mutableStateOf(false) }
     val shown = decks.map { drafts[it.id] ?: it }
+    val history by vm.history.collectAsState()
     Box(modifier.fillMaxSize()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 16.dp)) {
             item { HeaderBlock { Text("Decks", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp) } }
-            items(shown, key = { it.id }) { d -> DeckRow(d) { vm.push(Screen.DeckDetail(d.id)) } }
+            items(shown, key = { it.id }) { d -> DeckRow(d, io.github.mustypit.rifttracker.stats.Stats.deckMatches(history, d.id)) { vm.push(Screen.DeckDetail(d.id)) } }
             item {
                 Text(
                     "+ New deck", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = C.Muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -146,7 +147,7 @@ fun DecksScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun DeckRow(d: Deck, onClick: () -> Unit) {
+private fun DeckRow(d: Deck, matches: List<io.github.mustypit.rifttracker.game.Match>, onClick: () -> Unit) {
     val art = legendArt(d)
     val problem = DeckRules.problems(d).firstOrNull()
     Box(
@@ -165,11 +166,74 @@ private fun DeckRow(d: Deck, onClick: () -> Unit) {
                     Text("${d.mainSize} · ${d.runeCount} · ${d.battlefields.size}", color = C.Muted, fontSize = 12.sp)
                 }
             }
-            if (problem != null) Text(
-                problem, color = C.Red, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp,
-                modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Color(0xFF2A1513)).padding(horizontal = 8.dp, vertical = 3.dp),
-            )
+            // Record and form when it's been played; an unfinished/illegal deck also shows its label.
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                if (matches.isNotEmpty()) {
+                    val rec = io.github.mustypit.rifttracker.stats.Stats.record(matches)
+                    Text(rec.line, fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color.White, style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(Color.Black, blurRadius = 8f)))
+                    if (problem == null) {
+                        Text(io.github.mustypit.rifttracker.stats.Stats.rateOrHint(rec), fontSize = 11.sp, color = Color.White.copy(alpha = 0.85f))
+                        FormDots(io.github.mustypit.rifttracker.stats.Stats.form(matches))
+                    }
+                }
+                if (problem != null) Text(
+                    problem, color = C.Red, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp,
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Color(0xFF2A1513)).padding(horizontal = 8.dp, vertical = 3.dp),
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun FormDots(form: List<io.github.mustypit.rifttracker.game.Outcome>, modifier: Modifier = Modifier) = Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+    form.reversed().forEach { o -> Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(C.outcome(o))) }
+}
+
+/** The deck's results: record, going first/second, by opponent legend, latest matches. */
+@Composable
+private fun DeckRecord(vm: MainViewModel, deck: Deck) {
+    val history by vm.history.collectAsState()
+    val matches = remember(history, deck.id) { io.github.mustypit.rifttracker.stats.Stats.deckMatches(history, deck.id) }
+    if (matches.isEmpty()) return
+    val legend = matches.first().myLegend
+    val detail = remember(matches) { io.github.mustypit.rifttracker.stats.Stats.legendDetail(matches, legend, latestCount = 3) }
+    val rec = detail.record
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(rec.line, fontWeight = FontWeight.Black, fontSize = 26.sp, color = C.Ink, modifier = Modifier.semantics { contentDescription = "Deck record ${rec.line}" })
+            Text("  " + listOfNotNull(rec.winRate?.takeIf { rec.total >= io.github.mustypit.rifttracker.stats.Stats.MIN_MATCHES_FOR_RATE }?.let { io.github.mustypit.rifttracker.stats.Stats.percent(it) }, "${rec.total} ${if (rec.total == 1) "match" else "matches"}").joinToString(" · "), color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(bottom = 5.dp))
+        }
+        Row(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            if (rec.wins > 0) Box(Modifier.weight(rec.wins.toFloat()).fillMaxHeight().background(C.Green))
+            if (rec.draws > 0) Box(Modifier.weight(rec.draws.toFloat()).fillMaxHeight().background(C.DrawGrey))
+            if (rec.losses > 0) Box(Modifier.weight(rec.losses.toFloat()).fillMaxHeight().background(C.Red))
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        listOf(
+            "Going first" to io.github.mustypit.rifttracker.stats.Stats.percent(detail.goingFirst.winRate),
+            "Going second" to io.github.mustypit.rifttracker.stats.Stats.percent(detail.goingSecond.winRate),
+        ).forEach { (label, v) ->
+            Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(C.Card).padding(horizontal = 10.dp, vertical = 8.dp)) {
+                Text(label, color = C.Muted, fontSize = 11.sp)
+                Text(v, fontWeight = FontWeight.Black, fontSize = 16.sp, color = C.Ink)
+            }
+        }
+    }
+    if (detail.against.isNotEmpty()) {
+        Text("BY OPPONENT", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 4.dp))
+        detail.against.take(4).forEach { a ->
+            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.Card).padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                LegendAvatar(a.legend, 30.dp)
+                Text("vs ${a.legend}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Ink, modifier = Modifier.weight(1f).padding(start = 10.dp))
+                Text(a.record.line, fontWeight = FontWeight.Black, color = C.Ink)
+            }
+        }
+    }
+    Text("LATEST", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 4.dp))
+    Column(Modifier.fullBleed(16.dp)) {
+        detail.latest.forEach { m -> MatchRow(m, onClick = { vm.push(Screen.MatchDetail(m.id)) }, showMyLegend = false) }
     }
 }
 
@@ -266,6 +330,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp)) {
             DeckHeader(deck, onBack = { vm.back() }, onRename = { renaming = true }, onDuplicate = { vm.duplicateDeck(id) }, onDelete = { vm.deleteDeck(id) })
             Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).animateContentSize(spring(stiffness = 500f)), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                DeckRecord(vm, deck)
                 DeckCounts(deck)
                 // Toolbar: View · Group · Sort, each a dropdown.
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
