@@ -18,6 +18,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -568,47 +569,30 @@ open class AppTest {
         rule.mainClock.autoAdvance = true
     }
 
-    /** Renders the same screens in each dark palette (screenshots/darkstyles/), for the owner to compare. */
-    @Test
-    fun darkStyleVariants() {
-        if (prefix != "dark_") return
-        seedHistory()
-        try {
-            for (style in DarkStyle.entries) {
-                C.darkStyle = style
-                launch()
-                rule.waitFor("New match")
-                fun cap(name: String) = rule.onRoot().captureRoboImage("screenshots/darkstyles/${style.name.lowercase()}_$name.png")
-                cap("1_new_match")
-                click("Matches"); rule.waitFor("NOVEMBER 2026"); cap("2_matches")
-                rule.onAllNodes(hasText("vs Garen"))[0].performClick(); rule.waitForIdle(); rule.waitFor("GAME 1"); cap("3_match_detail")
-                rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
-                click("Cards"); rule.waitFor("Search cards"); settleImages(); cap("4_cards")
-                type("Search cards", "Kai'Sa, Surv")
-                rule.onNode(hasContentDescription("Card Kai'Sa, Survivor")).performClick(); rule.waitForIdle(); rule.waitFor("Cost"); settleImages(); cap("5_card")
-                rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
-                click("Play"); rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle(); rule.waitFor("ACCENT"); cap("6_settings")
-                scenario?.close()
-            }
-        } finally {
-            C.darkStyle = DarkStyle.GRAPHITE
-        }
-    }
-
     @Test
     fun accentColour() {
         launch()
         rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
         rule.waitFor("ACCENT")
-        rule.onNode(hasContentDescription("Accent Violet", substring = true)).performScrollTo().performClick(); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Accent Violet on")).assertExists()
-        assertEquals(Accent.VIOLET.color, C.Accent)
+        // A preset, then the hue slider.
+        rule.onNode(hasContentDescription("Accent Amethyst")).performScrollTo().performClick(); rule.waitForIdle()
+        assertEquals(Accents.presets.first { it.first == "Amethyst" }.second, C.Accent)
+        rule.onNode(hasContentDescription("Accent hue")).performScrollTo()
+            .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(200f / 360f) }
+        rule.waitForIdle()
+        assertEquals(Accents.fromHue(200f), C.Accent)
+        rule.waitFor("Readable on light and dark")
         shot("19e_settings_accent")
+        // A red hue gets a warning (red means the opponent).
+        rule.onNode(hasContentDescription("Accent hue")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(2f / 360f) }
+        rule.waitFor("Close to the opponent's red")
+        rule.onNode(hasContentDescription("Accent hue")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(200f / 360f) }
+        rule.waitForIdle()
         // Kept after a restart, and used across the app (the tab bar's pill).
         scenario?.close()
         launch()
         rule.waitFor("New match")
-        assertEquals(Accent.VIOLET, C.accent)
+        assertEquals(Accents.fromHue(200f).toArgb(), C.Accent.toArgb())
         shot("19f_new_match_accent")
     }
 

@@ -1,6 +1,12 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.clickable
@@ -73,18 +79,7 @@ fun SettingsScreen(vm: MainViewModel) {
         Segmented(ThemeMode.entries, theme, { it.label }, vm.settings::setTheme, Modifier.padding(horizontal = 16.dp))
         SectionLabel("Accent")
         val accent by vm.settings.accent.collectAsState()
-        Row(Modifier.padding(horizontal = 16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Accent.entries.forEach { a ->
-                val on = a == accent
-                Box(
-                    Modifier.size(48.dp).clip(CircleShape).background(a.color)
-                        .border(if (on) 3.dp else 0.dp, if (on) C.Ink else Color.Transparent, CircleShape)
-                        .clickable { vm.settings.setAccent(a) }
-                        .semantics { contentDescription = "Accent ${a.label}" + if (on) " on" else "" },
-                    contentAlignment = Alignment.Center,
-                ) { if (on) Text("✓", color = a.ink, fontWeight = FontWeight.Black, fontSize = 18.sp) }
-            }
-        }
+        AccentPicker(accent, vm.settings::setAccent, Modifier.padding(horizontal = 16.dp))
         SectionLabel("Score background")
         Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
             // Live preview, drawn exactly like a half of the scoring screen.
@@ -119,5 +114,75 @@ object AppInfo {
         val info = runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull() ?: return "?"
         val code = if (android.os.Build.VERSION.SDK_INT >= 28) info.longVersionCode else @Suppress("DEPRECATION") info.versionCode.toLong()
         return "${info.versionName} · build $code"
+    }
+}
+
+/** Hue slider, presets, a live preview and a readability check (owner's pick, concept "D"). */
+@Composable
+private fun AccentPicker(accent: Color, onPick: (Color) -> Unit, modifier: Modifier = Modifier) {
+    val hues = remember { (0..12).map { Accents.fromHue(it * 30f) } }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        androidx.compose.foundation.layout.BoxWithConstraints(
+            Modifier.fillMaxWidth().height(40.dp)
+                .semantics {
+                    contentDescription = "Accent hue"
+                    progressBarRangeInfo = androidx.compose.ui.semantics.ProgressBarRangeInfo(Accents.hueOf(accent) / 360f, 0f..1f)
+                    setProgress { v -> onPick(Accents.fromHue(v * 360f)); true }
+                },
+        ) {
+            val w = constraints.maxWidth.toFloat()
+            fun pick(x: Float) = onPick(Accents.fromHue((x / w).coerceIn(0f, 1f) * 360f))
+            Box(
+                Modifier.fillMaxWidth().height(22.dp).align(Alignment.Center).clip(RoundedCornerShape(11.dp))
+                    .background(Brush.horizontalGradient(hues))
+                    .pointerInput(w) { detectTapGestures { pick(it.x) } }
+                    .pointerInput(w) { detectHorizontalDragGestures { change, _ -> change.consume(); pick(change.position.x) } },
+            )
+            val grey = (maxOf(accent.red, accent.green, accent.blue) - minOf(accent.red, accent.green, accent.blue)) < 0.08f
+            if (!grey) {
+                val x = with(androidx.compose.ui.platform.LocalDensity.current) { (Accents.hueOf(accent) / 360f * w).toDp() }
+                Box(
+                    Modifier.offset(x = x - 16.dp).align(Alignment.CenterStart).size(32.dp).clip(CircleShape)
+                        .background(Color.White).padding(3.dp).clip(CircleShape).background(accent),
+                )
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Accents.presets.forEach { (name, c) ->
+                val on = c == accent
+                Box(
+                    Modifier.size(32.dp).clip(CircleShape).background(c)
+                        .border(if (on) 3.dp else 1.dp, if (on) C.Ink else C.Line, CircleShape)
+                        .clickable { onPick(c) }.semantics { contentDescription = "Accent $name" + if (on) " on" else "" },
+                )
+            }
+        }
+        val problem = Accents.problem(accent)
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.Card).padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(if (problem == null) "✓" else "!", color = if (problem == null) C.Green else C.Red, fontWeight = FontWeight.Black)
+            Text(problem ?: "Readable on light and dark", color = C.Ink, fontSize = 14.sp)
+        }
+        // Live preview: a header, two filter tokens and the tab bar's pill in the accent.
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).padding(8.dp)) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(C.Paper)) {
+                Row(Modifier.fillMaxWidth().background(C.Black).padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("10", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                    Text(" matches", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                    Text("+", color = accent, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                }
+                Row(Modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("Might ≥ 4", "Shield").forEach {
+                        Text(it, color = Accents.inkOn(accent), fontWeight = FontWeight.ExtraBold, fontSize = 12.sp,
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(accent).padding(horizontal = 8.dp, vertical = 4.dp))
+                    }
+                }
+                Row(Modifier.fillMaxWidth().background(C.Card).padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                    repeat(4) { i -> Box(Modifier.size(if (i == 0) 44.dp else 22.dp, if (i == 0) 20.dp else 8.dp).clip(RoundedCornerShape(10.dp)).background(if (i == 0) accent else C.Line)) }
+                }
+            }
+        }
     }
 }

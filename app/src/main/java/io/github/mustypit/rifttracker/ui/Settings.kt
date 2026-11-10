@@ -1,6 +1,7 @@
 package io.github.mustypit.rifttracker.ui
 
 import android.content.Context
+import androidx.compose.ui.graphics.toArgb
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,17 +48,17 @@ class SettingsStore(context: Context) {
     }
 
     private val _accent = MutableStateFlow(
-        Accent.entries.firstOrNull { it.name == prefs.getString(KEY_ACCENT, null) } ?: Accent.YELLOW,
+        if (prefs.contains(KEY_ACCENT_ARGB)) androidx.compose.ui.graphics.Color(prefs.getInt(KEY_ACCENT_ARGB, 0)) else Accents.DEFAULT,
     )
-    val accent: StateFlow<Accent> = _accent.asStateFlow()
+    val accent: StateFlow<androidx.compose.ui.graphics.Color> = _accent.asStateFlow()
 
-    fun setAccent(a: Accent) {
-        _accent.value = a
-        prefs.edit().putString(KEY_ACCENT, a.name).apply()
+    fun setAccent(c: androidx.compose.ui.graphics.Color) {
+        _accent.value = c
+        prefs.edit().putInt(KEY_ACCENT_ARGB, c.toArgb()).apply()
     }
 
     private companion object {
-        const val KEY_ACCENT = "accent"
+        const val KEY_ACCENT_ARGB = "accent_argb"
         const val KEY_DARKNESS = "veil_darkness"
         const val KEY_THEME = "theme"
     }

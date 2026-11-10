@@ -44,41 +44,54 @@ private val LightPalette = Palette(
     drawGrey = Color(0xFFBDB8B0),
 )
 
-/** Dark palettes to choose from (the first warm one felt yellowish). */
-enum class DarkStyle(val label: String, val palette: Palette) {
-    /** Neutral greys, no tint. */
-    GRAPHITE("Graphite", Palette(
-        paper = Color(0xFF121314), card = Color(0xFF1D1E20), ink = Color(0xFFEEEFF1), muted = Color(0xFF9C9EA3),
-        line = Color(0xFF2F3134), track = Color(0xFF26282B), soft = Color(0xFF242629),
-        solid = Color(0xFFEEEFF1), onSolid = Color(0xFF111111), header = Color(0xFF000000), onHeader = Color.White,
-        drawGrey = Color(0xFF6F7277),
-    )),
-    /** True black background (saves battery on OLED screens), dark grey cards. */
-    OLED("Black", Palette(
-        paper = Color(0xFF000000), card = Color(0xFF141414), ink = Color(0xFFF2F2F2), muted = Color(0xFF9A9A9A),
-        line = Color(0xFF2A2A2A), track = Color(0xFF1F1F1F), soft = Color(0xFF1A1A1A),
-        solid = Color(0xFFF2F2F2), onSolid = Color(0xFF000000), header = Color(0xFF000000), onHeader = Color.White,
-        drawGrey = Color(0xFF6B6B6B),
-    )),
-    /** Slightly cool blue-grey. */
-    SLATE("Slate", Palette(
-        paper = Color(0xFF0F1217), card = Color(0xFF1A1E25), ink = Color(0xFFE9EDF3), muted = Color(0xFF939CAA),
-        line = Color(0xFF2B313B), track = Color(0xFF232832), soft = Color(0xFF20252E),
-        solid = Color(0xFFE9EDF3), onSolid = Color(0xFF0F1217), header = Color(0xFF07090C), onHeader = Color.White,
-        drawGrey = Color(0xFF6C7482),
-    )),
-}
+/** Graphite: neutral dark grey, no tint (the owner's pick; the first warm dark felt yellowish). */
+private val DarkPalette = Palette(
+    paper = Color(0xFF121314), card = Color(0xFF1D1E20), ink = Color(0xFFEEEFF1), muted = Color(0xFF9C9EA3),
+    line = Color(0xFF2F3134), track = Color(0xFF26282B), soft = Color(0xFF242629),
+    solid = Color(0xFFEEEFF1), onSolid = Color(0xFF111111), header = Color(0xFF000000), onHeader = Color.White,
+    drawGrey = Color(0xFF6F7277),
+)
 
-/** The highlight colour across the app (tab pill, middle-bar pill, filter tokens…), picked in Settings. */
-enum class Accent(val label: String, val color: Color) {
-    YELLOW("Yellow", Color(0xFFFFE14A)),
-    ORANGE("Orange", Color(0xFFFF9F43)),
-    PINK("Pink", Color(0xFFFF6FAE)),
-    VIOLET("Violet", Color(0xFFA98BFF)),
-    BLUE("Blue", Color(0xFF5BC8F5)),
-    ;
-    /** Black or white, whichever reads better on the accent. */
-    val ink: Color get() = if (color.luminance() > 0.3f) Color(0xFF111111) else Color.White
+/**
+ * The highlight colour across the app (tab pill, middle-bar pill, filter tokens…), set in Settings with
+ * a hue slider or a preset. The slider keeps saturation and lightness fixed so every hue stays bright.
+ */
+object Accents {
+    val DEFAULT = Color(0xFFFFE14A)
+    val presets = listOf(
+        "Gold" to Color(0xFFFFE14A), "Ember" to Color(0xFFFF9F43), "Rose" to Color(0xFFFF6FAE),
+        "Amethyst" to Color(0xFFA98BFF), "Sky" to Color(0xFF5BC8F5), "Pearl" to Color(0xFFEDEDED),
+    )
+    fun fromHue(hue: Float): Color = Color.hsl(hue.coerceIn(0f, 359.9f), 0.92f, 0.64f)
+
+    /** Hue (0–360) of [c], for placing the slider's knob. */
+    fun hueOf(c: Color): Float {
+        val r = c.red; val g = c.green; val b = c.blue
+        val max = maxOf(r, g, b); val min = minOf(r, g, b); val d = max - min
+        if (d == 0f) return 0f
+        val h = when (max) { r -> ((g - b) / d) % 6f; g -> (b - r) / d + 2f; else -> (r - g) / d + 4f } * 60f
+        return if (h < 0) h + 360f else h
+    }
+
+    /** Black or white, whichever reads better on [c]. */
+    fun inkOn(c: Color): Color = Color(0xFF111111).let { dark -> if (contrast(c, dark) >= contrast(c, Color.White)) dark else Color.White }
+
+    fun contrast(a: Color, b: Color): Float {
+        val la = a.luminance(); val lb = b.luminance()
+        return (maxOf(la, lb) + 0.05f) / (minOf(la, lb) + 0.05f)
+    }
+
+    /** null when [c] works everywhere; otherwise what's wrong with it, in a few words. */
+    fun problem(c: Color): String? {
+        val hue = hueOf(c); val grey = (maxOf(c.red, c.green, c.blue) - minOf(c.red, c.green, c.blue)) < 0.08f
+        return when {
+            !grey && (hue < 14f || hue > 346f) -> "Close to the opponent's red"
+            !grey && hue in 105f..160f -> "Close to your green"
+            contrast(c, inkOn(c)) < 4.5f -> "Text on it is hard to read"
+            contrast(c, Color.Black) < 3f -> "Hard to see on the dark header"
+            else -> null
+        }
+    }
 }
 
 /**
@@ -91,11 +104,10 @@ object C {
     val GreenInk = Color(0xFF06210F)
     val Red = Color(0xFFE2483A)
     val RedInk = Color(0xFF2A0805)
-    /** The accent the owner picked (yellow by default), and the text colour on it. */
-    var accent: io.github.mustypit.rifttracker.ui.Accent = io.github.mustypit.rifttracker.ui.Accent.YELLOW
-        private set
-    val Accent get() = accent.color
-    val OnAccent get() = accent.ink
+    /** The accent the owner picked (gold by default), and the text colour on it. */
+    private var accentColor: Color = Accents.DEFAULT
+    val Accent get() = accentColor
+    val OnAccent get() = Accents.inkOn(accentColor)
     /** Always black: the counter's bars and dark text on coloured fills. */
     val Black = Color(0xFF111111)
 
@@ -115,12 +127,9 @@ object C {
     val OnHeader get() = palette.onHeader
     val DrawGrey get() = palette.drawGrey
 
-    /** The dark palette in use; tests switch it to render each variant. */
-    var darkStyle: DarkStyle = DarkStyle.GRAPHITE
-
-    fun use(dark: Boolean, accent: io.github.mustypit.rifttracker.ui.Accent = this.accent) {
-        palette = if (dark) darkStyle.palette else LightPalette
-        this.accent = accent
+    fun use(dark: Boolean, accent: Color = accentColor) {
+        palette = if (dark) DarkPalette else LightPalette
+        accentColor = accent
     }
 
     fun side(s: Side) = if (s == Side.ME) Green else Red
@@ -156,7 +165,7 @@ val Caps = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letter
 
 /** Follows the phone's light/dark setting. */
 @Composable
-fun RiftTheme(dark: Boolean = isSystemInDarkTheme(), accent: Accent = Accent.YELLOW, content: @Composable () -> Unit) {
+fun RiftTheme(dark: Boolean = isSystemInDarkTheme(), accent: Color = Accents.DEFAULT, content: @Composable () -> Unit) {
     C.use(dark, accent)
     MaterialTheme(colorScheme = scheme(C.palette, dark), typography = type, content = content)
 }

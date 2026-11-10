@@ -146,12 +146,14 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (counted per game) in Legends → Fields. Library from OpenRift via the same importer
   (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
   and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
-- **Accent** (Settings → Accent: Yellow default, Orange, Pink, Violet, Blue; never green/red, those
-  mean you/opponent): `C.Accent` / `C.OnAccent` (black or white by luminance) everywhere yellow was
-  (tab pill, middle-bar pill, filter tokens, lead-change outlines, header accents). Stored in
-  `SettingsStore`. **Dark palettes**: `DarkStyle` GRAPHITE (neutral grey, current default), OLED (true
-  black), SLATE (cool blue-grey); the old warm one felt yellowish. `AppDarkTest.darkStyleVariants`
-  renders each to `app/screenshots/darkstyles/`. Owner is choosing between them.
+- **Accent** (Settings → Accent, owner's pick "D"): a hue slider (fixed saturation/lightness so every hue
+  stays bright), presets Gold (default) · Ember · Rose · Amethyst · Sky · Pearl, a readability check
+  (`Accents.problem`: warns near the opponent's red or your green, or when text/header contrast is low)
+  and a live preview. Stored as ARGB in `SettingsStore`. `C.Accent` / `C.OnAccent` (black or white,
+  whichever contrasts more) replace yellow everywhere (tab pill, middle-bar pill, filter tokens,
+  lead-change outlines, header accents). The owner rejected a plain row of colour circles.
+- **Dark palette** is Graphite (neutral grey: paper #121314, cards #1D1E20), owner's pick; the
+  first warm dark felt yellowish. Black and slate variants were tried and dropped.
 - **Dark mode** follows the phone unless set in Settings: colours are roles in `Theme.kt` (`C.Paper/Card/Ink/Muted/Line/
   Track/Soft/Solid/OnSolid/Header`), each with a light and a dark value; `C.Black`, green and red are fixed;
   the accent is the owner's pick. Use the roles in new UI, never `Color.White`/hex for surfaces or text.
