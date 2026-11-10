@@ -4,6 +4,8 @@ package io.github.mustypit.rifttracker.ui
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.foundation.Image
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import io.github.mustypit.rifttracker.game.DeckRules
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.offset
@@ -259,12 +261,20 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
                             )
                             .semantics { contentDescription = "Card ${c.name}" },
                     )
-                    val n = deck?.count(c.slug) ?: 0
-                    if (n > 0) Text(
-                        "$n×", color = C.OnAccent, fontWeight = FontWeight.Black, fontSize = 13.sp,
-                        modifier = Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp).clip(RoundedCornerShape(9.dp))
-                            .background(C.Accent).padding(horizontal = 7.dp, vertical = 2.dp).semantics { contentDescription = "$n in deck" },
-                    )
+                    CountBadge(deck?.count(c.slug) ?: 0, Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp))
+                    // Take a copy back out, without leaving the library.
+                    val inDeck = deck?.count(c.slug) ?: 0
+                    androidx.compose.animation.AnimatedVisibility(
+                        inDeck > 0, Modifier.align(Alignment.TopStart).offset(x = (-4).dp, y = (-4).dp),
+                        enter = androidx.compose.animation.scaleIn(spring(dampingRatio = 0.5f, stiffness = 600f)), exit = androidx.compose.animation.scaleOut(tween(120)),
+                    ) {
+                        Box(
+                            Modifier.size(26.dp).clip(CircleShape).background(C.Solid)
+                                .clickable { deck?.let { d -> vm.editDeck(d.id) { DeckRules.remove(it, c) } } }
+                                .semantics { contentDescription = "Remove one ${c.name}" },
+                            contentAlignment = Alignment.Center,
+                        ) { Text("−", color = C.OnSolid, fontWeight = FontWeight.Black, fontSize = 16.sp, lineHeight = 16.sp) }
+                    }
                 }
             }
         }

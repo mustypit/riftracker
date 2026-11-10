@@ -116,6 +116,11 @@ open class AppTest {
 
     private fun click(text: String) { rule.onNode(hasText(text)).scrollIfNeeded().performClick(); rule.waitForIdle() }
 
+    /** Taps by semantics, for things a floating button may cover on screen. */
+    private fun tap(text: String) {
+        rule.onNode(hasText(text)).scrollIfNeeded().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
+    }
+
     /** A counter button press, 40 seconds after the previous one. */
     private fun press(who: String, what: String, times: Int = 1) = repeat(times) {
         clock.addAndGet(40_000)
@@ -626,6 +631,10 @@ open class AppTest {
             repeat(4) { rule.onNode(hasContentDescription("Card ${c.name}")).performClick(); rule.waitForIdle() }
             rule.onNode(hasContentDescription("3 in deck")).assertExists()
         }
+        // − on a card in the deck takes a copy back out.
+        rule.onNode(hasContentDescription("Remove one ${picks.last().name}")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("2 in deck")).assertExists()
+        rule.onNode(hasContentDescription("Card ${picks.last().name}")).performClick(); rule.waitForIdle()
         rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).performTextClearance(); rule.waitForIdle()
         val offDomain = io.github.mustypit.rifttracker.game.Cards.all.first { it.type == "unit" && it.domainList == listOf(io.github.mustypit.rifttracker.game.Domain.CALM) }
         type("Search cards", offDomain.name)
@@ -637,32 +646,35 @@ open class AppTest {
         rule.onNode(hasContentDescription("Main 10 of 40")).assertExists()
         settleImages()
         shot("25_deck_main")
-        // Runes: + on Fury takes one from Mind; always 12.
-        click("Runes")
+        // Views of the main deck.
+        click("Grid"); settleImages(); shot("25b_deck_grid")
+        click("Split"); settleImages(); shot("25c_deck_split")
+        click("Stacks"); settleImages(); shot("25d_deck_stacks")
+        click("List")
+        // Runes (on the same page): + on Fury takes one from Mind; always 12.
         rule.onNode(hasContentDescription("More fury runes")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("fury runes 7")).assertExists()
         rule.onNode(hasContentDescription("mind runes 5")).assertExists()
         shot("26_deck_runes")
-        // Fields
-        click("Fields")
-        click("+ Battlefield")
+        // Battlefields, further down the page, with their text.
+        tap("+ Battlefield")
         type("Search battlefields", "Cosmic")
         rule.onNode(hasContentDescription("Battlefield Cosmic Vista")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Fields 1 of 3")).assertExists()
         settleImages()
         shot("27_deck_fields")
-        // Stats, match runes, copy as text
-        click("Stats")
+        // Stats at the bottom, match runes, copy as text
+        rule.onNode(hasText("POWER")).performScrollTo()
         rule.waitFor("POWER")
         settleImages()
         shot("28_deck_stats")
-        click("Match")
-        click("Copy as text")
+        tap("Match")
+        tap("Copy as text")
         val clip = (context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip!!.getItemAt(0).text.toString()
         assertTrue(clip, clip.startsWith("Legend: Daughter of the Void"))
         assertTrue(clip.contains("3 ${picks.first().name}"))
         // Back on the list, the unfinished deck is labelled.
-        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Back")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
         rule.waitFor("10/40")
         // Paste it back as a new deck.
         click("Paste a list")
@@ -679,6 +691,56 @@ open class AppTest {
         click("Decks")
         rule.waitFor("Kai'Sa deck")
         rule.waitFor("Imported deck")
+    }
+
+    /** Records the deck builder's motion (screenshots/anim/deck_*): runes, adding cards, switching views. */
+    @Test
+    fun deckAnimationFrames() {
+        if (prefix.isNotEmpty()) return
+        launch()
+        click("Decks"); click("+ New deck")
+        type("Search legends", "Kai")
+        rule.onNode(hasContentDescription("Legend Daughter of the Void")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Champion Kai'Sa, Survivor")).performClick(); rule.waitForIdle()
+        click("START BUILDING"); rule.waitFor("Kai'Sa deck")
+        val legend = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Daughter of the Void" }
+        val champion = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Kai'Sa, Survivor" }
+        val probe = io.github.mustypit.rifttracker.game.DeckRules.newDeck(legend, champion)
+        val pool = io.github.mustypit.rifttracker.game.Cards.all.filter { io.github.mustypit.rifttracker.game.DeckRules.allowed(probe, it) && !it.isChampion && !io.github.mustypit.rifttracker.game.DeckRules.isSignature(it) && (it.energy ?: 9) <= 5 }.distinctBy { it.name }
+        var frame = 0
+        fun frames(name: String, count: Int, settle: Boolean = false) = repeat(count) {
+            if (settle && it % 3 == 0) Thread.sleep(100)
+            rule.onRoot().captureRoboImage("screenshots/anim/${name}_%03d.png".format(frame++))
+            rule.mainClock.advanceTimeBy(20)
+        }
+        // 1. Adding cards: badge pops, counts roll.
+        click("+ Add cards"); rule.waitFor("Search cards"); settleImages()
+        rule.mainClock.autoAdvance = false
+        frame = 0; frames("deckadd", 4, true)
+        // The first cards of the grid, as shown (no scrolling while recording).
+        val shown = rule.onAllNodes(hasContentDescription("Card ", substring = true)).fetchSemanticsNodes()
+            .mapNotNull { it.config.getOrElseNullable(androidx.compose.ui.semantics.SemanticsProperties.ContentDescription) { null }?.firstOrNull() }.take(3)
+        shown.forEach { desc ->
+            repeat(2) { rule.onNode(hasContentDescription(desc)).performClick(); frames("deckadd", 12, true) }
+        }
+        rule.mainClock.autoAdvance = true
+        // Fill a bit more so the deck has a curve, then back.
+        pool.drop(3).take(6).forEach { c ->
+            rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).performTextClearance()
+            type("Search cards", c.name)
+            repeat(2) { rule.onNode(hasContentDescription("Card ${c.name}")).performClick(); rule.waitForIdle() }
+        }
+        click("Done"); settleImages()
+        // 2. Runes: + on each side, then the divider, bar slides and numbers roll.
+        rule.mainClock.autoAdvance = false
+        frame = 0; frames("deckrunes", 4)
+        repeat(3) { rule.onNode(hasContentDescription("More fury runes")).performClick(); frames("deckrunes", 12) }
+        rule.onNode(hasContentDescription("More mind runes")).performClick(); frames("deckrunes", 14)
+        repeat(2) { rule.onNode(hasContentDescription("More mind runes")).performClick(); frames("deckrunes", 12) }
+        // 3. Views crossfade.
+        frame = 0; frames("deckviews", 3, true)
+        listOf("Grid", "Split", "Stacks", "List").forEach { v -> rule.onNode(hasText(v)).performClick(); frames("deckviews", 16, true) }
+        rule.mainClock.autoAdvance = true
     }
 
     @Test

@@ -2,6 +2,10 @@ package io.github.mustypit.rifttracker.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -106,7 +110,7 @@ fun DeckCounts(deck: Deck, modifier: Modifier = Modifier) {
                     .semantics(mergeDescendants = true) { contentDescription = "$label $n of $full" },
                 horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.Bottom,
             ) {
-                Text("$n", fontWeight = FontWeight.Black, fontSize = 14.sp, color = if (ok) C.Ink else C.Red)
+                RollingNumber(n) { Text("$it", fontWeight = FontWeight.Black, fontSize = 14.sp, color = if (ok) C.Ink else C.Red) }
                 Text("/$full $label", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (ok) C.Muted else C.Red, maxLines = 1)
             }
         }
@@ -237,14 +241,19 @@ fun NewDeckScreen(vm: MainViewModel) {
 
 // A deck
 
-private enum class DeckTab(val label: String) { Main("Main"), Runes("Runes"), Fields("Fields"), Stats("Stats") }
+/** How the main deck is shown. */
+private enum class DeckView(val label: String) { List("List"), Grid("Grid"), Split("Split"), Stacks("Stacks") }
 
+/**
+ * A deck, one scrolling page (owner's layout): counts, runes, the main deck in a chosen view,
+ * battlefields with their text, then stats. "+ Add cards" floats at the bottom.
+ */
 @Composable
 fun DeckScreen(vm: MainViewModel, id: Long) {
     val drafts by vm.deckDrafts.collectAsState()
     val decks by vm.decks.collectAsState()
     val deck = drafts[id] ?: decks.firstOrNull { it.id == id } ?: return
-    var tab by rememberSaveable { mutableStateOf(DeckTab.Main) }
+    var view by rememberSaveable { mutableStateOf(DeckView.List) }
     var renaming by remember { mutableStateOf(false) }
     var pickingField by remember { mutableStateOf<Int?>(null) }
     fun edit(f: (Deck) -> Deck) = vm.editDeck(id, f)
@@ -252,24 +261,35 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp)) {
             DeckHeader(deck, onBack = { vm.back() }, onRename = { renaming = true }, onDuplicate = { vm.duplicateDeck(id) }, onDelete = { vm.deleteDeck(id) })
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).animateContentSize(spring(stiffness = 500f)), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 DeckCounts(deck)
-                Segmented(DeckTab.entries, tab, { it.label }, { tab = it })
-                when (tab) {
-                    DeckTab.Main -> MainList(deck, vm, ::edit)
-                    DeckTab.Runes -> RuneSplit(deck, ::edit)
-                    DeckTab.Fields -> FieldSlots(deck, { pickingField = it }, ::edit)
-                    DeckTab.Stats -> DeckStats(deck, ::edit)
+                RuneSplit(deck, ::edit)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("MAIN DECK", style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
                 }
+                Segmented(DeckView.entries, view, { it.label }, { view = it })
+                androidx.compose.animation.Crossfade(view, animationSpec = tween(220), label = "deck view") { v ->
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        when (v) {
+                            DeckView.List -> MainList(deck, vm, ::edit)
+                            DeckView.Grid -> CardGrid(deck, DeckRules.entries(deck), vm)
+                            DeckView.Split -> groups(deck).forEach { (name, list) -> GroupLabel(name, list); CardGrid(deck, list, vm) }
+                            DeckView.Stacks -> Stacks(deck, vm)
+                        }
+                    }
+                }
+                Text("BATTLEFIELDS", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 8.dp))
+                FieldSlots(deck) { pickingField = it }
+                Text("STATS", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 8.dp))
+                DeckStats(deck, ::edit)
             }
         }
-        if (tab == DeckTab.Main) {
-            Text(
-                "+ Add cards", fontWeight = FontWeight.Black, fontSize = 16.sp, color = C.OnAccent,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).shadow(8.dp, RoundedCornerShape(16.dp))
-                    .clip(RoundedCornerShape(16.dp)).background(C.Accent).clickable { vm.push(Screen.DeckAddCards(id)) }.padding(horizontal = 26.dp, vertical = 14.dp),
-            )
-        }
+        Text(
+            "+ Add cards", fontWeight = FontWeight.Black, fontSize = 16.sp, color = C.OnAccent,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).squishWhenPressed(remember { androidx.compose.foundation.interaction.MutableInteractionSource() })
+                .shadow(8.dp, RoundedCornerShape(16.dp)).clip(RoundedCornerShape(16.dp)).background(C.Accent)
+                .clickable { vm.push(Screen.DeckAddCards(id)) }.padding(horizontal = 26.dp, vertical = 14.dp),
+        )
         pickingField?.let { i ->
             BattlefieldPicker(
                 "Battlefield ${i + 1}", deck.battlefields, deck.battlefields.getOrNull(i),
@@ -330,16 +350,19 @@ private fun EnergyCurve(deck: Deck, height: Dp = 64.dp, showAverage: Boolean = f
     val curve = DeckRules.energyCurve(deck)
     val max = (curve.maxOrNull() ?: 0).coerceAtLeast(1)
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).padding(horizontal = 12.dp, vertical = 10.dp)) {
-        if (showAverage) Row {
+        if (showAverage) Row(verticalAlignment = Alignment.CenterVertically) {
             Text("ENERGY", style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
             Text("avg ", style = Caps, color = C.Muted)
-            Text("%.1f".format(java.util.Locale.ENGLISH, DeckRules.averageEnergy(deck)), fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.Ink)
+            val avg by animateFloatAsState(DeckRules.averageEnergy(deck).toFloat(), tween(400), label = "avg")
+            Text("%.1f".format(java.util.Locale.ENGLISH, avg), fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.Ink)
         }
         Row(Modifier.fillMaxWidth().height(height).padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
             curve.forEachIndexed { i, n ->
+                // Bars grow and shrink as cards come and go.
+                val f by animateFloatAsState(n.toFloat() / max, spring(dampingRatio = 0.7f, stiffness = 300f), label = "bar")
                 Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
-                        if (n > 0) Box(Modifier.fillMaxWidth().fillMaxHeight(n.toFloat() / max).clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)).background(C.Accent))
+                        if (f > 0.005f) Box(Modifier.fillMaxWidth().fillMaxHeight(f.coerceIn(0f, 1f)).clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)).background(C.Accent))
                     }
                     Text(if (i == 7) "7+" else "$i", color = C.Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
@@ -348,25 +371,89 @@ private fun EnergyCurve(deck: Deck, height: Dp = 64.dp, showAverage: Boolean = f
     }
 }
 
-@Composable
-private fun MainList(deck: Deck, vm: MainViewModel, edit: ((Deck) -> Deck) -> Unit) {
-    EnergyCurve(deck)
+private fun groups(deck: Deck): List<Pair<String, List<Pair<Card, Int>>>> {
     val entries = DeckRules.entries(deck)
-    val groups = listOf(
+    return listOf(
         "Champion" to entries.filter { it.first.slug == deck.champion },
         "Units" to entries.filter { it.first.slug != deck.champion && it.first.type == "unit" },
         "Spells" to entries.filter { it.first.type == "spell" },
         "Gear" to entries.filter { it.first.type == "gear" },
         "Other" to entries.filter { it.first.type !in setOf("unit", "spell", "gear") },
-    )
-    if (entries.size <= 1) EmptyState("Add cards", "Tap + Add cards.", Modifier.fillMaxWidth())
-    groups.forEach { (name, list) ->
-        if (list.isEmpty()) return@forEach
-        Row(Modifier.padding(top = 4.dp)) {
-            Text(name.uppercase(), style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
-            Text("${list.sumOf { it.second }}", style = Caps, color = C.Muted)
+    ).filter { it.second.isNotEmpty() }
+}
+
+@Composable
+private fun GroupLabel(name: String, list: List<Pair<Card, Int>>) = Row(Modifier.padding(top = 4.dp)) {
+    Text(name.uppercase(), style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
+    Text("${list.sumOf { it.second }}", style = Caps, color = C.Muted)
+}
+
+@Composable
+private fun MainList(deck: Deck, vm: MainViewModel, edit: ((Deck) -> Deck) -> Unit) {
+    EnergyCurve(deck)
+    if (deck.main.size <= 1) EmptyState("Add cards", "Tap + Add cards.", Modifier.fillMaxWidth())
+    groups(deck).forEach { (name, list) ->
+        GroupLabel(name, list)
+        list.forEach { (c, n) ->
+            androidx.compose.runtime.key(c.slug) {
+                DeckCardRow(deck, c, n, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, c) } }, onRemove = { edit { DeckRules.remove(it, c) } })
+            }
         }
-        list.forEach { (c, n) -> DeckCardRow(deck, c, n, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, c) } }, onRemove = { edit { DeckRules.remove(it, c) } }) }
+    }
+}
+
+/** Card pictures, three across, each with its copy count. */
+@Composable
+private fun CardGrid(deck: Deck, list: List<Pair<Card, Int>>, vm: MainViewModel) {
+    list.chunked(3).forEach { rowCards ->
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            rowCards.forEach { (c, n) ->
+                Box(Modifier.weight(1f)) {
+                    CardImage(c, Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(7.dp)).clickable { vm.push(Screen.CardDetail(c.slug)) }.semantics { contentDescription = "Deck card ${c.name}" })
+                    CountBadge(n, Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp))
+                }
+            }
+            repeat(3 - rowCards.size) { Spacer(Modifier.weight(1f)) }
+        }
+    }
+}
+
+/** "3×" on a card; pops when the number changes. */
+@Composable
+fun CountBadge(n: Int, modifier: Modifier = Modifier) {
+    val scale = remember { androidx.compose.animation.core.Animatable(1f) }
+    var last by remember { mutableStateOf(n) }
+    androidx.compose.runtime.LaunchedEffect(n) {
+        if (n != last) { last = n; scale.snapTo(1.45f); scale.animateTo(1f, spring(dampingRatio = 0.4f, stiffness = 600f)) }
+    }
+    if (n > 0) Text(
+        "$n×", color = C.OnAccent, fontWeight = FontWeight.Black, fontSize = 13.sp,
+        modifier = modifier.graphicsLayer { scaleX = scale.value; scaleY = scale.value }.clip(RoundedCornerShape(9.dp))
+            .background(C.Accent).padding(horizontal = 7.dp, vertical = 2.dp).semantics { contentDescription = "$n in deck" },
+    )
+}
+
+/** Columns by energy cost, each card's top strip showing under the next one (Archidekt's stacks). */
+@Composable
+private fun Stacks(deck: Deck, vm: MainViewModel) {
+    val byCost = DeckRules.entries(deck).filter { it.first.energy != null }.groupBy { it.first.energy!!.coerceAtMost(7) }
+    val costs = (0..7).filter { it in byCost }
+    if (costs.isEmpty()) return
+    costs.chunked(4).forEach { chunk ->
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            chunk.forEach { k ->
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    EnergySymbol(k, 18.dp)
+                    Spacer(Modifier.height(4.dp))
+                    Box(Modifier.fillMaxWidth()) {
+                        byCost[k]!!.flatMap { (c, n) -> List(n) { c } }.forEachIndexed { i, c ->
+                            CardImage(c, Modifier.padding(top = (20 * i).dp).fillMaxWidth().shadow(2.dp, RoundedCornerShape(4.dp)).clickable { vm.push(Screen.CardDetail(c.slug)) }, corner = 4.dp)
+                        }
+                    }
+                }
+            }
+            repeat(4 - chunk.size) { Spacer(Modifier.weight(1f)) }
+        }
     }
 }
 
@@ -395,7 +482,7 @@ private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: 
         }
         Row(Modifier.clip(RoundedCornerShape(10.dp)).background(C.Track), verticalAlignment = Alignment.CenterVertically) {
             Text("−", color = C.Muted, fontWeight = FontWeight.Black, fontSize = 16.sp, modifier = Modifier.clickable(onClick = onRemove).semantics { contentDescription = "Remove ${c.name}" }.padding(horizontal = 10.dp, vertical = 4.dp))
-            Text("$n", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 15.sp, modifier = Modifier.semantics { contentDescription = "${c.name} $n" })
+            RollingNumber(n, Modifier.semantics(mergeDescendants = true) { contentDescription = "${c.name} $n" }) { Text("$it", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 15.sp) }
             Text("+", color = if (n < DeckRules.maxCopies(c)) C.Muted else C.Line, fontWeight = FontWeight.Black, fontSize = 16.sp,
                 modifier = Modifier.clickable(enabled = n < DeckRules.maxCopies(c), onClick = onAdd).semantics { contentDescription = "Add ${c.name}" }.padding(horizontal = 10.dp, vertical = 4.dp))
         }
@@ -404,39 +491,45 @@ private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: 
 
 private fun Modifier.graphicsScale(s: Float) = this.graphicsLayer { scaleX = s; scaleY = s; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 0.12f) }
 
-/** 12 runes as one bar: + on a side takes one from the other; the divider can be dragged. */
+/** 12 runes as one bar: + on a side takes one from the other; the divider can be dragged. Animated. */
 @Composable
 private fun RuneSplit(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
     val ds = DeckRules.domains(deck)
     if (ds.size < 2) return
     val (a, b) = ds
     val na = deck.runesOf(a); val nb = deck.runesOf(b)
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card).padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val split by animateFloatAsState(na / DeckRules.RUNES.toFloat(), spring(dampingRatio = 0.6f, stiffness = 400f), label = "rune split")
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card).padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            RuneSymbol(a, 28.dp)
-            Text("$na", fontWeight = FontWeight.Black, fontSize = 28.sp, color = C.Ink, modifier = Modifier.padding(start = 8.dp).semantics { contentDescription = "${a.name.lowercase()} runes $na" })
-            Spacer(Modifier.weight(1f))
-            Text("$nb", fontWeight = FontWeight.Black, fontSize = 28.sp, color = C.Ink, modifier = Modifier.padding(end = 8.dp).semantics { contentDescription = "${b.name.lowercase()} runes $nb" })
-            RuneSymbol(b, 28.dp)
-        }
-        BoxWithConstraints(Modifier.fillMaxWidth().height(30.dp)) {
-            val w = constraints.maxWidth.toFloat()
-            val density = LocalDensity.current
-            fun setAt(x: Float) = edit { DeckRules.setRunes(it, (x / w * DeckRules.RUNES).roundToInt()) }
-            Row(
-                Modifier.fillMaxWidth().height(22.dp).align(Alignment.Center).clip(RoundedCornerShape(11.dp))
-                    .pointerInput(w) { detectTapGestures { setAt(it.x) } }
-                    .pointerInput(w) { detectHorizontalDragGestures { ch, _ -> ch.consume(); setAt(ch.position.x) } },
-            ) {
-                if (na > 0) Box(Modifier.weight(na.toFloat()).fillMaxHeight().background(Color(a.argb)))
-                if (nb > 0) Box(Modifier.weight(nb.toFloat()).fillMaxHeight().background(Color(b.argb)))
+            RuneSymbol(a, 24.dp)
+            RollingNumber(na, Modifier.padding(start = 6.dp).semantics(mergeDescendants = true) { contentDescription = "${a.name.lowercase()} runes $na" }) {
+                Text("$it", fontWeight = FontWeight.Black, fontSize = 24.sp, color = C.Ink)
             }
-            val x = with(density) { (w * na / DeckRules.RUNES).toDp() }
-            Box(Modifier.offset(x = x - 3.dp).size(6.dp, 30.dp).clip(RoundedCornerShape(3.dp)).background(Color.White))
-        }
-        Row {
-            PlusButton("More ${a.name.lowercase()} runes") { edit { DeckRules.addRune(it, a) } }
             Spacer(Modifier.weight(1f))
+            Text("RUNES", style = Caps, color = C.Muted)
+            Spacer(Modifier.weight(1f))
+            RollingNumber(nb, Modifier.padding(end = 6.dp).semantics(mergeDescendants = true) { contentDescription = "${b.name.lowercase()} runes $nb" }) {
+                Text("$it", fontWeight = FontWeight.Black, fontSize = 24.sp, color = C.Ink)
+            }
+            RuneSymbol(b, 24.dp)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            PlusButton("More ${a.name.lowercase()} runes") { edit { DeckRules.addRune(it, a) } }
+            BoxWithConstraints(Modifier.weight(1f).height(30.dp)) {
+                val w = constraints.maxWidth.toFloat()
+                val density = LocalDensity.current
+                fun setAt(x: Float) = edit { DeckRules.setRunes(it, (x / w * DeckRules.RUNES).roundToInt()) }
+                Row(
+                    Modifier.fillMaxWidth().height(20.dp).align(Alignment.Center).clip(RoundedCornerShape(10.dp))
+                        .pointerInput(w) { detectTapGestures { setAt(it.x) } }
+                        .pointerInput(w) { detectHorizontalDragGestures { ch, _ -> ch.consume(); setAt(ch.position.x) } },
+                ) {
+                    if (split > 0.001f) Box(Modifier.weight(split).fillMaxHeight().background(Color(a.argb)))
+                    if (split < 0.999f) Box(Modifier.weight(1f - split).fillMaxHeight().background(Color(b.argb)))
+                }
+                val x = with(density) { (w * split).toDp() }
+                Box(Modifier.offset(x = x - 3.dp).size(6.dp, 30.dp).clip(RoundedCornerShape(3.dp)).background(Color.White))
+            }
             PlusButton("More ${b.name.lowercase()} runes") { edit { DeckRules.addRune(it, b) } }
         }
     }
@@ -444,48 +537,43 @@ private fun RuneSplit(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
 
 @Composable
 private fun PlusButton(description: String, onClick: () -> Unit) {
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Text("+", fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Ink, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-        modifier = Modifier.width(56.dp).clip(RoundedCornerShape(10.dp)).background(C.Track).clickable(onClick = onClick).semantics { contentDescription = description }.padding(vertical = 6.dp))
+        modifier = Modifier.width(44.dp).squishWhenPressed(source).clip(RoundedCornerShape(10.dp)).background(C.Track)
+            .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick).semantics { contentDescription = description }.padding(vertical = 4.dp))
 }
 
+/** Battlefields with their picture and what they do. */
 @Composable
-private fun FieldSlots(deck: Deck, onPick: (Int) -> Unit, edit: ((Deck) -> Deck) -> Unit) {
+private fun FieldSlots(deck: Deck, onPick: (Int) -> Unit) {
     deck.battlefields.forEachIndexed { i, name ->
-        Box(Modifier.fillMaxWidth().height(70.dp).clip(RoundedCornerShape(12.dp)).clickable { onPick(i) }.semantics(mergeDescendants = true) { contentDescription = "Battlefield $name" }) {
-            BattlefieldThumb(name, Modifier.matchParentSize(), corner = 0)
-            Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to Color.Black.copy(alpha = 0.6f), 1f to Color.Transparent)))
-            Text(name, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, modifier = Modifier.align(Alignment.BottomStart).padding(12.dp))
+        val card = remember(name, Cards.all) { Cards.all.firstOrNull { it.type == "battlefield" && it.name.equals(name, true) } }
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).clickable { onPick(i) }
+                .semantics(mergeDescendants = true) { contentDescription = "Battlefield $name" },
+        ) {
+            Box(Modifier.fillMaxWidth().height(64.dp)) {
+                BattlefieldThumb(name, Modifier.matchParentSize(), corner = 0)
+                Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to Color.Black.copy(alpha = 0.65f), 1f to Color.Transparent)))
+                Text(name, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, modifier = Modifier.align(Alignment.BottomStart).padding(12.dp))
+            }
+            if (card != null && card.text.isNotBlank()) RulesTextView(card.text, Modifier.padding(12.dp), fontSize = 14.sp)
         }
     }
     if (deck.battlefields.size < DeckRules.BATTLEFIELDS) {
         Text("+ Battlefield", fontWeight = FontWeight.ExtraBold, color = C.Muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp)).clickable { onPick(deck.battlefields.size) }.padding(22.dp))
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp)).clickable { onPick(deck.battlefields.size) }.padding(20.dp))
     }
 }
 
 @Composable
 private fun DeckStats(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
-    // Stacks: card images piled by energy cost.
-    val byCost = DeckRules.entries(deck).filter { it.first.energy != null }.groupBy { it.first.energy!!.coerceAtMost(6) }.toSortedMap()
-    if (byCost.isNotEmpty()) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        (0..6).filter { it in byCost }.take(6).forEach { k ->
-            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                EnergySymbol(k, 18.dp)
-                Spacer(Modifier.height(4.dp))
-                // Each card shows only its top strip (cost and name) under the next one.
-                Box(Modifier.fillMaxWidth()) {
-                    byCost[k]!!.take(8).forEachIndexed { i, (c, _) ->
-                        CardImage(c, Modifier.padding(top = (22 * i).dp).fillMaxWidth().shadow(2.dp, RoundedCornerShape(4.dp)), corner = 4.dp)
-                    }
-                }
-            }
-        }
-    }
     EnergyCurve(deck, 52.dp, showAverage = true)
     val ds = DeckRules.domains(deck)
     if (ds.size == 2) {
         val p = DeckRules.powerByDomain(deck)
         val pa = (p[ds[0]] ?: 0.0).roundToInt(); val pb = (p[ds[1]] ?: 0.0).roundToInt()
+        val share by animateFloatAsState(if (pa + pb == 0) 0.5f else pa / (pa + pb).toFloat(), tween(400), label = "power")
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row {
                 Text("POWER", style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
@@ -495,8 +583,8 @@ private fun DeckStats(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
                 RuneSymbol(ds[0], 20.dp)
                 Text("$pa", fontWeight = FontWeight.Black, color = C.Ink)
                 Row(Modifier.weight(1f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(C.Track), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    if (pa > 0) Box(Modifier.weight(pa.toFloat()).fillMaxHeight().background(Color(ds[0].argb)))
-                    if (pb > 0) Box(Modifier.weight(pb.toFloat()).fillMaxHeight().background(Color(ds[1].argb)))
+                    if (pa + pb > 0 && share > 0.001f) Box(Modifier.weight(share).fillMaxHeight().background(Color(ds[0].argb)))
+                    if (pa + pb > 0 && share < 0.999f) Box(Modifier.weight(1f - share).fillMaxHeight().background(Color(ds[1].argb)))
                 }
                 Text("$pb", fontWeight = FontWeight.Black, color = C.Ink)
                 RuneSymbol(ds[1], 20.dp)

@@ -115,9 +115,13 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   cards split evenly) and "Match" (runes in that ratio); no power "curve" (no Riftbound tool has one).
   Text export/import (`toText`/`fromText`). Stored in Room table `decks` (JSON per row, DB version 2,
   `MIGRATION_1_2` only creates the table; `MigrationTest` opens a v1 file with a match). UI:
-  `ui/DecksScreen.kt` (list, new deck: legend then champion, deck screen Main/Runes/Fields/Stats,
-  rename/paste overlays) and `CardsScreen(deckId=…)` for adding cards (library limited to allowed
-  cards, tap adds, "n×" badge, counts dock). `MainViewModel.editDeck` keeps drafts and saves after each
+  `ui/DecksScreen.kt` (list, new deck: legend then champion, rename/paste overlays). The deck screen is
+  **one scrolling page** (owner): counts, the rune bar (+ on each side, slides and rolls), main deck
+  with views **List · Grid · Split (grid by type) · Stacks (by cost)**, battlefields showing their
+  rules text, then stats (curve with average, power vs runes + Match, copy as text). Adding cards:
+  `CardsScreen(deckId=…)` (library limited to allowed cards, tap adds, "n×" badge pops, a "−" on cards
+  in the deck takes one out, counts dock). Motion: counts and copy numbers roll, curve bars grow,
+  views crossfade, + buttons squish. `AppTest.deckAnimationFrames` records `anim/deck*` frames. `MainViewModel.editDeck` keeps drafts and saves after each
   change. No banlist yet (data has `banned`; owner postponed). Decks aren't linked to matches yet.
 - `stats/Stats.kt`: pure stats over finished matches.
 - `data/Db.kt`: Room, one row per match with the match as JSON (new fields get defaults when old
