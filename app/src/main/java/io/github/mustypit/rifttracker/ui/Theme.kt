@@ -7,6 +7,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -43,16 +44,45 @@ private val LightPalette = Palette(
     drawGrey = Color(0xFFBDB8B0),
 )
 
-/** Warm near-black, matching the light theme's paper tone; the player colours stay the same. */
-private val DarkPalette = Palette(
-    paper = Color(0xFF121110), card = Color(0xFF1E1C1A), ink = Color(0xFFF2EEE8), muted = Color(0xFFA8A29A),
-    line = Color(0xFF34302C), track = Color(0xFF2A2724), soft = Color(0xFF282522),
-    solid = Color(0xFFF2EEE8), onSolid = Color(0xFF111111), header = Color(0xFF000000), onHeader = Color.White,
-    drawGrey = Color(0xFF77726C),
-)
+/** Dark palettes to choose from (the first warm one felt yellowish). */
+enum class DarkStyle(val label: String, val palette: Palette) {
+    /** Neutral greys, no tint. */
+    GRAPHITE("Graphite", Palette(
+        paper = Color(0xFF121314), card = Color(0xFF1D1E20), ink = Color(0xFFEEEFF1), muted = Color(0xFF9C9EA3),
+        line = Color(0xFF2F3134), track = Color(0xFF26282B), soft = Color(0xFF242629),
+        solid = Color(0xFFEEEFF1), onSolid = Color(0xFF111111), header = Color(0xFF000000), onHeader = Color.White,
+        drawGrey = Color(0xFF6F7277),
+    )),
+    /** True black background (saves battery on OLED screens), dark grey cards. */
+    OLED("Black", Palette(
+        paper = Color(0xFF000000), card = Color(0xFF141414), ink = Color(0xFFF2F2F2), muted = Color(0xFF9A9A9A),
+        line = Color(0xFF2A2A2A), track = Color(0xFF1F1F1F), soft = Color(0xFF1A1A1A),
+        solid = Color(0xFFF2F2F2), onSolid = Color(0xFF000000), header = Color(0xFF000000), onHeader = Color.White,
+        drawGrey = Color(0xFF6B6B6B),
+    )),
+    /** Slightly cool blue-grey. */
+    SLATE("Slate", Palette(
+        paper = Color(0xFF0F1217), card = Color(0xFF1A1E25), ink = Color(0xFFE9EDF3), muted = Color(0xFF939CAA),
+        line = Color(0xFF2B313B), track = Color(0xFF232832), soft = Color(0xFF20252E),
+        solid = Color(0xFFE9EDF3), onSolid = Color(0xFF0F1217), header = Color(0xFF07090C), onHeader = Color.White,
+        drawGrey = Color(0xFF6C7482),
+    )),
+}
+
+/** The highlight colour across the app (tab pill, middle-bar pill, filter tokens…), picked in Settings. */
+enum class Accent(val label: String, val color: Color) {
+    YELLOW("Yellow", Color(0xFFFFE14A)),
+    ORANGE("Orange", Color(0xFFFF9F43)),
+    PINK("Pink", Color(0xFFFF6FAE)),
+    VIOLET("Violet", Color(0xFFA98BFF)),
+    BLUE("Blue", Color(0xFF5BC8F5)),
+    ;
+    /** Black or white, whichever reads better on the accent. */
+    val ink: Color get() = if (color.luminance() > 0.3f) Color(0xFF111111) else Color.White
+}
 
 /**
- * "Bold blocks": two loud player colours, black bars, yellow highlights, heavy type.
+ * "Bold blocks": two loud player colours, black bars, accent highlights (yellow by default), heavy type.
  * Role colours follow the current palette (set by [RiftTheme]); the fixed colours never change.
  */
 object C {
@@ -61,7 +91,11 @@ object C {
     val GreenInk = Color(0xFF06210F)
     val Red = Color(0xFFE2483A)
     val RedInk = Color(0xFF2A0805)
-    val Yellow = Color(0xFFFFE14A)
+    /** The accent the owner picked (yellow by default), and the text colour on it. */
+    var accent: io.github.mustypit.rifttracker.ui.Accent = io.github.mustypit.rifttracker.ui.Accent.YELLOW
+        private set
+    val Accent get() = accent.color
+    val OnAccent get() = accent.ink
     /** Always black: the counter's bars and dark text on coloured fills. */
     val Black = Color(0xFF111111)
 
@@ -81,7 +115,13 @@ object C {
     val OnHeader get() = palette.onHeader
     val DrawGrey get() = palette.drawGrey
 
-    fun use(dark: Boolean) { palette = if (dark) DarkPalette else LightPalette }
+    /** The dark palette in use; tests switch it to render each variant. */
+    var darkStyle: DarkStyle = DarkStyle.GRAPHITE
+
+    fun use(dark: Boolean, accent: io.github.mustypit.rifttracker.ui.Accent = this.accent) {
+        palette = if (dark) darkStyle.palette else LightPalette
+        this.accent = accent
+    }
 
     fun side(s: Side) = if (s == Side.ME) Green else Red
     fun sideInk(s: Side) = if (s == Side.ME) GreenInk else RedInk
@@ -116,7 +156,7 @@ val Caps = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letter
 
 /** Follows the phone's light/dark setting. */
 @Composable
-fun RiftTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    C.use(dark)
+fun RiftTheme(dark: Boolean = isSystemInDarkTheme(), accent: Accent = Accent.YELLOW, content: @Composable () -> Unit) {
+    C.use(dark, accent)
     MaterialTheme(colorScheme = scheme(C.palette, dark), typography = type, content = content)
 }

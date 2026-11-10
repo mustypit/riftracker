@@ -95,7 +95,7 @@ fun MatchesScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text("${matches.size}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 56.sp)
                     Text(if (matches.size == 1) " match" else " matches", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.padding(bottom = 12.dp).weight(1f))
-                    IconButton(onClick = { vm.push(Screen.LogMatch) }) { Icon(Icons.Default.Add, "Log a match", tint = C.Yellow) }
+                    IconButton(onClick = { vm.push(Screen.LogMatch) }) { Icon(Icons.Default.Add, "Log a match", tint = C.Accent) }
                 }
                 val latest = matches.firstOrNull()?.myLegend
                 Text(
@@ -253,7 +253,7 @@ private fun ScoreChart(g: Game, oppLabel: String) {
                     Text(
                         "${r.me}–${r.opp}", fontWeight = FontWeight.Black, fontSize = 12.sp, color = C.Ink,
                         modifier = Modifier.clip(RoundedCornerShape(9.dp)).background(C.Card)
-                            .border(if (r.leadChange) 2.dp else 1.dp, if (r.leadChange) C.Yellow else C.Line, RoundedCornerShape(9.dp))
+                            .border(if (r.leadChange) 2.dp else 1.dp, if (r.leadChange) C.Accent else C.Line, RoundedCornerShape(9.dp))
                             .padding(horizontal = 7.dp, vertical = 2.dp),
                     )
                 }
@@ -421,7 +421,7 @@ fun LegendDetailScreen(vm: MainViewModel, legend: String) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LegendAvatar(d.legend, 56.dp)
                     Column(Modifier.padding(start = 14.dp)) {
-                        Text(period.label.uppercase(), style = Caps, color = C.Yellow)
+                        Text(period.label.uppercase(), style = Caps, color = C.Accent)
                         Text(d.legend, color = Color.White, fontWeight = FontWeight.Black, fontSize = 34.sp)
                     }
                 }

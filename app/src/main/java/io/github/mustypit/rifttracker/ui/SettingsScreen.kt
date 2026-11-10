@@ -1,6 +1,11 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +71,20 @@ fun SettingsScreen(vm: MainViewModel) {
         SectionLabel("Theme")
         val theme by vm.settings.theme.collectAsState()
         Segmented(ThemeMode.entries, theme, { it.label }, vm.settings::setTheme, Modifier.padding(horizontal = 16.dp))
+        SectionLabel("Accent")
+        val accent by vm.settings.accent.collectAsState()
+        Row(Modifier.padding(horizontal = 16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Accent.entries.forEach { a ->
+                val on = a == accent
+                Box(
+                    Modifier.size(48.dp).clip(CircleShape).background(a.color)
+                        .border(if (on) 3.dp else 0.dp, if (on) C.Ink else Color.Transparent, CircleShape)
+                        .clickable { vm.settings.setAccent(a) }
+                        .semantics { contentDescription = "Accent ${a.label}" + if (on) " on" else "" },
+                    contentAlignment = Alignment.Center,
+                ) { if (on) Text("✓", color = a.ink, fontWeight = FontWeight.Black, fontSize = 18.sp) }
+            }
+        }
         SectionLabel("Score background")
         Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(16.dp)) {
             // Live preview, drawn exactly like a half of the scoring screen.

@@ -98,7 +98,7 @@ fun BattlefieldPicker(title: String, recentNames: List<String?>, selected: Strin
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White) }
                 Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp, modifier = Modifier.weight(1f))
-                if (selected != null) Text("Clear", color = C.Yellow, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onPick(null) }.padding(8.dp))
+                if (selected != null) Text("Clear", color = C.Accent, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onPick(null) }.padding(8.dp))
             }
             RiftTextField("Search battlefields", query, { query = it }, Modifier.padding(start = 8.dp, top = 6.dp))
         }

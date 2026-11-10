@@ -46,7 +46,18 @@ class SettingsStore(context: Context) {
         prefs.edit().putString(KEY_THEME, mode.name).apply()
     }
 
+    private val _accent = MutableStateFlow(
+        Accent.entries.firstOrNull { it.name == prefs.getString(KEY_ACCENT, null) } ?: Accent.YELLOW,
+    )
+    val accent: StateFlow<Accent> = _accent.asStateFlow()
+
+    fun setAccent(a: Accent) {
+        _accent.value = a
+        prefs.edit().putString(KEY_ACCENT, a.name).apply()
+    }
+
     private companion object {
+        const val KEY_ACCENT = "accent"
         const val KEY_DARKNESS = "veil_darkness"
         const val KEY_THEME = "theme"
     }

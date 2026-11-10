@@ -432,8 +432,8 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
                 else -> "FIRST TO ${GameRules.VICTORY_SCORE}"
             }
             Text(
-                label, style = Caps, color = C.Black,
-                modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (correction != null) Color.White else C.Yellow)
+                label, style = Caps, color = if (correction != null) C.Black else C.OnAccent,
+                modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (correction != null) Color.White else C.Accent)
                     .clickable(enabled = correction != null) { vm.undo() }
                     .padding(horizontal = 10.dp, vertical = 4.dp),
             )

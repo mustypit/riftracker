@@ -44,7 +44,8 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
-            RiftTheme(dark) { AppShell(vm) }
+            val accent by vm.settings.accent.collectAsState()
+            RiftTheme(dark, accent) { AppShell(vm) }
         }
     }
 }
@@ -83,7 +84,7 @@ fun AppShell(vm: MainViewModel) {
                             )
                         },
                         label = { Text(t.label) },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = C.Yellow, selectedIconColor = C.Black, selectedTextColor = C.Ink, unselectedIconColor = C.Muted, unselectedTextColor = C.Muted),
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = C.Accent, selectedIconColor = C.OnAccent, selectedTextColor = C.Ink, unselectedIconColor = C.Muted, unselectedTextColor = C.Muted),
                     )
                 }
             }

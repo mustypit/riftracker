@@ -258,19 +258,19 @@ private fun StatIcon(stat: Stat, size: Dp) = when (stat) {
 @Composable
 private fun FilterToken(text: String, statIcon: Stat? = null, onRemove: () -> Unit) {
     Row(
-        Modifier.clip(RoundedCornerShape(10.dp)).background(C.Yellow).clickable(onClick = onRemove)
+        Modifier.clip(RoundedCornerShape(10.dp)).background(C.Accent).clickable(onClick = onRemove)
             .semantics(mergeDescendants = true) { contentDescription = "Remove $text" }
             .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         if (statIcon != null) {
             when (statIcon) {
-                Stat.MIGHT -> Icon(RiftSymbols.Might, null, tint = C.Black, modifier = Modifier.size(16.dp))
+                Stat.MIGHT -> Icon(RiftSymbols.Might, null, tint = C.OnAccent, modifier = Modifier.size(16.dp))
                 else -> StatIcon(statIcon, 16.dp)
             }
         }
-        Text(text, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.Black)
-        Text("×", fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.Black.copy(alpha = 0.55f))
+        Text(text, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.OnAccent)
+        Text("×", fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.OnAccent.copy(alpha = 0.55f))
     }
 }
 

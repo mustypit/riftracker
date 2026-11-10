@@ -146,9 +146,15 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (counted per game) in Legends → Fields. Library from OpenRift via the same importer
   (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
   and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
+- **Accent** (Settings → Accent: Yellow default, Orange, Pink, Violet, Blue; never green/red, those
+  mean you/opponent): `C.Accent` / `C.OnAccent` (black or white by luminance) everywhere yellow was
+  (tab pill, middle-bar pill, filter tokens, lead-change outlines, header accents). Stored in
+  `SettingsStore`. **Dark palettes**: `DarkStyle` GRAPHITE (neutral grey, current default), OLED (true
+  black), SLATE (cool blue-grey); the old warm one felt yellowish. `AppDarkTest.darkStyleVariants`
+  renders each to `app/screenshots/darkstyles/`. Owner is choosing between them.
 - **Dark mode** follows the phone unless set in Settings: colours are roles in `Theme.kt` (`C.Paper/Card/Ink/Muted/Line/
-  Track/Soft/Solid/OnSolid/Header`), each with a light and a dark value; `C.Black`, green, red and
-  yellow are fixed. Use the roles in new UI, never `Color.White`/hex for surfaces or text.
+  Track/Soft/Solid/OnSolid/Header`), each with a light and a dark value; `C.Black`, green and red are fixed;
+  the accent is the owner's pick. Use the roles in new UI, never `Color.White`/hex for surfaces or text.
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
 - The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.

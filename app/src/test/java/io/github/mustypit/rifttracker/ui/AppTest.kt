@@ -568,6 +568,50 @@ open class AppTest {
         rule.mainClock.autoAdvance = true
     }
 
+    /** Renders the same screens in each dark palette (screenshots/darkstyles/), for the owner to compare. */
+    @Test
+    fun darkStyleVariants() {
+        if (prefix != "dark_") return
+        seedHistory()
+        try {
+            for (style in DarkStyle.entries) {
+                C.darkStyle = style
+                launch()
+                rule.waitFor("New match")
+                fun cap(name: String) = rule.onRoot().captureRoboImage("screenshots/darkstyles/${style.name.lowercase()}_$name.png")
+                cap("1_new_match")
+                click("Matches"); rule.waitFor("NOVEMBER 2026"); cap("2_matches")
+                rule.onAllNodes(hasText("vs Garen"))[0].performClick(); rule.waitForIdle(); rule.waitFor("GAME 1"); cap("3_match_detail")
+                rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+                click("Cards"); rule.waitFor("Search cards"); settleImages(); cap("4_cards")
+                type("Search cards", "Kai'Sa, Surv")
+                rule.onNode(hasContentDescription("Card Kai'Sa, Survivor")).performClick(); rule.waitForIdle(); rule.waitFor("Cost"); settleImages(); cap("5_card")
+                rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+                click("Play"); rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle(); rule.waitFor("ACCENT"); cap("6_settings")
+                scenario?.close()
+            }
+        } finally {
+            C.darkStyle = DarkStyle.GRAPHITE
+        }
+    }
+
+    @Test
+    fun accentColour() {
+        launch()
+        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        rule.waitFor("ACCENT")
+        rule.onNode(hasContentDescription("Accent Violet", substring = true)).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Accent Violet on")).assertExists()
+        assertEquals(Accent.VIOLET.color, C.Accent)
+        shot("19e_settings_accent")
+        // Kept after a restart, and used across the app (the tab bar's pill).
+        scenario?.close()
+        launch()
+        rule.waitFor("New match")
+        assertEquals(Accent.VIOLET, C.accent)
+        shot("19f_new_match_accent")
+    }
+
     @Test
     fun emptyHistory() {
         launch()
