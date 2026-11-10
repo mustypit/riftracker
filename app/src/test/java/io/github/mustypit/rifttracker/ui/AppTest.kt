@@ -3,6 +3,7 @@ package io.github.mustypit.rifttracker.ui
 import android.content.Context
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -574,20 +575,18 @@ open class AppTest {
         launch()
         rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
         rule.waitFor("ACCENT")
-        // A preset, then the hue slider.
-        rule.onNode(hasContentDescription("Accent Amethyst")).performScrollTo().performClick(); rule.waitForIdle()
-        assertEquals(Accents.presets.first { it.first == "Amethyst" }.second, C.Accent)
+        // A preset, then a custom hue behind "+".
+        rule.onNode(hasContentDescription("Accent Lavender")).performScrollTo().performClick(); rule.waitForIdle()
+        assertEquals(Accents.presets.first { it.first == "Lavender" }.second, C.Accent)
+        rule.onNode(hasContentDescription("Accent Lavender on")).assertExists()
+        shot("19e_settings_accent")
+        rule.onAllNodes(hasContentDescription("Accent hue")).assertCountEquals(0)
+        rule.onNode(hasContentDescription("Custom accent")).performScrollTo().performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Accent hue")).performScrollTo()
             .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(200f / 360f) }
         rule.waitForIdle()
         assertEquals(Accents.fromHue(200f), C.Accent)
-        rule.waitFor("Readable on light and dark")
-        shot("19e_settings_accent")
-        // A red hue gets a warning (red means the opponent).
-        rule.onNode(hasContentDescription("Accent hue")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(2f / 360f) }
-        rule.waitFor("Close to the opponent's red")
-        rule.onNode(hasContentDescription("Accent hue")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.SetProgress) { it(200f / 360f) }
-        rule.waitForIdle()
+        shot("19g_settings_accent_custom")
         // Kept after a restart, and used across the app (the tab bar's pill).
         scenario?.close()
         launch()

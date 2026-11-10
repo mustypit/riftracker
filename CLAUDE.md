@@ -146,12 +146,16 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (counted per game) in Legends → Fields. Library from OpenRift via the same importer
   (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
   and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
-- **Accent** (Settings → Accent, owner's pick "D"): a hue slider (fixed saturation/lightness so every hue
-  stays bright), presets Gold (default) · Ember · Rose · Amethyst · Sky · Pearl, a readability check
-  (`Accents.problem`: warns near the opponent's red or your green, or when text/header contrast is low)
-  and a live preview. Stored as ARGB in `SettingsStore`. `C.Accent` / `C.OnAccent` (black or white,
-  whichever contrasts more) replace yellow everywhere (tab pill, middle-bar pill, filter tokens,
-  lead-change outlines, header accents). The owner rejected a plain row of colour circles.
+- **Accent** (Settings → Accent, owner's pick "1", like X's display settings): a slice of the real app
+  (match row, filter tokens, tab bar) that recolours as you tap, eight pastel presets spread around
+  the wheel (Butter default · Apricot · Blush · Orchid · Lavender · Periwinkle · Sky · Pearl; no red
+  or green, those mean opponent/you; each tested: black text ≥ 9:1, on the black header ≥ 10:1), and
+  "+" for a custom hue at the same pastel saturation/lightness (the slider shows only then). **No
+  explanatory or warning text** (owner: users judge readability themselves; customisation is a last
+  resort). Stored as ARGB in `SettingsStore`. `C.Accent` / `C.OnAccent` replace yellow everywhere
+  (tab pill, middle-bar pill, filter tokens, lead-change outlines, header accents). Rejected: a plain
+  row of saturated circles, named preview tiles, domain emblems, follow-my-legend, a slider with a
+  readability check.
 - **Dark palette** is Graphite (neutral grey: paper #121314, cards #1D1E20), owner's pick; the
   first warm dark felt yellowish. Black and slate variants were tried and dropped.
 - **Dark mode** follows the phone unless set in Settings: colours are roles in `Theme.kt` (`C.Paper/Card/Ink/Muted/Line/

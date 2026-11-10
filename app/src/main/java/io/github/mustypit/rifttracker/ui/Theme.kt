@@ -57,12 +57,17 @@ private val DarkPalette = Palette(
  * a hue slider or a preset. The slider keeps saturation and lightness fixed so every hue stays bright.
  */
 object Accents {
-    val DEFAULT = Color(0xFFFFE14A)
+    /** Pastel, spread around the wheel; red and green are left out (they mean opponent and you). Each
+     *  tested for black text (≥ 9:1) and on the black header (≥ 10:1). */
     val presets = listOf(
-        "Gold" to Color(0xFFFFE14A), "Ember" to Color(0xFFFF9F43), "Rose" to Color(0xFFFF6FAE),
-        "Amethyst" to Color(0xFFA98BFF), "Sky" to Color(0xFF5BC8F5), "Pearl" to Color(0xFFEDEDED),
+        "Butter" to Color(0xFFFCEA92), "Apricot" to Color(0xFFFCC392), "Blush" to Color(0xFFFAA8C3),
+        "Orchid" to Color(0xFFEBADEB), "Lavender" to Color(0xFFCAAFF8), "Periwinkle" to Color(0xFFA1B2F7),
+        "Sky" to Color(0xFF8ED3F6), "Pearl" to Color(0xFFE6E6E6),
     )
-    fun fromHue(hue: Float): Color = Color.hsl(hue.coerceIn(0f, 359.9f), 0.92f, 0.64f)
+    val DEFAULT = presets.first().second
+
+    /** The custom colour (behind "+"): any hue, at the same pastel saturation and lightness. */
+    fun fromHue(hue: Float): Color = Color.hsl(hue.coerceIn(0f, 359.9f), 0.9f, 0.8f)
 
     /** Hue (0–360) of [c], for placing the slider's knob. */
     fun hueOf(c: Color): Float {
@@ -73,25 +78,13 @@ object Accents {
         return if (h < 0) h + 360f else h
     }
 
-    /** Black or white, whichever reads better on [c]. */
-    fun inkOn(c: Color): Color = Color(0xFF111111).let { dark -> if (contrast(c, dark) >= contrast(c, Color.White)) dark else Color.White }
-
     fun contrast(a: Color, b: Color): Float {
         val la = a.luminance(); val lb = b.luminance()
         return (maxOf(la, lb) + 0.05f) / (minOf(la, lb) + 0.05f)
     }
 
-    /** null when [c] works everywhere; otherwise what's wrong with it, in a few words. */
-    fun problem(c: Color): String? {
-        val hue = hueOf(c); val grey = (maxOf(c.red, c.green, c.blue) - minOf(c.red, c.green, c.blue)) < 0.08f
-        return when {
-            !grey && (hue < 14f || hue > 346f) -> "Close to the opponent's red"
-            !grey && hue in 105f..160f -> "Close to your green"
-            contrast(c, inkOn(c)) < 4.5f -> "Text on it is hard to read"
-            contrast(c, Color.Black) < 3f -> "Hard to see on the dark header"
-            else -> null
-        }
-    }
+    /** Black or white, whichever reads better on [c]. */
+    fun inkOn(c: Color): Color = Color(0xFF111111).let { dark -> if (contrast(c, dark) >= contrast(c, Color.White)) dark else Color.White }
 }
 
 /**
