@@ -42,6 +42,42 @@ enum class CardType(val label: String, val types: Set<String>) {
     RUNES("Runes", setOf("rune")),
 }
 
+/** A number on a card that the filters compare. */
+enum class Stat(val label: String) { ENERGY("Energy"), POWER("Power"), MIGHT("Might") }
+
+/** Comparisons, as Scryfall offers them; [symbol] is what the compact field shows. */
+enum class Compare(val symbol: String, val label: String, val test: (Int, Int) -> Boolean) {
+    EQ("=", "equal to", { a, b -> a == b }),
+    LT("<", "less than", { a, b -> a < b }),
+    GT(">", "greater than", { a, b -> a > b }),
+    LE("≤", "less than or equal to", { a, b -> a <= b }),
+    GE("≥", "greater than or equal to", { a, b -> a >= b }),
+    NE("≠", "not equal to", { a, b -> a != b }),
+}
+
+/** One stats row: e.g. Might ≥ 4. Rows combine with AND, so "might between 4 and 6" is ≥ 4 plus ≤ 6. */
+data class StatFilter(val stat: Stat, val compare: Compare, val value: Int) {
+    val text: String get() = "${stat.label} ${compare.symbol} $value"
+}
+
+enum class CardSort(val label: String) { ENERGY("Energy"), NAME("Name"), SET("Set") }
+
+/** Everything the card search can narrow by. */
+data class CardQuery(
+    /** Searched in card names only. */
+    val text: String = "",
+    /** Words that must all appear in the rules text, in any order (Scryfall's "Text"). */
+    val rulesText: String = "",
+    /** Type-line tags (champion, region, species…); the card needs every one. */
+    val tags: Set<String> = emptySet(),
+    val domains: Set<Domain> = emptySet(),
+    val type: CardType = CardType.ALL,
+    val stats: List<StatFilter> = emptyList(),
+    /** The card must have every one of these. */
+    val keywords: Set<String> = emptySet(),
+    val sort: CardSort = CardSort.ENERGY,
+)
+
 object Cards {
     var all: List<Card> = emptyList()
         private set
@@ -58,21 +94,57 @@ object Cards {
 
     fun bySlug(slug: String): Card? = all.firstOrNull { it.slug == slug }
 
-    val sets: List<String> get() = all.map { it.set }.distinct().sortedWith(compareBy({ setOrder.indexOf(it).let { i -> if (i < 0) 99 else i } }, { it }))
+    val sets: List<String> get() = all.map { it.set }.distinct().sortedWith(compareBy({ setRank(it) }, { it }))
+    private fun setRank(set: String) = setOrder.indexOf(set).let { if (it < 0) 99 else it }
+
+    /** Every tag on some card (champions, regions, species), alphabetical, with how many cards have it. */
+    val tags: List<Pair<String, Int>> get() = all.flatMap { it.tags }.groupingBy { it }.eachCount().toList().sortedBy { it.first }
+
+    private val symbolWords = Regex(""":rb_(?:energy_(\d+)|rune_([a-z]+)|([a-z]+)):""")
+
+    /** Rules text as plain words: markup dropped, symbols as words ("2 energy", "fury rune", "might"). */
+    fun plainText(card: Card): String = card.text
+        .replace(symbolWords) { m ->
+            val (energy, rune, other) = m.destructured
+            when { energy.isNotEmpty() -> " $energy energy "; rune.isNotEmpty() -> " $rune rune "; else -> " $other " }
+        }
+        .replace("_(", "(").replace(")_", ")").replace("[", "").replace("]", "")
+
+    /** Every keyword on some card, alphabetical, with how many cards have it. */
+    val keywords: List<Pair<String, Int>> get() = all.flatMap { it.keywords }.groupingBy { it }.eachCount().toList().sortedBy { it.first }
 
     /**
-     * Cards matching [query] (name, champion/region tags or keywords), any of [domains] (none selected
-     * = all) and [type], grouped by set in [sets] order and by collector number within a set.
+     * A card's value for [stat], or null when it has none (it then never matches that stat, like
+     * Scryfall). A card with an energy cost but no power cost has power 0.
      */
-    fun browse(query: String = "", domains: Set<Domain> = emptySet(), type: CardType = CardType.ALL): List<Pair<String, List<Card>>> {
-        val q = query.trim().lowercase()
-        val matching = all.filter { c ->
-            c.type in type.types &&
-                (domains.isEmpty() || c.domainList.any { it in domains }) &&
-                (q.isEmpty() || c.name.lowercase().contains(q) || c.tags.any { it.lowercase().contains(q) } || c.keywords.any { it.lowercase().contains(q) })
+    fun value(card: Card, stat: Stat): Int? = when (stat) {
+        Stat.ENERGY -> card.energy
+        Stat.POWER -> card.power ?: if (card.energy != null) 0 else null
+        Stat.MIGHT -> card.might
+    }
+
+    fun matches(c: Card, q: CardQuery): Boolean {
+        val text = q.text.trim().lowercase()
+        return c.type in q.type.types &&
+            (q.domains.isEmpty() || c.domainList.any { it in q.domains }) &&
+            (text.isEmpty() || c.name.lowercase().contains(text)) &&
+            q.rulesText.trim().lowercase().split(Regex("\\s+")).filter { it.isNotEmpty() }.let { words ->
+                words.isEmpty() || plainText(c).lowercase().let { t -> words.all { it in t } }
+            } &&
+            q.tags.all { tag -> c.tags.any { it.equals(tag, ignoreCase = true) } } &&
+            q.keywords.all { k -> c.keywords.any { it.equals(k, ignoreCase = true) } } &&
+            q.stats.all { f -> value(c, f.stat)?.let { f.compare.test(it, f.value) } ?: false }
+    }
+
+    /** The cards matching [q], in its sort order (cards without an energy cost last when sorting by energy). */
+    fun search(q: CardQuery): List<Card> {
+        val byNumber = compareBy<Card>({ setRank(it.set) }, { it.code ?: "" }, { it.name })
+        val order = when (q.sort) {
+            CardSort.ENERGY -> compareBy<Card>({ it.energy ?: Int.MAX_VALUE }, { it.name })
+            CardSort.NAME -> compareBy { it.name }
+            CardSort.SET -> byNumber
         }
-        val bySet = matching.groupBy { it.set }
-        return sets.mapNotNull { s -> bySet[s]?.sortedWith(compareBy({ it.code ?: "" }, { it.name }))?.let { s to it } }
+        return all.filter { matches(it, q) }.sortedWith(order)
     }
 }
 

@@ -70,9 +70,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val setup = MutableStateFlow(MatchSetup())
 
     // Card library: filters and scroll position survive opening a card and coming back.
-    val cardQuery = MutableStateFlow("")
-    val cardDomains = MutableStateFlow<Set<io.github.mustypit.rifttracker.game.Domain>>(emptySet())
-    val cardType = MutableStateFlow(io.github.mustypit.rifttracker.game.CardType.ALL)
+    val cardSearch = MutableStateFlow(io.github.mustypit.rifttracker.game.CardQuery())
+    val cardFiltersOpen = MutableStateFlow(false)
     val cardsGrid = androidx.compose.foundation.lazy.grid.LazyGridState()
 
     private val saving = Mutex()

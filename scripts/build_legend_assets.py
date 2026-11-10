@@ -189,6 +189,18 @@ def write_cards(catalog):
             continue
         if c["id"] not in best or rank(p, sets) < rank(best[c["id"]], sets):
             best[c["id"]] = p
+    # How big would "every printing" be? Count English printings with their own picture, per card.
+    images_per_card = {}
+    for p in as_list(catalog["printings"]):
+        if p.get("language") == "EN" and p.get("images") and p.get("cardId") in cards:
+            images_per_card.setdefault(p["cardId"], set()).add(p["images"][0]["imageId"])
+    extra = sum(len(v) - 1 for v in images_per_card.values())
+    kinds = {}
+    for p in as_list(catalog["printings"]):
+        if p.get("language") == "EN":
+            k = "overnumbered" if p.get("isOvernumbered") else "signed" if p.get("isSigned") else p.get("artVariant", "normal")
+            kinds[k] = kinds.get(k, 0) + 1
+    print(f"printings: {extra} extra English pictures beyond one per card; English printings by kind {kinds}")
     library, tokens = [], {}
     for cid, p in best.items():
         c, s = cards[cid], sets.get(p.get("setId"), {})
@@ -227,6 +239,10 @@ def write_cards(catalog):
     for e in library:
         by_type[e["type"]] = by_type.get(e["type"], 0) + 1
     print(f"{len(library)} cards -> {CARDS_OUT / 'cards.json'}, {sum(1 for e in library if e['image'])} images; by type {by_type}")
+    sizes = [(CARDS_OUT / e["image"]).stat().st_size for e in library if e["image"]]
+    if sizes:
+        avg = sum(sizes) / len(sizes)
+        print(f"printings: average picture {avg / 1024:.1f} KB -> all English printings would add about {extra * avg / 1024 / 1024:.1f} MB")
     print("rules-text symbols:", json.dumps(dict(sorted(tokens.items(), key=lambda kv: -kv[1]))))
     print("enums:", json.dumps({k: [x.get("slug") for x in v] if isinstance(v, list) else v for k, v in catalog.get("enums", {}).items()})[:3000])
 

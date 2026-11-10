@@ -8,6 +8,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -463,6 +464,11 @@ open class AppTest {
     /** Card images load off the main thread; give them a moment before a screenshot. */
     private fun settleImages() { repeat(3) { Thread.sleep(250); rule.mainClock.advanceTimeBy(50); rule.waitForIdle() } }
 
+    private fun pick(field: String, option: String) {
+        rule.onNode(hasContentDescription(field)).performClick(); rule.waitForIdle()
+        rule.onAllNodes(hasText(option)).onLast().performClick(); rule.waitForIdle() // the open menu's item
+    }
+
     @Test
     fun cardLibrary() {
         launch()
@@ -473,17 +479,61 @@ open class AppTest {
         rule.onNode(hasContentDescription("Fury filter")).performClick()
         rule.onNode(hasContentDescription("Mind filter")).performClick()
         click("Units")
+        // Might between 4 and 6, with Shield: two stats rows and a keyword.
+        click("+ Filters")
+        click("+ Add stat")
+        pick("Stat 1", "Might"); pick("Comparison 1", "greater than or equal to"); pick("Value 1", "4")
+        click("+ Add stat")
+        pick("Stat 2", "Might"); pick("Comparison 2", "less than or equal to"); pick("Value 2", "6")
+        rule.onNode(hasSetTextAction() and hasContentDescription("Add keyword")).performScrollTo().performTextInput("shi"); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Keyword Shield")).performClick(); rule.waitForIdle()
+        val q = io.github.mustypit.rifttracker.game.CardQuery(
+            domains = setOf(io.github.mustypit.rifttracker.game.Domain.FURY, io.github.mustypit.rifttracker.game.Domain.MIND),
+            type = io.github.mustypit.rifttracker.game.CardType.UNITS,
+            stats = listOf(
+                io.github.mustypit.rifttracker.game.StatFilter(io.github.mustypit.rifttracker.game.Stat.MIGHT, io.github.mustypit.rifttracker.game.Compare.GE, 4),
+                io.github.mustypit.rifttracker.game.StatFilter(io.github.mustypit.rifttracker.game.Stat.MIGHT, io.github.mustypit.rifttracker.game.Compare.LE, 6),
+            ),
+            keywords = setOf("Shield"),
+        )
+        val expected = io.github.mustypit.rifttracker.game.Cards.search(q)
+        assertTrue("some Fury/Mind units with might 4-6 and Shield", expected.isNotEmpty())
+        assertTrue(expected.all { it.might in 4..6 && "Shield" in it.keywords })
+        rule.waitFor("SHOW ${expected.size} CARDS")
+        screenShot("20c_card_filters")
+        click("SHOW ${expected.size} CARDS")
+        rule.onNode(hasContentDescription("Remove Might ≥ 4")).assertExists()
+        rule.onNode(hasContentDescription("Remove Might ≤ 6")).assertExists()
+        rule.onNode(hasContentDescription("Remove Shield")).assertExists()
+        rule.waitFor("${expected.size} CARDS")
+        rule.onNode(hasContentDescription("Card ${expected.first().name}")).assertExists()
         settleImages()
         shot("20b_cards_filtered")
-        type("Search cards", "Kai'Sa")
-        rule.onNode(hasContentDescription("Card Kai'Sa, Survivor")).performClick(); rule.waitForIdle()
-        rule.waitFor("Energy")
+        // Removing a token widens the search again.
+        rule.onNode(hasContentDescription("Remove Shield")).performClick(); rule.waitForIdle()
+        rule.waitFor("${io.github.mustypit.rifttracker.game.Cards.search(q.copy(keywords = emptySet())).size} CARDS")
+        rule.onNode(hasContentDescription("Card ${expected.first().name}")).performClick(); rule.waitForIdle()
+        rule.waitFor("Cost")
         settleImages()
         shot("21_card")
         rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
         // Filters are kept after looking at a card.
         rule.onNode(hasContentDescription("Fury filter on")).assertExists()
-        rule.onNode(hasContentDescription("Card Kai'Sa, Survivor")).assertExists()
+        rule.onNode(hasContentDescription("Remove Might ≥ 4")).assertExists()
+        // Rules text and tags, from the sheet; the search box itself looks at names only.
+        click("+ Filters")
+        click("Clear all")
+        type("Rules text, e.g. draw 2", "draw 2")
+        rule.onNode(hasSetTextAction() and hasContentDescription("Add tag")).performScrollTo().performTextInput("frel"); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Tag Freljord")).performScrollTo().performClick(); rule.waitForIdle()
+        screenShot("20d_card_text_tags")
+        val tq = io.github.mustypit.rifttracker.game.CardQuery(
+            domains = q.domains, type = q.type, rulesText = "draw 2", tags = setOf("Freljord"),
+        )
+        val n = io.github.mustypit.rifttracker.game.Cards.search(tq).size
+        click("SHOW $n CARDS")
+        rule.onNode(hasContentDescription("Remove Text: “draw 2”")).assertExists()
+        rule.onNode(hasContentDescription("Remove Freljord")).assertExists()
     }
 
     /** Records browsing the card library (screenshots/anim/cards_*). */

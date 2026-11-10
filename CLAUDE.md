@@ -39,7 +39,7 @@ report as artifacts.
 |---|---|
 | `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
 | `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends; the shipped files cover Radiance with art |
-| `game/CardsTest` | Shipped card library: complete with pictures, filters, search, set order, every rules-text symbol drawable |
+| `game/CardsTest` | Shipped card library: complete with pictures, filters, search, sorting, stats rows (each comparison, might between 4 and 6, power 0), keywords (all must match), name-only search, rules text (any word order, symbols as words), tags, every rules-text symbol drawable |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
 
@@ -73,14 +73,28 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   card is its tag whose `tagCategoryMap` category is `legend`; names use straight apostrophes. The app
   merges `legends.json` into the built-in list at startup (`Legends.install`). Riftcodex was the
   earlier source (it lagged behind on Radiance and mixed in overnumbered art); it's no longer used.
-- **Card library** (Cards tab): `game/Cards.kt` (`Card`, `Cards.browse` filters by search/domains/type,
-  grouped by set newest first; `RulesText.parse` splits OpenRift markup `[Keyword]`, `_(reminder)_`,
-  `:rb_…:` into words and symbols) over `assets/cards/cards.json` + `assets/cards/<slug>.webp` (whole
-  card, 400 px, ~31 MB for ~1,100 cards; written by the importer, every card's original normal
-  printing). `ui/CardsScreen.kt`: concept "A" grid (3 columns, battlefields full width), domain and
-  type chips, card page (`Screen.CardDetail`) with energy/runes/might tiles and rules text with
-  inline symbols. Images decode off the main thread (`CardArt`, LruCache). Filters and scroll live in
-  `MainViewModel` so they survive opening a card. Symbols: `ui/RiftSymbols.kt`, generated from
+- **Card library** (Cards tab): `game/Cards.kt`: `Card`; `CardQuery` (name text, rules text, tags,
+  domains, type, stats rows, keywords, sort) and `Cards.search`. The search box matches **names only**
+  (owner: "shadow" must only find cards named …shadow…). Rules text (sheet's "Text", like Scryfall):
+  every word must appear, any order, over `Cards.plainText` (markup dropped, symbols as words:
+  "might", "2 energy", "fury rune"). Tags (type line: champions, regions, species): multi-select like
+  keywords, card needs every one. Stats rows are `StatFilter(stat ENERGY/POWER/MIGHT, compare
+  = < > ≤ ≥ ≠, value)` and combine with AND ("might between 4 and 6" = ≥ 4 plus ≤ 6); a card without
+  that stat never matches (power counts as 0 for cards with an energy cost). Keywords: a card needs
+  every one picked. `RulesText.parse` splits OpenRift markup `[Keyword]`, `_(reminder)_`, `:rb_…:` into
+  words and symbols. Data: `assets/cards/cards.json` + `assets/cards/<slug>.webp` (whole card, 400 px,
+  ~31 MB for ~1,100 cards; the importer writes them, each card's original normal printing).
+  `ui/CardsScreen.kt` (owner-approved mockups): search field in the black header, no count header and
+  no set dividers; domain and type chips; active filters as yellow removable tokens + "+ Filters";
+  "N cards" + sort (Energy/Name/Set); one flat 3-column grid (battlefields full width). Filter sheet is
+  an in-screen overlay (not a dialog: Robolectric quirk with text fields): Scryfall-style stats rows of
+  three dropdowns (stat, comparison shown as its symbol, value 0–12) + "+ Add stat", a Text field, and
+  tag and keyword multi-selects (`MultiPicker`: tokens in the field, checkbox list with counts that typing narrows). Card page: grouped **Cost**
+  tile (energy disc + one power symbol per power, in the card's domains; it's "power", not "runes"),
+  Might tile, rules text with inline symbols, keywords, then set · number · rarity · artist. No
+  horizontal strips of cards (owner: too many cards). Images decode on a background pool and are handed
+  back on the main thread (`CardArt`; resuming a coroutine after `withContext(IO)` broke Compose tests).
+  Search state and scroll live in `MainViewModel`. Symbols: `ui/RiftSymbols.kt`, generated from
   `design/symbols/*.svg` (domain emblems traced from OpenRift's images, might and the any-domain
   rune from OpenRift's SVGs, exhaust redrawn on a trace of the printed card; energy drawn in code as a
   white disc with a dark rim). Owner wants these as close to the printed symbols as possible.
