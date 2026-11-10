@@ -3,6 +3,9 @@ package io.github.mustypit.rifttracker.ui
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import io.github.mustypit.rifttracker.game.StatFilter
 import io.github.mustypit.rifttracker.game.Stat
 import io.github.mustypit.rifttracker.game.Compare
@@ -212,6 +215,7 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                                 FilterToken(f.text, statIcon = f.stat) { update { it.copy(stats = it.stats.filterIndexed { j, _ -> j != i }) } }
                             }
                             if (q.rulesText.isNotBlank()) FilterToken("Text: “${q.rulesText.trim()}”") { update { it.copy(rulesText = "") } }
+                            if (q.tagText.isNotBlank()) FilterToken("Tag: “${q.tagText.trim()}”") { update { it.copy(tagText = "") } }
                             q.tags.sorted().forEach { k -> FilterToken(k) { update { it.copy(tags = it.tags - k) } } }
                             q.keywords.sorted().forEach { k -> FilterToken(k) { update { it.copy(keywords = it.keywords - k) } } }
                             Text(
@@ -304,19 +308,37 @@ private fun <T> DropField(label: @Composable () -> Unit, description: String, it
 /** The filter sheet: stats rows (stat, comparison, value) and a multi-select keyword field. */
 @Composable
 private fun FilterSheet(q: CardQuery, count: Int, update: ((CardQuery) -> CardQuery) -> Unit, onClose: () -> Unit) {
-    Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f)).clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null, onClick = onClose)) {
+    androidx.compose.foundation.layout.BoxWithConstraints(
+        // Tapping the dimmed area closes the sheet (a plain tap catcher, so the sheet's own
+        // controls keep their separate accessibility nodes).
+        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f)).pointerInput(Unit) { detectTapGestures { onClose() } },
+    ) {
+        // Drag the handle (or the title row) to make the sheet taller or shorter; far down closes it.
+        val maxH = maxHeight - 24.dp
+        var height by remember { mutableStateOf(minOf(560.dp, maxH)) }
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        val drag = Modifier.pointerInput(maxH) {
+            detectVerticalDragGestures(onDragEnd = { if (height < 220.dp) onClose() }) { change, dy ->
+                change.consume()
+                height = (height - with(density) { dy.toDp() }).coerceIn(140.dp, maxH)
+            }
+        }
         Column(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().heightIn(max = 640.dp)
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(height)
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)).background(C.Paper)
-                .clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null) {}
+                // Taps inside the sheet stay in it (they don't close it); doesn't merge its contents.
+                .pointerInput(Unit) { detectTapGestures { } }
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp),
         ) {
-            Box(Modifier.align(Alignment.CenterHorizontally).size(40.dp, 5.dp).clip(RoundedCornerShape(3.dp)).background(C.Line))
-            Row(Modifier.padding(top = 10.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.fillMaxWidth().then(drag).semantics { contentDescription = "Resize filters" }.padding(vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) { Box(Modifier.size(40.dp, 5.dp).clip(RoundedCornerShape(3.dp)).background(C.Line)) }
+            Row(Modifier.then(drag).padding(top = 4.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("Filters", fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Ink, modifier = Modifier.weight(1f))
-                Text("Clear all", fontWeight = FontWeight.Bold, color = C.Muted, modifier = Modifier.clickable { update { it.copy(stats = emptyList(), keywords = emptySet(), tags = emptySet(), rulesText = "") } }.padding(4.dp))
+                Text("Clear all", fontWeight = FontWeight.Bold, color = C.Muted, modifier = Modifier.clickable { update { it.copy(stats = emptyList(), keywords = emptySet(), tags = emptySet(), tagText = "", rulesText = "") } }.padding(4.dp))
             }
-            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Stats", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = C.Ink, modifier = Modifier.padding(top = 6.dp))
                 q.stats.forEachIndexed { i, f ->
                     fun set(nf: StatFilter) = update { it.copy(stats = it.stats.toMutableList().also { l -> l[i] = nf }) }
@@ -346,7 +368,10 @@ private fun FilterSheet(q: CardQuery, count: Int, update: ((CardQuery) -> CardQu
                 Text("Text", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = C.Ink, modifier = Modifier.padding(top = 6.dp))
                 RiftTextField("Rules text, e.g. draw 2", q.rulesText, { t -> update { it.copy(rulesText = t) } })
                 Text("Tags", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = C.Ink, modifier = Modifier.padding(top = 6.dp))
-                MultiPicker("tag", remember(Cards.all) { Cards.tags }, q.tags) { k -> update { it.copy(tags = if (k in it.tags) it.tags - k else it.tags + k) } }
+                MultiPicker(
+                    "tag", remember(Cards.all) { Cards.tags }, q.tags,
+                    typedText = q.tagText, onTyped = { t -> update { it.copy(tagText = t) } },
+                ) { k -> update { it.copy(tags = if (k in it.tags) it.tags - k else it.tags + k) } }
                 Text("Keywords", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = C.Ink, modifier = Modifier.padding(top = 6.dp))
                 MultiPicker("keyword", remember(Cards.all) { Cards.keywords }, q.keywords) { k -> update { it.copy(keywords = if (k in it.keywords) it.keywords - k else it.keywords + k) } }
             }
@@ -360,8 +385,15 @@ private fun FilterSheet(q: CardQuery, count: Int, update: ((CardQuery) -> CardQu
  * and counts that typing narrows. [what] names it ("keyword") for the field and accessibility.
  */
 @Composable
-private fun MultiPicker(what: String, all: List<Pair<String, Int>>, selected: Set<String>, onToggle: (String) -> Unit) {
-    var typed by remember { mutableStateOf("") }
+private fun MultiPicker(
+    what: String, all: List<Pair<String, Int>>, selected: Set<String>,
+    /** When given, the typed text is part of the search (tags) instead of only narrowing the list. */
+    typedText: String? = null, onTyped: (String) -> Unit = {},
+    onToggle: (String) -> Unit,
+) {
+    var localTyped by remember { mutableStateOf("") }
+    val typed = typedText ?: localTyped
+    fun setTyped(t: String) { if (typedText != null) onTyped(t) else localTyped = t }
     var open by remember { mutableStateOf(false) }
     val title = what.replaceFirstChar { it.uppercase() }
     FlowRow(
@@ -375,7 +407,7 @@ private fun MultiPicker(what: String, all: List<Pair<String, Int>>, selected: Se
                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(C.Solid).clickable { onToggle(k) }.padding(horizontal = 8.dp, vertical = 5.dp))
         }
         androidx.compose.foundation.text.BasicTextField(
-            typed, { typed = it; open = true }, singleLine = true,
+            typed, { setTyped(it); open = true }, singleLine = true,
             textStyle = androidx.compose.ui.text.TextStyle(color = C.Ink, fontSize = 15.sp),
             cursorBrush = androidx.compose.ui.graphics.SolidColor(C.Ink),
             modifier = Modifier.widthIn(min = 120.dp).padding(vertical = 5.dp, horizontal = 4.dp)
@@ -389,7 +421,7 @@ private fun MultiPicker(what: String, all: List<Pair<String, Int>>, selected: Se
             shown.take(40).forEach { (k, n) ->
                 val on = k in selected
                 Row(
-                    Modifier.fillMaxWidth().clickable { onToggle(k); typed = "" }.semantics(mergeDescendants = true) { contentDescription = "$title $k" + if (on) " on" else "" }
+                    Modifier.fillMaxWidth().clickable { onToggle(k); setTyped("") }.semantics(mergeDescendants = true) { contentDescription = "$title $k" + if (on) " on" else "" }
                         .padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
@@ -423,7 +455,7 @@ fun CardDetailScreen(vm: MainViewModel, slug: String) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White)
             }
             CardImage(
-                card, Modifier.align(Alignment.Center).padding(top = 48.dp).widthIn(max = if (card.landscape) 340.dp else 250.dp)
+                card, Modifier.align(Alignment.Center).padding(start = 28.dp, end = 28.dp, top = 52.dp).fillMaxWidth().widthIn(max = if (card.landscape) 520.dp else 420.dp)
                     .shadow(16.dp, RoundedCornerShape(12.dp)),
                 corner = 12.dp,
             )

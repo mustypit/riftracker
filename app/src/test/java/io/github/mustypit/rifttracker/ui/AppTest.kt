@@ -16,6 +16,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -486,7 +487,7 @@ open class AppTest {
         click("+ Add stat")
         pick("Stat 2", "Might"); pick("Comparison 2", "less than or equal to"); pick("Value 2", "6")
         rule.onNode(hasSetTextAction() and hasContentDescription("Add keyword")).performScrollTo().performTextInput("shi"); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Keyword Shield")).performClick(); rule.waitForIdle()
+                rule.onNode(hasContentDescription("Keyword Shield")).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
         val q = io.github.mustypit.rifttracker.game.CardQuery(
             domains = setOf(io.github.mustypit.rifttracker.game.Domain.FURY, io.github.mustypit.rifttracker.game.Domain.MIND),
             type = io.github.mustypit.rifttracker.game.CardType.UNITS,
@@ -525,7 +526,15 @@ open class AppTest {
         click("Clear all")
         type("Rules text, e.g. draw 2", "draw 2")
         rule.onNode(hasSetTextAction() and hasContentDescription("Add tag")).performScrollTo().performTextInput("frel"); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Tag Freljord")).performScrollTo().performClick(); rule.waitForIdle()
+        // Typing alone already searches by tag; picking from the list makes it an exact tag.
+        val typedN = io.github.mustypit.rifttracker.game.Cards.search(io.github.mustypit.rifttracker.game.CardQuery(domains = q.domains, type = q.type, rulesText = "draw 2", tagText = "frel")).size
+        rule.waitFor("SHOW $typedN CARDS")
+        rule.onNode(hasContentDescription("Tag Freljord")).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
+        // The sheet resizes by dragging its handle.
+        val topBefore = rule.onNode(hasText("Clear all")).fetchSemanticsNode().boundsInWindow.top
+        rule.onNode(hasText("Filters")).performTouchInput { swipeUp(startY = centerY, endY = centerY - 300f) }; rule.waitForIdle()
+        val topAfter = rule.onNode(hasText("Clear all")).fetchSemanticsNode().boundsInWindow.top
+        assertTrue("dragging up makes the sheet taller ($topBefore -> $topAfter)", topAfter < topBefore - 100)
         screenShot("20d_card_text_tags")
         val tq = io.github.mustypit.rifttracker.game.CardQuery(
             domains = q.domains, type = q.type, rulesText = "draw 2", tags = setOf("Freljord"),

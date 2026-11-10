@@ -70,6 +70,8 @@ data class CardQuery(
     val rulesText: String = "",
     /** Type-line tags (champion, region, species…); the card needs every one. */
     val tags: Set<String> = emptySet(),
+    /** Typed in the tag box: some tag must contain it ("shadow" finds Shadow Isles), like Scryfall's partial type match. */
+    val tagText: String = "",
     val domains: Set<Domain> = emptySet(),
     val type: CardType = CardType.ALL,
     val stats: List<StatFilter> = emptyList(),
@@ -132,6 +134,7 @@ object Cards {
                 words.isEmpty() || plainText(c).lowercase().let { t -> words.all { it in t } }
             } &&
             q.tags.all { tag -> c.tags.any { it.equals(tag, ignoreCase = true) } } &&
+            (q.tagText.isBlank() || c.tags.any { it.contains(q.tagText.trim(), ignoreCase = true) }) &&
             q.keywords.all { k -> c.keywords.any { it.equals(k, ignoreCase = true) } } &&
             q.stats.all { f -> value(c, f.stat)?.let { f.compare.test(it, f.value) } ?: false }
     }

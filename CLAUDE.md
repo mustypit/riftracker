@@ -89,7 +89,11 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   "N cards" + sort (Energy/Name/Set); one flat 3-column grid (battlefields full width). Filter sheet is
   an in-screen overlay (not a dialog: Robolectric quirk with text fields): Scryfall-style stats rows of
   three dropdowns (stat, comparison shown as its symbol, value 0–12) + "+ Add stat", a Text field, and
-  tag and keyword multi-selects (`MultiPicker`: tokens in the field, checkbox list with counts that typing narrows). Card page: grouped **Cost**
+  tag and keyword multi-selects (`MultiPicker`: tokens in the field, checkbox list with counts that typing narrows;
+  text typed in the tag box is itself a filter, `CardQuery.tagText`: some tag contains it, so "shadow"
+  finds Shadow Isles cards). The sheet resizes by dragging its handle or title row (far down closes
+  it). Backdrop and sheet catch taps with `pointerInput`, not `clickable`: `clickable` merges all the
+  sheet's controls into one accessibility node (tests then hit the wrong spot). Card page: the card picture large (nearly full width), grouped **Cost**
   tile (energy disc + one power symbol per power, in the card's domains; it's "power", not "runes"),
   Might tile, rules text with inline symbols, keywords, then set · number · rarity · artist. No
   horizontal strips of cards (owner: too many cards). Images decode on a background pool and are handed

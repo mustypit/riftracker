@@ -58,6 +58,9 @@ class CardsTest {
         val poroFreljord = find(CardQuery(tags = setOf("Poro")))
         assertTrue(poroFreljord.isNotEmpty() && poroFreljord.all { "Poro" in it.tags })
         assertTrue(Cards.tags.any { it.first == "Freljord" })
+        val shadowTag = find(CardQuery(tagText = "shadow"))
+        assertTrue("typing part of a tag finds cards", shadowTag.isNotEmpty() && shadowTag.all { c -> c.tags.any { it.contains("shadow", true) } })
+        assertTrue(shadowTag.any { "Shadow Isles" in it.tags })
     }
 
     @Test
