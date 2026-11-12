@@ -214,6 +214,11 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `AppShell`); score-chart rows draw in top to bottom (`rowReveal`); win rates count up
   (`countUpPercent`). `AppTest.pointPopAnimationFrames` / `screenAnimationFrames` record frames to
   `app/screenshots/anim/` (paused `mainClock`, 20 ms steps): turn them into a GIF to show the owner.
+- **App icon** (owner's pick, after flat marks and 2D rune sketches): a real 3D render of a flat golden
+  rune (faceted gold diamond, teal crystal) on navy, long lens, slight turn. Source and how to
+  re-render: `design/icon/`. Adaptive icon: foreground = the render (`mipmap-*/ic_launcher_foreground.webp`,
+  gem ≈ 48% of the layer), background `@color/icon_background`, monochrome = flat outline vector. Not the
+  Riftbound logo: Riot's policy forbids using its logos/trademarks, so marks must be original.
 - No ads or tracking. Everything stays on the phone.
 
 ## Conventions
