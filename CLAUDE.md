@@ -40,7 +40,8 @@ report as artifacts.
 | `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
 | `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends; the shipped files cover Radiance with art |
 | `game/CardsTest` | Shipped card library: complete with pictures, filters, search, sorting, stats rows (each comparison, might between 4 and 6, power 0), keywords (all must match), name-only search, rules text (any word order, symbols as words), tags, every rules-text symbol drawable |
-| `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label (banned cards and battlefields), runes stay 12, stats, match runes, text round trip |
+| `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label (banned cards and battlefields), sideboard/maybeboard rules and moves, sideboarding swaps, runes stay 12, stats, match runes, text round trip |
+| `game/DeckCodesTest` | Deck codes: Piltover Archive's golden fixtures (encode and decode, v3–v6), the README deck, our decks round trip, alt-art codes |
 | `data/MigrationTest` | A version-1 database keeps its matches when the decks table is added |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
@@ -127,8 +128,30 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   cards carry a red "BANNED" tag (`BannedTag`: on card pictures via `CardImage(showBanned)`, deck rows,
   the card page, battlefield slots and the battlefield picker); `DeckRules.bannedCards` checks legend, main
   and battlefields (by name) and `problems()` puts "Banned" first, so the deck reads as illegal.
-  Sideboard/maybeboard: concept mockup shown (A one page vs B board switch, move sheet, add-cards target,
-  Bo3 swaps for the match only), not built; the July 2026 tournament rules raised the sideboard to 10.
+  **Sideboard and maybeboard** (owner: "build it with all the rules"; layout A, one page): `Deck.side` /
+  `Deck.maybe` (JSON fields, no migration), `Board` MAIN/SIDE/MAYBE. Side: up to `SIDEBOARD` = 10 (July 2026
+  tournament rules; was 8), only cards the deck may hold, copy limit counts main + side (`Deck.copies`),
+  banned counts; more than 10 is labelled "Side n/10". Maybe: no limits, never illegal, not in deck codes.
+  `DeckRules.add/remove(deck, board, c)`, `move(deck, c, from, to, all)` (main↔side keeps the total; out of
+  maybe obeys the copy limit). Deck page: SIDEBOARD n/10 and MAYBE (dashed, faded) lists under the main
+  deck; ⇄ on any row opens `MoveSheet` (1 / All to each other board, card page). Add cards: the dock is a
+  Main · Side · Maybe switch (`MainViewModel.addBoard`) choosing where taps go; badges "n×" main, "n S"
+  side, "n M" maybe. Text export has "Sideboard:"; import reads Sideboard/Maybeboard sections.
+  **Sideboarding between games** (Bo3, deck with a sideboard): a "Sideboard" row on the game-over / who
+  goes first card opens `SideboardScreen` (OUT · main size · IN, +/− per card; READY only when in = out);
+  stored per game as `Game.swaps` (`Swaps(brought, taken)`, against the match's deck snapshot, carried
+  over to the next game; the saved deck is untouched). Match review lists In/Out per game.
+- **Deck codes** (`game/DeckCodes.kt`): Piltover Archive's open format (github.com/Piltover-Archive/
+  RiftboundDeckCodes, Apache 2.0), used by Piltover Archive, Riftmana, Riftbound Zone and companion apps.
+  `DeckCodeFormat` is a port of the reference implementation (format 1, versions 1–6: varints grouped by
+  copy count then set/variant, base32; v4 rune flags, v5 sparse counts and SP cards, v6 extra legends);
+  `DeckCodeFormat.encode/decode` must match the reference byte for byte: `DeckCodesTest` runs its golden
+  fixtures (`src/test/resources/deckcodes/`). The code's main list holds legend, main cards, rune cards
+  (×runes per domain: "Fury Rune" OGN-007…) and battlefields; then sideboard and chosen champion.
+  `DeckCodes.fromDeck/toDeck` map to our `Deck` by card code (`Card.code`, plus `Card.codes`: every
+  printing's code from the importer, so reprints and alt/signed art suffixes still match). Deck page:
+  "Copy deck code" next to "Copy as text"; the Decks tab's "Import" box takes a code or a list
+  (`DeckCodeFormat.looksLikeCode`).
 - **Decks in matches**: `Match.deck` is a snapshot of the deck when the match started (JSON field,
   old rows null; later edits don't rewrite history). New match / Log a match: with saved decks, the
   "Your deck" slot opens a deck picker (recent first, "Just a legend" for the old flow) and sets the
@@ -199,7 +222,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
 - The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
-- Next: sideboard/maybeboard (concept awaiting the owner's pick), deck versions. Deferred: battlefield tracking, XP/levels. Not wanted: 4-player boards,
+- Next: deck versions. Deferred: battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
   game, central menu button, clean panels); ask the owner for a screen recording.
 - **Minimal UI copy** (owner's request): short one-line headers ("New match", "Settings"), no

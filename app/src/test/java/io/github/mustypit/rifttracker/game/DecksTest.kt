@@ -99,6 +99,68 @@ class DecksTest {
     }
 
     @Test
+    fun sideboardAndMaybeboard() {
+        val d = legalDeck()
+        val inMain = Cards.bySlug(d.main.entries.first { (slug, n) -> n == 3 && slug != d.champion }.key)!!
+        // Copies count across main and side: a card with 3 in main can't go on the sideboard.
+        assertFalse(DeckRules.canAdd(d, Board.SIDE, inMain))
+        assertEquals(d, DeckRules.add(d, Board.SIDE, inMain))
+        // Moving between main and side keeps the total; the main deck is then 39.
+        val moved = DeckRules.move(d, inMain, Board.MAIN, Board.SIDE)
+        assertEquals(2, moved.count(inMain.slug)); assertEquals(1, moved.count(Board.SIDE, inMain.slug))
+        assertEquals(listOf("39/40"), DeckRules.problems(moved))
+        assertEquals(3, DeckRules.move(d, inMain, Board.MAIN, Board.SIDE, all = true).count(Board.SIDE, inMain.slug))
+        // The maybeboard has no limits and never makes a deck illegal...
+        val maybe = (1..5).fold(d) { acc, _ -> DeckRules.add(acc, Board.MAYBE, inMain) }
+        assertEquals(5, maybe.count(Board.MAYBE, inMain.slug))
+        assertEquals(emptyList<String>(), DeckRules.problems(maybe))
+        // ...but moving out of it respects the copy limit.
+        assertEquals(maybe, DeckRules.move(maybe, inMain, Board.MAYBE, Board.SIDE))
+        // Up to 10 in the sideboard; more is labelled.
+        val spare = Cards.all.filter { DeckRules.allowed(d, it) && !it.banned && d.copies(it.slug) == 0 && !DeckRules.isSignature(it) && !it.isChampion }
+        var side = d
+        spare.take(4).forEach { c -> repeat(3) { side = DeckRules.add(side, Board.SIDE, c) } }
+        assertEquals(12, side.sideSize)
+        assertEquals(listOf("Side 12/10"), DeckRules.problems(side))
+        val ten = DeckRules.remove(DeckRules.remove(side, Board.SIDE, spare[0]), Board.SIDE, spare[0])
+        assertEquals(emptyList<String>(), DeckRules.problems(ten))
+        // Sideboard cards must be allowed and not banned, like the main deck.
+        val off = Cards.all.first { it.type == "unit" && it.domainList == listOf(Domain.CALM) }
+        assertTrue("Off-domain" in DeckRules.problems(d.copy(side = mapOf(off.slug to 1))))
+        Cards.all.firstOrNull { it.banned && DeckRules.allowed(d, it) }?.let { b ->
+            assertEquals("Banned", DeckRules.problems(d.copy(side = mapOf(b.slug to 1))).first())
+            assertEquals(emptyList<String>(), DeckRules.problems(d.copy(maybe = mapOf(b.slug to 1))))
+        }
+        // Text keeps the sideboard (and reads a maybeboard section).
+        val text = DeckRules.toText(ten)
+        assertTrue("Sideboard:" in text)
+        val (back, unknown) = DeckRules.fromText(text + "\n\nMaybeboard:\n2 ${off.name}", "x")
+        assertTrue(unknown.isEmpty())
+        assertEquals(ten.side, back!!.side)
+        assertEquals(mapOf(off.slug to 2), back.maybe)
+    }
+
+    @Test
+    fun sideboardingBetweenGames() {
+        val d = legalDeck()
+        val spare = Cards.all.first { DeckRules.allowed(d, it) && !it.banned && d.copies(it.slug) == 0 && !DeckRules.isSignature(it) && !it.isChampion }
+        val deck = d.copy(side = mapOf(spare.slug to 2))
+        val out = d.main.keys.first { it != d.champion }
+        var s = Swaps()
+        s = s.bringIn(deck, spare.slug).bringIn(deck, spare.slug).bringIn(deck, spare.slug)
+        assertEquals("only what the sideboard holds", 2, s.inCount)
+        assertFalse(s.balanced)
+        s = s.takeOut(deck, out).takeOut(deck, out)
+        assertTrue(s.balanced)
+        val played = s.applyTo(deck)
+        assertEquals(40, played.mainSize)
+        assertEquals(2, played.count(spare.slug))
+        assertEquals(deck.count(out) - 2, played.count(out))
+        assertEquals(mapOf(out to 2), played.side)
+        assertEquals(Swaps(), s.undoIn(spare.slug).undoIn(spare.slug).undoOut(out).undoOut(out))
+    }
+
+    @Test
     fun runesAlwaysTwelve() {
         var d = DeckRules.newDeck(legend, champion)
         d = DeckRules.addRune(d, Domain.FURY)

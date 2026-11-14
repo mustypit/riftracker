@@ -195,6 +195,13 @@ def write_cards(catalog):
         if p.get("language") == "EN" and p.get("images") and p.get("cardId") in cards:
             images_per_card.setdefault(p["cardId"], set()).add(p["images"][0]["imageId"])
     extra = sum(len(v) - 1 for v in images_per_card.values())
+    # Every printing's card code (variant suffix dropped), so deck codes that name a reprint or an
+    # alternate art still find the card (deck codes: Piltover Archive's format, see game/DeckCodes.kt).
+    codes_per_card = {}
+    for p in as_list(catalog["printings"]):
+        sc = p.get("shortCode")
+        if sc and p.get("cardId") in cards:
+            codes_per_card.setdefault(p["cardId"], set()).add(re.sub(r"[a-z*]$", "", sc))
     kinds = {}
     for p in as_list(catalog["printings"]):
         if p.get("language") == "EN":
@@ -214,6 +221,7 @@ def write_cards(catalog):
             "keywords": c.get("keywords") or [], "tags": [clean(t) for t in c.get("tags") or []],
             "text": text, "set": s.get("name", ""), "code": p.get("shortCode"), "rarity": p.get("rarity"),
             "artist": p.get("artist"), "maxCopies": c.get("maxCopiesOverride"), "banned": bool(c.get("bans")),
+            "codes": sorted(codes_per_card.get(cid, set()) - {p.get("shortCode")}),
             "imageId": p["images"][0]["imageId"],
         })
     library.sort(key=lambda e: (e["set"], e["code"] or "", e["name"]))

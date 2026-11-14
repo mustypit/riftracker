@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.spring
 import io.github.mustypit.rifttracker.game.DeckRules
+import io.github.mustypit.rifttracker.game.Board
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.combinedClickable
@@ -130,6 +131,16 @@ fun CardImage(card: Card, modifier: Modifier = Modifier, corner: Dp = 7.dp, show
     }
 }
 
+/** "2 S" (side) or "1 M" (maybe) on a card in the library while adding to a deck. */
+@Composable
+private fun BoardBadge(n: Int, letter: String, name: String, color: Color) {
+    if (n > 0) Text(
+        "$n $letter", color = color, fontWeight = FontWeight.Black, fontSize = 12.sp,
+        modifier = Modifier.clip(RoundedCornerShape(9.dp)).background(C.Paper).border(1.5.dp, color, RoundedCornerShape(9.dp))
+            .padding(horizontal = 6.dp, vertical = 1.dp).semantics { contentDescription = "$n in $name" },
+    )
+}
+
 /** "BANNED": on a banned card's picture, in deck lists and on battlefields. */
 @Composable
 fun BannedTag(modifier: Modifier = Modifier, large: Boolean = false) {
@@ -204,6 +215,7 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
     val deckDomains = deck?.let { DeckRules.domains(it) }.orEmpty()
     val all = remember(q, Cards.all) { Cards.search(q) }
     val results = if (deck == null) all else all.filter { DeckRules.allowed(deck, it) }
+    val board by vm.addBoard.collectAsState()
     val grid = if (deckId == null) vm.cardsGrid else androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     fun update(f: (CardQuery) -> CardQuery) { vm.cardSearch.value = f(vm.cardSearch.value) }
     androidx.activity.compose.BackHandler(enabled = filtersOpen) { vm.cardFiltersOpen.value = false }
@@ -267,21 +279,28 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
                         c,
                         Modifier.shadow(2.dp, RoundedCornerShape(7.dp))
                             .combinedClickable(
-                                onClick = { if (deck != null) vm.editDeck(deck.id) { DeckRules.add(it, c) } else vm.push(Screen.CardDetail(c.slug)) },
+                                onClick = { if (deck != null) vm.editDeck(deck.id) { DeckRules.add(it, board, c) } else vm.push(Screen.CardDetail(c.slug)) },
                                 onLongClick = { vm.push(Screen.CardDetail(c.slug)) },
                             )
                             .semantics { contentDescription = "Card ${c.name}" },
                     )
-                    CountBadge(deck?.count(c.slug) ?: 0, Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp))
-                    // Take a copy back out, without leaving the library.
-                    val inDeck = deck?.count(c.slug) ?: 0
+                    // Where the card is: n× main (accent), n S side (outlined), n M maybe (dashed grey).
+                    Column(Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        CountBadge(deck?.count(c.slug) ?: 0)
+                        if (deck != null) {
+                            BoardBadge(deck.count(Board.SIDE, c.slug), "S", "side", C.Accent)
+                            BoardBadge(deck.count(Board.MAYBE, c.slug), "M", "maybe", C.Muted)
+                        }
+                    }
+                    // Take a copy back out (of the board taps go to), without leaving the library.
+                    val inDeck = deck?.count(board, c.slug) ?: 0
                     androidx.compose.animation.AnimatedVisibility(
                         inDeck > 0, Modifier.align(Alignment.TopStart).offset(x = (-4).dp, y = (-4).dp),
                         enter = androidx.compose.animation.scaleIn(spring(dampingRatio = 0.5f, stiffness = 600f)), exit = androidx.compose.animation.scaleOut(tween(120)),
                     ) {
                         Box(
                             Modifier.size(26.dp).clip(CircleShape).background(C.Solid)
-                                .clickable { deck?.let { d -> vm.editDeck(d.id) { DeckRules.remove(it, c) } } }
+                                .clickable { deck?.let { d -> vm.editDeck(d.id) { DeckRules.remove(it, board, c) } } }
                                 .semantics { contentDescription = "Remove one ${c.name}" },
                             contentAlignment = Alignment.Center,
                         ) { Text("−", color = C.OnSolid, fontWeight = FontWeight.Black, fontSize = 16.sp, lineHeight = 16.sp) }
@@ -294,7 +313,23 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(72.dp).background(C.Card).padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                DeckCounts(deck, Modifier.weight(1f))
+                // Taps go to the board picked here.
+                Row(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(C.Track).padding(3.dp)) {
+                    Board.entries.forEach { b ->
+                        val n = when (b) { Board.MAIN -> deck.mainSize; Board.SIDE -> deck.sideSize; Board.MAYBE -> deck.maybeSize }
+                        val on = b == board
+                        val bad = (b == Board.MAIN && n > DeckRules.MAIN_SIZE) || (b == Board.SIDE && n > DeckRules.SIDEBOARD)
+                        Row(
+                            Modifier.weight(1f).clip(RoundedCornerShape(9.dp)).background(if (on) C.Accent else Color.Transparent)
+                                .clickable { vm.addBoard.value = b }.semantics(mergeDescendants = true) { contentDescription = "Add to ${b.label.lowercase()}, $n" + if (on) ", on" else "" }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(b.label + " ", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = if (on) C.OnAccent else C.Muted)
+                            RollingNumber(n) { Text("$it", fontWeight = FontWeight.Black, fontSize = 13.sp, color = if (on) C.OnAccent else if (bad) C.Red else C.Ink) }
+                        }
+                    }
+                }
                 Text("Done", fontWeight = FontWeight.Black, color = C.OnSolid, modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(C.Solid).clickable { vm.back() }.padding(horizontal = 16.dp, vertical = 10.dp))
             }
         }

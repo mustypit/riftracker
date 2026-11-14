@@ -25,6 +25,8 @@ data class Card(
     val maxCopies: Int? = null,
     val banned: Boolean = false,
     val image: String? = null,
+    /** Other printings' card codes (reprints, promos), for deck codes. */
+    val codes: List<String> = emptyList(),
 ) {
     val domainList: List<Domain> get() = domains.mapNotNull { d -> Domain.entries.firstOrNull { it.name.equals(d, true) } }
     val isChampion: Boolean get() = "champion" in superTypes

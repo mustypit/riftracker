@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextClearance
@@ -673,8 +674,8 @@ open class AppTest {
         rule.onNode(hasContentDescription("Back")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
         rule.waitFor("10/40")
         // Paste it back as a new deck.
-        click("Paste a list")
-        rule.onNode(hasSetTextAction() and hasText("Deck list", substring = true)).performTextInput(clip); rule.waitForIdle()
+        click("Import")
+        rule.onNode(hasSetTextAction() and hasText("Deck code or list", substring = true)).performTextInput(clip); rule.waitForIdle()
         click("IMPORT")
         rule.waitFor("Imported deck")
         rule.onNode(hasContentDescription("Main 10 of 40")).assertExists()
@@ -830,6 +831,88 @@ open class AppTest {
         shot("35_match_deck_chip")
         rule.onNode(hasContentDescription("Deck Kai'Sa Tempo")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Deck record 1–0")).assertExists()
+    }
+
+    /** Importing a deck code from a deck site, its sideboard and maybeboard, and sideboarding between games. */
+    @Test
+    fun sideboardsAndDeckCodes() {
+        val code = "CIAAAAAAAAAQCAAAA4AACAIAABMQAAILAAAAICIMDMOVOX3AM5UHIAIDAAACO6XYAEAQKAAABX3QDGACUABKIAQAAEBQAAAWDBOQCAQAABMHE"
+        launch()
+        click("Decks")
+        click("Import")
+        rule.onNode(hasSetTextAction() and hasText("Deck code or list", substring = true)).performTextInput(code); rule.waitForIdle()
+        click("IMPORT")
+        rule.waitFor("Imported deck")
+        rule.onNode(hasContentDescription("Main 40 of 40")).assertExists()
+        rule.onNode(hasContentDescription("Side 8 of 10")).assertExists()
+        // The sideboard sits under the main deck; ⇄ moves cards between boards.
+        rule.onNode(hasText("SIDEBOARD")).performScrollTo(); rule.waitForIdle()
+        settleImages()
+        shot("45_deck_sideboard")
+        rule.onNode(hasContentDescription("Move Thermo Beam side")).performScrollTo().performClick(); rule.waitForIdle()
+        settleImages()
+        shot("46_move_sheet")
+        rule.onNode(hasContentDescription("Move one to maybe")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Thermo Beam maybe 1")).assertExists()
+        rule.onNode(hasContentDescription("Side 7 of 10")).assertExists()
+        rule.onNode(hasText("MAYBE")).performScrollTo(); rule.waitForIdle()
+        shot("47_deck_maybe")
+        // Adding cards: the dock picks the board.
+        tap("+ Add cards")
+        rule.onNode(hasContentDescription("Add to side", substring = true)).performClick(); rule.waitForIdle()
+        type("Search cards", "Mega-Mech")
+        rule.onNode(hasContentDescription("Card Mega-Mech")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("2 in side")).assertExists()
+        rule.onNode(hasContentDescription("Add to maybe", substring = true)).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Card Mega-Mech")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("1 in maybe")).assertExists()
+        settleImages()
+        shot("48_add_cards_boards")
+        click("Done")
+        rule.onNode(hasContentDescription("Side 8 of 10")).assertExists()
+        // The deck code copies out and reads back the same.
+        tap("Copy deck code")
+        val clip = (context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip!!.getItemAt(0).text.toString()
+        val back = io.github.mustypit.rifttracker.game.DeckCodes.toDeck(clip, "x").first!!
+        assertEquals(8, back.sideSize)
+        assertEquals(40, back.mainSize)
+        // A best of 3 with this deck: sideboard before game 2.
+        rule.onNode(hasContentDescription("Back")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
+        click("Play")
+        rule.waitFor("New match")
+        rule.onNode(hasContentDescription("Your deck")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Pick deck Imported deck")).performClick(); rule.waitForIdle()
+        pickLegend("Their legend", "Mordekaiser")
+        click("START")
+        rule.waitFor("WHO GOES FIRST?")
+        rule.onAllNodes(hasContentDescription("Sideboard")).assertCountEquals(0)
+        click("YOU")
+        press("You", "CONQUER", 8)
+        rule.onNode(hasContentDescription("Sideboard")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("More Mega-Mech in")).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasText("1 IN · 0 OUT")).assertExists()
+        rule.onNode(hasContentDescription("More Cleave out")).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Main 40 of 40")).assertExists()
+        settleImages()
+        shot("49_sideboarding")
+        click("READY FOR GAME 2")
+        rule.onNode(hasText("+1 −1")).assertExists()
+        screenShot("50_game_over_sideboard")
+        click("YOU")
+        press("You", "CONQUER", 8)
+        click("SAVE MATCH")
+        rule.waitFor("New match")
+        val m = saved().single()
+        val cleave = io.github.mustypit.rifttracker.game.DeckCodes.cardFor("OGN-004")!!.slug
+        val mech = io.github.mustypit.rifttracker.game.DeckCodes.cardFor("OGN-088")!!.slug
+        assertTrue(m.games[0].swaps.isEmpty())
+        assertEquals(io.github.mustypit.rifttracker.game.Swaps(mapOf(mech to 1), mapOf(cleave to 1)), m.games[1].swaps)
+        assertEquals("the saved deck isn't changed", 3, m.deck!!.count(cleave))
+        click("Matches")
+        rule.onNode(hasText("vs Mordekaiser")).performClick(); rule.waitForIdle()
+        rule.onAllNodes(androidx.compose.ui.test.hasScrollToNodeAction()).onFirst().performScrollToNode(hasText("In: Mega-Mech")); rule.waitForIdle()
+        rule.onNode(hasText("In: Mega-Mech")).assertExists()
+        shot("51_match_swaps")
     }
 
     @Test

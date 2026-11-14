@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -75,7 +76,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.mustypit.rifttracker.game.Board
 import io.github.mustypit.rifttracker.game.Card
+import io.github.mustypit.rifttracker.game.DeckCodeFormat
+import io.github.mustypit.rifttracker.game.DeckCodes
 import io.github.mustypit.rifttracker.game.Cards
 import io.github.mustypit.rifttracker.game.Deck
 import io.github.mustypit.rifttracker.game.DeckRules
@@ -97,14 +101,16 @@ private fun DomainIcons(domains: List<Domain>, size: Dp = 16.dp) = Row(horizonta
 
 /** Main n/40 · Runes n/12 · Fields n/3, each red until right. */
 @Composable
-fun DeckCounts(deck: Deck, modifier: Modifier = Modifier) {
+fun DeckCounts(deck: Deck, modifier: Modifier = Modifier, showSide: Boolean = deck.side.isNotEmpty()) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        listOf(
+        listOfNotNull(
             Triple("Main", deck.mainSize, DeckRules.MAIN_SIZE),
+            Triple("Side", deck.sideSize, DeckRules.SIDEBOARD).takeIf { showSide },
             Triple("Runes", deck.runeCount, DeckRules.RUNES),
             Triple("Fields", deck.battlefields.distinctBy { it.lowercase() }.size, DeckRules.BATTLEFIELDS),
         ).forEach { (label, n, full) ->
-            val ok = n == full
+            // The sideboard may hold fewer than 10; the rest must be exact.
+            val ok = if (label == "Side") n <= full else n == full
             Row(
                 Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(if (ok) C.Track else C.Red.copy(alpha = 0.18f)).padding(vertical = 6.dp)
                     .semantics(mergeDescendants = true) { contentDescription = "$label $n of $full" },
@@ -137,7 +143,7 @@ fun DecksScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                         .border(1.5.dp, C.Line, RoundedCornerShape(16.dp)).clickable { vm.push(Screen.NewDeck) }.padding(18.dp),
                 )
                 Text(
-                    "Paste a list", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    "Import", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().clickable { pasting = true }.padding(16.dp),
                 )
             }
@@ -324,6 +330,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
     val sort by vm.deckSort.collectAsState()
     var renaming by remember { mutableStateOf(false) }
     var pickingField by remember { mutableStateOf<Int?>(null) }
+    var moving by remember { mutableStateOf<Pair<String, Board>?>(null) }
     fun edit(f: (Deck) -> Deck) = vm.editDeck(id, f)
 
     Box(Modifier.fillMaxSize()) {
@@ -347,13 +354,29 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                                 GroupLabel(name, list)
                                 list.forEach { (c, n) ->
                                     androidx.compose.runtime.key(c.slug) {
-                                        DeckCardRow(deck, c, n, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, c) } }, onRemove = { edit { DeckRules.remove(it, c) } })
+                                        DeckCardRow(deck, c, n, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, c) } }, onRemove = { edit { DeckRules.remove(it, c) } }, onMove = { moving = c.slug to Board.MAIN })
                                     }
                                 }
                             }
                             DeckView.Grid -> sections.forEach { (name, list) -> GroupLabel(name, list); CardGrid(deck, list, vm) }
                             DeckView.Stacks -> StackColumns(sections, vm, everyCopy = false)
                             DeckView.Split -> StackColumns(sections, vm, everyCopy = true)
+                        }
+                    }
+                }
+                // Sideboard and maybeboard: lists under the main deck (owner's pick: one page).
+                listOf(Board.SIDE, Board.MAYBE).forEach { b ->
+                    val list = DeckRules.entries(deck, b)
+                    if (list.isNotEmpty()) {
+                        Row(Modifier.padding(top = 8.dp)) {
+                            Text(if (b == Board.SIDE) "SIDEBOARD" else "MAYBE", style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
+                            val n = list.sumOf { it.second }
+                            Text(if (b == Board.SIDE) "$n/${DeckRules.SIDEBOARD}" else "$n", style = Caps, color = if (b == Board.SIDE && n > DeckRules.SIDEBOARD) C.Red else C.Muted)
+                        }
+                        list.forEach { (c, n) ->
+                            androidx.compose.runtime.key(b.name + c.slug) {
+                                DeckCardRow(deck, c, n, board = b, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, b, c) } }, onRemove = { edit { DeckRules.remove(it, b, c) } }, onMove = { moving = c.slug to b })
+                            }
                         }
                     }
                 }
@@ -386,6 +409,50 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
             )
         }
         if (renaming) RenameOverlay(deck.name, onClose = { renaming = false }) { n -> edit { it.copy(name = n) }; renaming = false }
+        moving?.let { (slug, from) ->
+            val c = Cards.bySlug(slug)
+            if (c == null || deck.count(from, slug) == 0) moving = null
+            else MoveSheet(deck, c, from, onMove = { to, all -> edit { DeckRules.move(it, c, from, to, all) }; moving = null },
+                onOpen = { moving = null; vm.push(Screen.CardDetail(slug)) }, onClose = { moving = null })
+        }
+    }
+}
+
+/** ⇄ on a row: one copy or all of them to another board. */
+@Composable
+private fun MoveSheet(deck: Deck, c: Card, from: Board, onMove: (Board, Boolean) -> Unit, onOpen: () -> Unit, onClose: () -> Unit) {
+    BackHandler(onBack = onClose)
+    Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).pointerInput(Unit) { detectTapGestures { onClose() } }) {
+        Column(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)).background(C.Card)
+                .pointerInput(Unit) { detectTapGestures { } }.navigationBarsPadding().padding(horizontal = 18.dp, vertical = 12.dp),
+        ) {
+            Box(Modifier.align(Alignment.CenterHorizontally).size(40.dp, 4.dp).clip(RoundedCornerShape(2.dp)).background(C.Line))
+            Row(Modifier.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.size(44.dp).clip(RoundedCornerShape(8.dp))) {
+                    CardImage(c, Modifier.fillMaxWidth().aspectRatio(744f / 1039f).offset(y = (-5).dp).graphicsScale(2.1f), corner = 0.dp, showBanned = false)
+                }
+                Column {
+                    Text(c.name, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = C.Ink)
+                    Text("${deck.count(from, c.slug)} in ${from.label.lowercase()}", color = C.Muted, fontSize = 13.sp)
+                }
+            }
+            Board.entries.filter { it != from }.forEach { to ->
+                // Into main/side from the maybeboard, the copy limit applies.
+                val possible = from != Board.MAYBE || to == Board.MAYBE || DeckRules.canAdd(deck, to, c)
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("To ${when (to) { Board.MAIN -> "main deck"; Board.SIDE -> "sideboard"; Board.MAYBE -> "maybe" }}", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = if (possible) C.Ink else C.Muted, modifier = Modifier.weight(1f))
+                    listOf(false, true).forEach { all ->
+                        Text(if (all) "All" else "1", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = if (possible) C.Ink else C.Muted,
+                            modifier = Modifier.padding(start = 6.dp).clip(RoundedCornerShape(9.dp)).background(C.Track)
+                                .clickable(enabled = possible) { onMove(to, all) }
+                                .semantics { contentDescription = "Move ${if (all) "all" else "one"} to ${to.label.lowercase()}" }
+                                .padding(horizontal = 14.dp, vertical = 6.dp))
+                    }
+                }
+            }
+            Text("Card page", color = C.Muted, fontSize = 15.sp, modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen).padding(vertical = 10.dp))
+        }
     }
 }
 
@@ -566,9 +633,13 @@ private fun StackColumns(sections: List<Pair<String, List<Pair<Card, Int>>>>, vm
 }
 
 @Composable
-private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: () -> Unit, onRemove: () -> Unit) {
+private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: () -> Unit, onRemove: () -> Unit, board: Board = Board.MAIN, onMove: (() -> Unit)? = null) {
+    val maybe = board == Board.MAYBE
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.Card).clickable(onClick = onOpen).padding(start = 8.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+            .then(if (maybe) Modifier.border(1.5.dp, C.Line, RoundedCornerShape(12.dp)) else Modifier.background(C.Card))
+            .graphicsLayer { alpha = if (maybe) 0.7f else 1f }
+            .clickable(onClick = onOpen).padding(start = 8.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Column(Modifier.width(30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -581,7 +652,7 @@ private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: 
         }
         Column(Modifier.weight(1f)) {
             Text(c.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val tag = when { c.slug == deck.champion -> "Chosen"; DeckRules.isSignature(c) -> "Signature"; !DeckRules.allowed(deck, c) -> "Off-domain"; else -> null }
+            val tag = when { c.slug == deck.champion && board == Board.MAIN -> "Chosen"; DeckRules.isSignature(c) -> "Signature"; !DeckRules.allowed(deck, c) && !maybe -> "Off-domain"; else -> null }
             if (c.banned) BannedTag(Modifier.padding(top = 2.dp))
             else if (tag != null) Text(
                 tag, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp,
@@ -589,11 +660,15 @@ private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: 
                 modifier = Modifier.padding(top = 2.dp).clip(RoundedCornerShape(6.dp)).background(when (tag) { "Chosen" -> C.Accent; "Off-domain" -> C.Red.copy(alpha = 0.18f); else -> C.Line }).padding(horizontal = 6.dp, vertical = 1.dp),
             )
         }
+        val where = if (board == Board.MAIN) "" else " ${board.label.lowercase()}"
+        if (onMove != null) Text("⇄", color = C.Muted, fontWeight = FontWeight.Black, fontSize = 17.sp,
+            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onMove).semantics { contentDescription = "Move ${c.name}$where" }.padding(horizontal = 6.dp, vertical = 4.dp))
+        val canAdd = DeckRules.canAdd(deck, board, c)
         Row(Modifier.clip(RoundedCornerShape(10.dp)).background(C.Track), verticalAlignment = Alignment.CenterVertically) {
-            Text("−", color = C.Muted, fontWeight = FontWeight.Black, fontSize = 16.sp, modifier = Modifier.clickable(onClick = onRemove).semantics { contentDescription = "Remove ${c.name}" }.padding(horizontal = 10.dp, vertical = 4.dp))
-            RollingNumber(n, Modifier.semantics(mergeDescendants = true) { contentDescription = "${c.name} $n" }) { Text("$it", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 15.sp) }
-            Text("+", color = if (n < DeckRules.maxCopies(c)) C.Muted else C.Line, fontWeight = FontWeight.Black, fontSize = 16.sp,
-                modifier = Modifier.clickable(enabled = n < DeckRules.maxCopies(c), onClick = onAdd).semantics { contentDescription = "Add ${c.name}" }.padding(horizontal = 10.dp, vertical = 4.dp))
+            Text("−", color = C.Muted, fontWeight = FontWeight.Black, fontSize = 16.sp, modifier = Modifier.clickable(onClick = onRemove).semantics { contentDescription = "Remove ${c.name}$where" }.padding(horizontal = 10.dp, vertical = 4.dp))
+            RollingNumber(n, Modifier.semantics(mergeDescendants = true) { contentDescription = "${c.name}$where $n" }) { Text("$it", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 15.sp) }
+            Text("+", color = if (canAdd) C.Muted else C.Line, fontWeight = FontWeight.Black, fontSize = 16.sp,
+                modifier = Modifier.clickable(enabled = canAdd, onClick = onAdd).semantics { contentDescription = "Add ${c.name}$where" }.padding(horizontal = 10.dp, vertical = 4.dp))
         }
     }
 }
@@ -705,10 +780,15 @@ private fun DeckStats(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
         }
     }
     val clipboard = LocalClipboardManager.current
-    var copied by remember { mutableStateOf(false) }
-    Text(if (copied) "Copied" else "Copy as text", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp))
-            .clickable { clipboard.setText(AnnotatedString(DeckRules.toText(deck))); copied = true }.padding(12.dp))
+    var copied by remember { mutableStateOf<String?>(null) }
+    val code = remember(deck) { runCatching { DeckCodes.fromDeck(deck) }.getOrNull() }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOfNotNull(("Copy deck code" to code).takeIf { code != null }, "Copy as text" to DeckRules.toText(deck)).forEach { (label, value) ->
+            Text(if (copied == label) "Copied" else label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp))
+                    .clickable { clipboard.setText(AnnotatedString(value!!)); copied = label }.padding(12.dp))
+        }
+    }
 }
 
 /** Full-screen overlays (not dialogs: Robolectric's text-field quirk). */
@@ -733,10 +813,17 @@ private fun RenameOverlay(current: String, onClose: () -> Unit, onSave: (String)
 @Composable
 private fun PasteOverlay(onClose: () -> Unit, onImport: (Deck) -> Unit) {
     var text by remember { mutableStateOf("") }
-    val parsed = remember(text) { if (text.isBlank()) null else DeckRules.fromText(text, "Imported deck") }
-    Overlay("Paste a list", onClose) {
+    val parsed = remember(text) {
+        when {
+            text.isBlank() -> null
+            // A deck code (Piltover Archive's format, used by most deck sites), else a card list.
+            DeckCodeFormat.looksLikeCode(text) -> runCatching { DeckCodes.toDeck(text.trim(), "Imported deck") }.getOrElse { null to listOf(text.trim()) }
+            else -> DeckRules.fromText(text, "Imported deck")
+        }
+    }
+    Overlay("Import", onClose) {
         androidx.compose.material3.OutlinedTextField(
-            text, { text = it }, label = { Text("Deck list") }, minLines = 8, maxLines = 14,
+            text, { text = it }, label = { Text("Deck code or list") }, minLines = 8, maxLines = 14,
             shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth(),
         )
         parsed?.second?.takeIf { it.isNotEmpty() }?.let { Text("${it.size} not found", color = C.Muted, fontSize = 13.sp) }

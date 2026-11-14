@@ -22,12 +22,51 @@ data class Deck(
     val runes: Map<String, Int> = emptyMap(),
     val battlefields: List<String> = emptyList(),
     val updatedAt: Long = 0,
+    /** Sideboard: slug -> copies (up to [DeckRules.SIDEBOARD] cards; copies count with the main deck). */
+    val side: Map<String, Int> = emptyMap(),
+    /** Maybeboard: cards being considered. No limits, never makes a deck illegal, not exported in codes. */
+    val maybe: Map<String, Int> = emptyMap(),
 ) {
     fun count(slug: String) = main[slug] ?: 0
+    fun count(board: Board, slug: String) = board(board)[slug] ?: 0
+    fun board(board: Board): Map<String, Int> = when (board) { Board.MAIN -> main; Board.SIDE -> side; Board.MAYBE -> maybe }
+    fun withBoard(board: Board, cards: Map<String, Int>): Deck = when (board) {
+        Board.MAIN -> copy(main = cards); Board.SIDE -> copy(side = cards); Board.MAYBE -> copy(maybe = cards)
+    }
+    /** Copies across main deck and sideboard (what the copy limit counts). */
+    fun copies(slug: String) = count(slug) + (side[slug] ?: 0)
+    val sideSize: Int get() = side.values.sum()
+    val maybeSize: Int get() = maybe.values.sum()
     val mainSize: Int get() = main.values.sum()
     val runeCount: Int get() = runes.values.sum()
     fun runesOf(d: Domain) = runes[d.name] ?: 0
 }
+
+/** Sideboarding between games: copies brought in from the sideboard and taken out of the main deck. */
+@Serializable
+data class Swaps(val brought: Map<String, Int> = emptyMap(), val taken: Map<String, Int> = emptyMap()) {
+    val inCount: Int get() = brought.values.sum()
+    val outCount: Int get() = taken.values.sum()
+    fun isEmpty() = inCount == 0 && outCount == 0
+    /** In and out match, so the main deck keeps its size. */
+    val balanced: Boolean get() = inCount == outCount
+
+    /** One more copy of [slug] in (up to the sideboard's copies) or out (up to the main deck's). */
+    fun bringIn(deck: Deck, slug: String) = if ((brought[slug] ?: 0) < (deck.side[slug] ?: 0)) copy(brought = brought + (slug to (brought[slug] ?: 0) + 1)) else this
+    fun takeOut(deck: Deck, slug: String) = if ((taken[slug] ?: 0) < deck.count(slug)) copy(taken = taken + (slug to (taken[slug] ?: 0) + 1)) else this
+    fun undoIn(slug: String) = copy(brought = dec(brought, slug))
+    fun undoOut(slug: String) = copy(taken = dec(taken, slug))
+    private fun dec(m: Map<String, Int>, slug: String) = (m[slug] ?: 0).let { n -> if (n <= 1) m - slug else m + (slug to n - 1) }
+
+    /** The deck as played: swapped cards moved between main deck and sideboard. */
+    fun applyTo(deck: Deck): Deck {
+        fun plus(a: Map<String, Int>, b: Map<String, Int>, sign: Int) = (a.keys + b.keys).associateWith { (a[it] ?: 0) + sign * (b[it] ?: 0) }.filterValues { it > 0 }
+        return deck.copy(main = plus(plus(deck.main, taken, -1), brought, 1), side = plus(plus(deck.side, brought, -1), taken, 1))
+    }
+}
+
+/** Where a card sits in a deck. */
+enum class Board(val label: String) { MAIN("Main"), SIDE("Side"), MAYBE("Maybe") }
 
 /** Riftbound deckbuilding rules, as pure functions over the card library ([Cards]). */
 object DeckRules {
@@ -36,6 +75,8 @@ object DeckRules {
     const val BATTLEFIELDS = 3
     const val COPIES = 3
     const val SIGNATURES = 3
+    /** Sideboard size (tournament rules, July 2026; it was 8 before). */
+    const val SIDEBOARD = 10
 
     fun legendOf(deck: Deck): Card? = Cards.bySlug(deck.legend)
     fun domains(deck: Deck): List<Domain> = legendOf(deck)?.domainList.orEmpty()
@@ -67,17 +108,42 @@ object DeckRules {
         return true
     }
 
-    /** Adds one copy (up to the card's copy limit). Going past 40 is allowed; it's labelled. */
-    fun add(deck: Deck, c: Card): Deck {
-        val n = deck.count(c.slug)
-        if (n >= maxCopies(c)) return deck
-        return deck.copy(main = deck.main + (c.slug to n + 1))
+    /** Adds one copy to the main deck (up to the card's copy limit, sideboard copies included). Going past 40 is allowed; it's labelled. */
+    fun add(deck: Deck, c: Card): Deck = add(deck, Board.MAIN, c)
+
+    fun remove(deck: Deck, c: Card): Deck = remove(deck, Board.MAIN, c)
+
+    /** Whether one more copy of [c] may go on [board]: main and side share the copy limit; maybe has none. */
+    fun canAdd(deck: Deck, board: Board, c: Card): Boolean = board == Board.MAYBE || deck.copies(c.slug) < maxCopies(c)
+
+    /** One more copy on [board]. Going past 40 or 10 is allowed; it's labelled. */
+    fun add(deck: Deck, board: Board, c: Card): Deck {
+        if (!canAdd(deck, board, c)) return deck
+        return deck.withBoard(board, deck.board(board) + (c.slug to deck.count(board, c.slug) + 1))
     }
 
-    fun remove(deck: Deck, c: Card): Deck {
-        val n = deck.count(c.slug)
+    fun remove(deck: Deck, board: Board, c: Card): Deck {
+        val n = deck.count(board, c.slug)
         if (n <= 0) return deck
-        return deck.copy(main = if (n == 1) deck.main - c.slug else deck.main + (c.slug to n - 1))
+        val cards = deck.board(board)
+        return deck.withBoard(board, if (n == 1) cards - c.slug else cards + (c.slug to n - 1))
+    }
+
+    /**
+     * Moves one copy (or all of them) of [c] from one board to another. Moving between main and side
+     * never breaks the copy limit (the total stays the same); moving out of the maybeboard is limited
+     * by it. The chosen champion stays the chosen champion even when its copies move.
+     */
+    fun move(deck: Deck, c: Card, from: Board, to: Board, all: Boolean = false): Deck {
+        if (from == to) return deck
+        var d = deck
+        repeat(if (all) deck.count(from, c.slug) else 1) {
+            if (d.count(from, c.slug) == 0) return d
+            val removed = remove(d, from, c)
+            if (to != Board.MAYBE && from == Board.MAYBE && !canAdd(removed, to, c)) return d
+            d = removed.withBoard(to, removed.board(to) + (c.slug to removed.count(to, c.slug) + 1))
+        }
+        return d
     }
 
     /** One more rune of [d], taken from the other domain: the rune deck always stays at 12. */
@@ -114,12 +180,14 @@ object DeckRules {
         val cards = deck.main.mapNotNull { (slug, n) -> Cards.bySlug(slug)?.let { it to n } }
         if (deck.champion == null || deck.count(deck.champion) == 0) out += "No champion"
         if (deck.mainSize != MAIN_SIZE) out += "${deck.mainSize}/$MAIN_SIZE"
-        if (cards.any { (c, _) -> !allowed(deck, c) }) out += "Off-domain"
-        if (cards.any { (c, n) -> n > maxCopies(c) }) out += "Too many copies"
+        val sideCards = deck.side.mapNotNull { (slug, n) -> Cards.bySlug(slug)?.let { it to n } }
+        if ((cards + sideCards).any { (c, _) -> !allowed(deck, c) }) out += "Off-domain"
+        if ((cards + sideCards).map { it.first }.distinct().any { c -> deck.copies(c.slug) > maxCopies(c) }) out += "Too many copies"
         if (cards.filter { (c, _) -> isSignature(c) }.sumOf { it.second } > SIGNATURES) out += "Signatures"
         if (deck.runeCount != RUNES || deck.runes.filterValues { it > 0 }.keys.any { k -> legend.domainList.none { it.name == k } }) out += "Runes ${deck.runeCount}/$RUNES"
         val fields = deck.battlefields.distinctBy { it.lowercase() }
         if (fields.size != BATTLEFIELDS || fields.size != deck.battlefields.size) out += "Fields ${fields.size}/$BATTLEFIELDS"
+        if (deck.sideSize > SIDEBOARD) out += "Side ${deck.sideSize}/$SIDEBOARD"
         return out
     }
 
@@ -128,13 +196,15 @@ object DeckRules {
     /** The battlefield card with this name (decks store battlefields by name). */
     fun battlefieldCard(name: String): Card? = Cards.all.firstOrNull { it.type == "battlefield" && it.name.equals(name, ignoreCase = true) }
 
-    /** Banned cards in [deck]: its legend, main deck cards and battlefields. */
+    /** Banned cards in [deck]: its legend, main deck and sideboard cards, and battlefields (not the maybeboard). */
     fun bannedCards(deck: Deck): List<Card> =
-        (listOfNotNull(legendOf(deck)) + deck.main.keys.mapNotNull(Cards::bySlug) + deck.battlefields.mapNotNull(::battlefieldCard))
+        (listOfNotNull(legendOf(deck)) + deck.main.keys.mapNotNull(Cards::bySlug) + deck.side.keys.mapNotNull(Cards::bySlug) + deck.battlefields.mapNotNull(::battlefieldCard))
             .filter { it.banned }.distinctBy { it.slug }
 
     /** Main-deck cards with their counts, in deck order (champion, then units, spells, gear; by energy). */
-    fun entries(deck: Deck): List<Pair<Card, Int>> = deck.main.mapNotNull { (slug, n) -> Cards.bySlug(slug)?.let { it to n } }
+    fun entries(deck: Deck): List<Pair<Card, Int>> = entries(deck, Board.MAIN)
+
+    fun entries(deck: Deck, board: Board): List<Pair<Card, Int>> = deck.board(board).mapNotNull { (slug, n) -> Cards.bySlug(slug)?.let { it to n } }
         .sortedWith(compareBy({ it.first.energy ?: 99 }, { it.first.name }))
 
     /** Copies per energy cost, 0..7 (7 = seven or more). */
@@ -188,6 +258,11 @@ object DeckRules {
             appendLine("Battlefields:")
             deck.battlefields.forEach { appendLine("1 $it") }
         }
+        if (deck.side.isNotEmpty()) {
+            appendLine()
+            appendLine("Sideboard:")
+            entries(deck, Board.SIDE).forEach { (c, n) -> appendLine("$n ${c.name}") }
+        }
     }.trimEnd()
 
     /**
@@ -201,6 +276,8 @@ object DeckRules {
         val main = linkedMapOf<String, Int>()
         val runes = mutableMapOf<String, Int>()
         val fields = mutableListOf<String>()
+        val side = linkedMapOf<String, Int>()
+        val maybe = linkedMapOf<String, Int>()
         var section = "main"
         val line = Regex("""^(\d+)\s*x?\s+(.+)$""", RegexOption.IGNORE_CASE)
         fun card(n: String) = Cards.all.firstOrNull { it.name.equals(n.trim(), ignoreCase = true) }
@@ -214,6 +291,8 @@ object DeckRules {
                 lower.trimEnd(':').let { it == "main deck" || it == "main" || it == "deck" } -> { section = "main"; continue }
                 lower.trimEnd(':').let { it == "runes" || it == "rune deck" } -> { section = "runes"; continue }
                 lower.trimEnd(':').let { it == "battlefields" || it == "battlefield" } -> { section = "fields"; continue }
+                lower.trimEnd(':').let { it == "sideboard" || it == "side" || it == "side deck" } -> { section = "side"; continue }
+                lower.trimEnd(':').let { it == "maybeboard" || it == "maybe" || it == "considering" } -> { section = "maybe"; continue }
             }
             val m = line.find(l)
             val (n, cardName) = if (m != null) m.groupValues[1].toInt() to m.groupValues[2] else 1 to l
@@ -223,6 +302,11 @@ object DeckRules {
                     if (d != null) runes[d.name] = (runes[d.name] ?: 0) + n else unknown += cardName
                 }
                 "fields" -> fields += cardName.trim()
+                "side", "maybe" -> {
+                    val c = card(cardName)
+                    val into = if (section == "side") side else maybe
+                    if (c == null) unknown += cardName.trim() else into[c.slug] = (into[c.slug] ?: 0) + n
+                }
                 else -> {
                     val c = card(cardName)
                     when {
@@ -237,7 +321,7 @@ object DeckRules {
         val leg = legend ?: return null to unknown
         val champ = champion ?: champions(leg).firstOrNull { main.containsKey(it.slug) }
         if (champ != null && !main.containsKey(champ.slug)) main[champ.slug] = 1
-        return Deck(name = name, legend = leg.slug, champion = champ?.slug, main = main, runes = runes, battlefields = fields) to unknown
+        return Deck(name = name, legend = leg.slug, champion = champ?.slug, main = main, runes = runes, battlefields = fields, side = side, maybe = maybe) to unknown
     }
 
     /** A new deck: legend and champion (one copy in the main deck), runes split 6 · 6. */
