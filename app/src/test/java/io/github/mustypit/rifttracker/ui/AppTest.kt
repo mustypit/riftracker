@@ -468,7 +468,7 @@ open class AppTest {
         rule.waitFor("best run")
     }
 
-    /** Records the high roll for who goes first (screenshots/anim/roll_*): tumble, settle, winner lights up, tap back to the board. */
+    /** Records the dice for who goes first (screenshots/anim/roll_*): thrown, rolling, settled, tap back to the board. */
     @Test
     fun highRollFrames() {
         if (prefix.isNotEmpty()) return
@@ -485,8 +485,7 @@ open class AppTest {
         }
         frames(3)
         rule.onNode(hasText("ROLL")).performClick()
-        frames(60)                     // 2.4 s: tumble, settle, glow, sparkles
-        frames(15, 100)                // sparkles keep going
+        frames(110)                    // 4.4 s: thrown in, bouncing, tumbling, settling, the winner shown
         rule.onNode(hasContentDescription("Start game")).performClick()
         frames(14)                     // fade back to the board
         rule.mainClock.autoAdvance = true

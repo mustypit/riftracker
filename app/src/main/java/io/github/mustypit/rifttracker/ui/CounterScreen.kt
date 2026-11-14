@@ -28,6 +28,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import io.github.mustypit.rifttracker.game.Battlefields
+import io.github.mustypit.rifttracker.game.Dice
+import androidx.compose.ui.graphics.drawscope.withTransform
 import io.github.mustypit.rifttracker.game.Legends
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -183,95 +185,102 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                 onClose = { picking = null },
             )
         }
-        // High roll: both halves dark, numbers tumble and settle, the winner's half lights up; a tap
-        // fades back to the board and starts the game.
-        var lastRoll by remember { mutableStateOf<MatchRules.HighRoll?>(null) }
+        // Dice: each player's die is thrown in from their edge and rolls to a stop; higher goes first
+        // (ties are thrown again). A tap after they settle fades back to the board and starts the game.
+        var lastRoll by remember { mutableStateOf<Dice.Roll?>(null) }
         if (roll != null) lastRoll = roll
         androidx.compose.animation.AnimatedVisibility(
             visible = roll != null, enter = androidx.compose.animation.fadeIn(tween(180)), exit = androidx.compose.animation.fadeOut(tween(380)),
-        ) { lastRoll?.let { HighRollOverlay(match, it, onDone = vm::finishRoll) } }
+        ) { lastRoll?.let { DiceOverlay(match, it, onDone = vm::finishRoll) } }
     }
 }
 
-// High roll timing (ms): the numbers change at STEPS (slowing down), the last one is the result.
-private val ROLL_STEPS = listOf(0, 55, 110, 170, 235, 305, 385, 475, 580, 700, 840, 1000, 1180)
-private const val ROLL_SETTLE = 1180f
-private const val ROLL_END = 9000f
+// Dice for who goes first: both thrown together, a pause after a tie, then the next throw.
+private const val DIE_SIZE = 64f // dp
+private const val TIE_PAUSE = 800f // ms
+private const val WIN_FADE = 450f // ms
 
 @Composable
-private fun HighRollOverlay(match: Match, roll: MatchRules.HighRoll, onDone: () -> Unit) {
-    val t = remember(roll) { androidx.compose.animation.core.Animatable(0f) }
-    LaunchedEffect(roll) { t.animateTo(ROLL_END, tween(ROLL_END.toInt(), easing = androidx.compose.animation.core.LinearEasing)) }
-    val ms = t.value
-    val settled = ms >= ROLL_SETTLE
-    Column(
-        Modifier.fillMaxSize().background(C.Black)
-            .clickable(enabled = settled, indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, onClick = onDone)
-            .semantics { contentDescription = if (settled) "Start game" else "Rolling" },
-    ) {
-        RollHalf(match, Side.OPP, roll, ms, Modifier.weight(1f).rotate(180f))
-        Spacer(Modifier.height(4.dp))
-        RollHalf(match, Side.ME, roll, ms, Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun RollHalf(match: Match, side: Side, roll: MatchRules.HighRoll, ms: Float, modifier: Modifier) {
-    val final = roll.of(side)
-    val step = ROLL_STEPS.indexOfLast { it <= ms }
-    // Tumbling numbers: fixed per step (no randomness here, so frames are repeatable).
-    val shown = if (step == ROLL_STEPS.lastIndex) final else ((step * 7 + (if (side == Side.ME) 3 else 11) * (step + 1) + final * 5) % 20) + 1
-    val winner = roll.winner == side
-    fun phase(from: Float, to: Float) = ((ms - from) / (to - from)).coerceIn(0f, 1f)
-    val glow = if (winner) androidx.compose.animation.core.FastOutSlowInEasing.transform(phase(ROLL_SETTLE + 60f, ROLL_SETTLE + 520f)) else 0f
-    val pop = androidx.compose.animation.core.CubicBezierEasing(0.34f, 1.56f, 0.64f, 1f).transform(phase(ROLL_SETTLE, ROLL_SETTLE + 360f))
-    val (c1, c2) = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side)
-    val l1 = androidx.compose.ui.graphics.lerp(c1, Color.White, 0.35f)
-    val l2 = androidx.compose.ui.graphics.lerp(c2, Color.White, 0.35f)
-    Box(modifier.fillMaxWidth().background(Color(0xFF1D1E20)), contentAlignment = Alignment.Center) {
-        if (glow > 0f) {
-            Box(Modifier.matchParentSize().graphicsLayer { alpha = glow }.background(Brush.linearGradient(listOf(l1, l2))))
-            Box(Modifier.matchParentSize().graphicsLayer { alpha = glow }.background(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.55f), Color.Transparent))))
-            Sparkles(roll, ms - ROLL_SETTLE, listOf(Color.White, l1, l2, Color.White), Modifier.matchParentSize().graphicsLayer { alpha = glow })
-        }
-        val ink = if (glow > 0.5f) inkOn(androidx.compose.ui.graphics.lerp(l1, l2, 0.5f)) else Color.White
-        val scale = if (winner) 1f + 0.28f * pop else 1f
-        val alpha = if (winner || !(ms >= ROLL_SETTLE)) 1f else 1f - 0.6f * phase(ROLL_SETTLE, ROLL_SETTLE + 360f)
-        Text(
-            "$shown",
-            style = TextStyle(fontSize = 150.sp, fontWeight = FontWeight.Black, color = ink, letterSpacing = (-4).sp),
-            modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale; this.alpha = alpha }
-                .semantics { contentDescription = if (ms >= ROLL_SETTLE) "${match.nameOf(side)} rolled $final" else "rolling" },
-        )
-    }
-}
-
-private data class Star(val x: Float, val y: Float, val size: Float, val phase: Float, val speed: Float, val color: Int)
-
-/** Little stars that twinkle and drift up over the winner's half. */
-@Composable
-private fun Sparkles(roll: MatchRules.HighRoll, ms: Float, colors: List<Color>, modifier: Modifier) {
-    val stars = remember(roll) {
-        val r = kotlin.random.Random(roll.me * 31 + roll.opp)
-        List(46) { Star(r.nextFloat(), r.nextFloat(), 3f + r.nextFloat() * 8f, r.nextFloat() * 6.28f, 0.02f + r.nextFloat() * 0.05f, r.nextInt(colors.size)) }
-    }
-    androidx.compose.foundation.Canvas(modifier) {
-        val s = ms.coerceAtLeast(0f) / 1000f
-        stars.forEach { (x, y, size, ph, speed, ci) ->
-            val yy = ((y - s * speed) % 1f + 1f) % 1f
-            val twinkle = 0.35f + 0.65f * ((kotlin.math.sin(ph + s * 4f) + 1f) / 2f)
-            val rad = size * density * (0.7f + 0.3f * twinkle)
-            val cx = x * this.size.width; val cy = yy * this.size.height
-            val path = androidx.compose.ui.graphics.Path()
-            for (i in 0 until 10) {
-                val a = -Math.PI / 2 + i * Math.PI / 5
-                val rr = if (i % 2 == 0) rad else rad * 0.42f
-                val px = cx + (rr * kotlin.math.cos(a)).toFloat(); val py = cy + (rr * kotlin.math.sin(a)).toFloat()
-                if (i == 0) path.moveTo(px, py) else path.lineTo(px, py)
+private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
+    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+        val w = maxWidth.value
+        val halfH = (maxHeight.value - 4f) / 2f
+        // One track per die per throw, from the roll's own seed (the faces were drawn before this).
+        val throws = remember(roll, w, halfH) {
+            roll.throws.mapIndexed { i, (me, opp) ->
+                Dice.simulate(kotlin.random.Random(roll.seed + i * 2), w, halfH, DIE_SIZE, me) to
+                    Dice.simulate(kotlin.random.Random(roll.seed + i * 2 + 1), w, halfH, DIE_SIZE, opp)
             }
-            path.close()
-            drawPath(path, colors[ci].copy(alpha = twinkle))
         }
+        val starts = remember(throws) { throws.runningFold(0f) { acc, (a, b) -> acc + maxOf(a.durationMs, b.durationMs) + TIE_PAUSE }.dropLast(1) }
+        val end = starts.last() + maxOf(throws.last().first.durationMs, throws.last().second.durationMs)
+        val t = remember(roll) { androidx.compose.animation.core.Animatable(0f) }
+        LaunchedEffect(roll) { t.animateTo(end + WIN_FADE, tween((end + WIN_FADE).toInt(), easing = androidx.compose.animation.core.LinearEasing)) }
+        val ms = t.value
+        val settled = ms >= end
+        val i = starts.indexOfLast { it <= ms }.coerceAtLeast(0)
+        val local = ms - starts[i]
+        val emph = if (settled) androidx.compose.animation.core.FastOutSlowInEasing.transform(((ms - end) / WIN_FADE).coerceIn(0f, 1f)) else 0f
+        Column(
+            Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f))
+                .clickable(enabled = settled, indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, onClick = onDone)
+                .semantics { contentDescription = if (settled) "Start game" else "Rolling" },
+        ) {
+            for (side in listOf(Side.OPP, Side.ME)) {
+                val track = if (side == Side.ME) throws[i].first else throws[i].second
+                val win = settled && roll.winner == side
+                val glow = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side).first
+                androidx.compose.foundation.Canvas(
+                    Modifier.weight(1f).fillMaxWidth().let { if (side == Side.OPP) it.rotate(180f) else it }
+                        .semantics { contentDescription = if (settled) "${match.nameOf(side)} rolled ${roll.of(side)}" else "die" },
+                ) {
+                    val f = track.at(local)
+                    drawDie(f, track.face(f), DIE_SIZE * density, alpha = if (settled && !win) 1f - 0.55f * emph else 1f,
+                        scale = if (win) 1f + 0.15f * emph else 1f, glow = if (win) glow.copy(alpha = 0.7f * emph) else null)
+                }
+                if (side == Side.OPP) Spacer(Modifier.height(4.dp))
+            }
+        }
+    }
+}
+
+/** Pip positions for each face, on a 3×3 grid (0..2, 0..2). */
+private val PIPS = mapOf(
+    1 to listOf(1 to 1), 2 to listOf(0 to 0, 2 to 2), 3 to listOf(0 to 0, 1 to 1, 2 to 2),
+    4 to listOf(0 to 0, 2 to 0, 0 to 2, 2 to 2), 5 to listOf(0 to 0, 2 to 0, 1 to 1, 0 to 2, 2 to 2),
+    6 to listOf(0 to 0, 0 to 1, 0 to 2, 2 to 0, 2 to 1, 2 to 2),
+)
+
+/** A die seen from above: its shadow on the table, then the die, squashed along its travel while it tumbles. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDie(f: Dice.Frame, face: Int, s: Float, alpha: Float, scale: Float, glow: Color?) {
+    val cx = f.x * density; val cy = f.y * density
+    val lift = 1f + f.z / 240f
+    val heading = Math.toDegrees(f.heading.toDouble()).toFloat()
+    val squash = kotlin.math.abs(kotlin.math.cos(f.flip * Math.PI)).toFloat().coerceAtLeast(0.12f)
+    val corner = androidx.compose.ui.geometry.CornerRadius(s * 0.2f)
+    val box = androidx.compose.ui.geometry.Size(s, s)
+    val topLeft = androidx.compose.ui.geometry.Offset(-s / 2, -s / 2)
+    if (glow != null) drawCircle(Brush.radialGradient(listOf(glow, Color.Transparent), center = androidx.compose.ui.geometry.Offset(cx, cy), radius = s * 1.6f), radius = s * 1.6f, center = androidx.compose.ui.geometry.Offset(cx, cy))
+    // Shadow: further away and softer the higher the die is.
+    val off = (4f + f.z * 0.35f) * density
+    withTransform({ translate(cx + off * 0.6f, cy + off); rotate(f.spin, androidx.compose.ui.geometry.Offset.Zero); scale(scale, scale, androidx.compose.ui.geometry.Offset.Zero) }) {
+        drawRoundRect(Color.Black.copy(alpha = 0.38f * alpha / lift), topLeft, box, corner)
+    }
+    withTransform({
+        translate(cx, cy)
+        rotate(heading, androidx.compose.ui.geometry.Offset.Zero)
+        scale(squash * lift * scale, lift * scale, androidx.compose.ui.geometry.Offset.Zero)
+        rotate(f.spin - heading, androidx.compose.ui.geometry.Offset.Zero)
+    }) {
+        drawRoundRect(Brush.linearGradient(listOf(Color(0xFFFFFFFF), Color(0xFFE4E1DA)), start = topLeft, end = androidx.compose.ui.geometry.Offset(s / 2, s / 2)), topLeft, box, corner, alpha = alpha)
+        drawRoundRect(Color(0xFFBDB8AE), topLeft, box, corner, alpha = alpha, style = androidx.compose.ui.graphics.drawscope.Stroke(s * 0.025f))
+        val step = s * 0.28f
+        PIPS[face].orEmpty().forEach { (gx, gy) ->
+            val c = androidx.compose.ui.geometry.Offset((gx - 1) * step, (gy - 1) * step)
+            drawCircle(Color(0xFF1B1B1D), radius = s * if (face == 1) 0.13f else 0.085f, center = c, alpha = alpha)
+        }
+        // Edge-on faces read darker.
+        if (squash < 0.95f) drawRoundRect(Color.Black, topLeft, box, corner, alpha = alpha * (1f - squash) * 0.35f)
     }
 }
 

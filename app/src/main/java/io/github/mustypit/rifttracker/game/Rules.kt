@@ -132,20 +132,6 @@ object GameRules {
 
 /** Best-of-1 / best-of-3 bookkeeping. */
 object MatchRules {
-    /** Lotus-style "high roll" for who goes first: a d20 each, rolled again until they differ. */
-    data class HighRoll(val me: Int, val opp: Int) {
-        val winner: Side get() = if (me > opp) Side.ME else Side.OPP
-        fun of(side: Side) = if (side == Side.ME) me else opp
-    }
-
-    fun highRoll(random: kotlin.random.Random): HighRoll {
-        while (true) {
-            val a = random.nextInt(1, 21)
-            val b = random.nextInt(1, 21)
-            if (a != b) return HighRoll(a, b)
-        }
-    }
-
     fun wins(m: Match) = m.games.count { it.outcome == Outcome.WIN }
     fun losses(m: Match) = m.games.count { it.outcome == Outcome.LOSS }
     fun draws(m: Match) = m.games.count { it.outcome == Outcome.DRAW }

@@ -24,11 +24,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.random.Random
+import kotlin.random.asKotlinRandom
 
 /** The few things tests swap out. */
 object AppGraph {
     var clock: () -> Long = System::currentTimeMillis
-    var random: Random = Random.Default
+    /** Dice and coin flips: the system's cryptographic random source (tests swap in a seeded one). */
+    var random: Random = java.security.SecureRandom().asKotlinRandom()
 }
 
 enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Cards("Cards"), Decks("Decks"), Legends("Legends") }
@@ -121,11 +123,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _pendingBattlefields.update { if (name == null) it - side else it + (side to name) }
     }
 
-    /** A high roll on screen; tapping after it settles starts the game with the winner first. */
-    private val _roll = MutableStateFlow<MatchRules.HighRoll?>(null)
-    val roll: StateFlow<MatchRules.HighRoll?> = _roll.asStateFlow()
+    /** Dice on screen for who goes first; tapping after they settle starts the game with the winner first. */
+    private val _roll = MutableStateFlow<io.github.mustypit.rifttracker.game.Dice.Roll?>(null)
+    val roll: StateFlow<io.github.mustypit.rifttracker.game.Dice.Roll?> = _roll.asStateFlow()
 
-    fun startRoll() { if (_active.value != null) _roll.value = MatchRules.highRoll(AppGraph.random) }
+    fun startRoll() { if (_active.value != null) _roll.value = io.github.mustypit.rifttracker.game.Dice.roll(AppGraph.random) }
 
     fun finishRoll() {
         val r = _roll.value ?: return
