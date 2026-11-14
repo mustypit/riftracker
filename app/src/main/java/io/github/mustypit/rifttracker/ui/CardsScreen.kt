@@ -117,16 +117,27 @@ internal object CardArt {
         }
 }
 
-/** A card's picture (the whole printed card), with a quiet placeholder while it loads. */
+/** A card's picture (the whole printed card), with a quiet placeholder while it loads. Banned cards carry a tag. */
 @Composable
-fun CardImage(card: Card, modifier: Modifier = Modifier, corner: Dp = 7.dp) {
+fun CardImage(card: Card, modifier: Modifier = Modifier, corner: Dp = 7.dp, showBanned: Boolean = true) {
     val context = LocalContext.current
     val file = card.image
     val bitmap by produceState(file?.let(CardArt::cached), file) { if (file != null && value == null) value = CardArt.load(context, file) }
     val ratio = if (card.landscape) 1039f / 744f else 744f / 1039f
     Box(modifier.aspectRatio(ratio).clip(RoundedCornerShape(corner)).background(C.Track)) {
         bitmap?.let { Image(it, card.name, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
+        if (showBanned && card.banned) BannedTag(Modifier.align(Alignment.TopCenter).padding(top = 4.dp))
     }
+}
+
+/** "BANNED": on a banned card's picture, in deck lists and on battlefields. */
+@Composable
+fun BannedTag(modifier: Modifier = Modifier, large: Boolean = false) {
+    Text(
+        "BANNED", color = Color.White, fontWeight = FontWeight.Black, fontSize = if (large) 12.sp else 9.sp, letterSpacing = 0.6.sp, lineHeight = 12.sp,
+        modifier = modifier.shadow(3.dp, RoundedCornerShape(6.dp)).clip(RoundedCornerShape(6.dp)).background(C.Red)
+            .padding(horizontal = if (large) 8.dp else 5.dp, vertical = if (large) 3.dp else 1.dp).semantics { contentDescription = "Banned" },
+    )
 }
 
 /** The energy symbol: a white disc with the number in dark, as printed on the cards. */
@@ -241,7 +252,7 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
                             )
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("${results.size} cards".uppercase(), style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
+                            Text("${results.size} ${if (results.size == 1) "card" else "cards"}".uppercase(), style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
                             SortMenu(q.sort) { s -> update { it.copy(sort = s) } }
                         }
                     }
@@ -499,13 +510,14 @@ fun CardDetailScreen(vm: MainViewModel, slug: String) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White)
             }
             CardImage(
-                card, Modifier.align(Alignment.Center).padding(start = 28.dp, end = 28.dp, top = 52.dp).fillMaxWidth().widthIn(max = if (card.landscape) 520.dp else 420.dp)
+                card, showBanned = false, modifier = Modifier.align(Alignment.Center).padding(start = 28.dp, end = 28.dp, top = 52.dp).fillMaxWidth().widthIn(max = if (card.landscape) 520.dp else 420.dp)
                     .shadow(16.dp, RoundedCornerShape(12.dp)),
                 corner = 12.dp,
             )
         }
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Column {
+                if (card.banned) BannedTag(Modifier.padding(bottom = 6.dp), large = true)
                 Text(card.name, fontWeight = FontWeight.Black, fontSize = 26.sp, color = C.Ink)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     card.domainList.forEach { Box(Modifier.size(10.dp).clip(CircleShape).background(Color(it.argb))) }

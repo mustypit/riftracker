@@ -40,7 +40,7 @@ report as artifacts.
 | `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
 | `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends; the shipped files cover Radiance with art |
 | `game/CardsTest` | Shipped card library: complete with pictures, filters, search, sorting, stats rows (each comparison, might between 4 and 6, power 0), keywords (all must match), name-only search, rules text (any word order, symbols as words), tags, every rules-text symbol drawable |
-| `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label, runes stay 12, stats, match runes, text round trip |
+| `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label (banned cards and battlefields), runes stay 12, stats, match runes, text round trip |
 | `data/MigrationTest` | A version-1 database keeps its matches when the decks table is added |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
@@ -123,7 +123,12 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `CardsScreen(deckId=…)` (library limited to allowed cards, tap adds, "n×" badge pops, a "−" on cards
   in the deck takes one out, counts dock). Motion: counts and copy numbers roll, curve bars grow,
   views crossfade, + buttons squish. `AppTest.deckAnimationFrames` records `anim/deck*` frames. `MainViewModel.editDeck` keeps drafts and saves after each
-  change. No banlist yet (data has `banned`; owner postponed).
+  change. **Banlist**: `Card.banned` comes from OpenRift's `bans` (importer, refreshed weekly). Banned
+  cards carry a red "BANNED" tag (`BannedTag`: on card pictures via `CardImage(showBanned)`, deck rows,
+  the card page, battlefield slots and the battlefield picker); `DeckRules.bannedCards` checks legend, main
+  and battlefields (by name) and `problems()` puts "Banned" first, so the deck reads as illegal.
+  Sideboard/maybeboard: concept mockup shown (A one page vs B board switch, move sheet, add-cards target,
+  Bo3 swaps for the match only), not built; the July 2026 tournament rules raised the sideboard to 10.
 - **Decks in matches**: `Match.deck` is a snapshot of the deck when the match started (JSON field,
   old rows null; later edits don't rewrite history). New match / Log a match: with saved decks, the
   "Your deck" slot opens a deck picker (recent first, "Just a legend" for the old flow) and sets the
@@ -194,7 +199,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
 - The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
-- Next: link decks to matches (per-deck records), banlist in the deck builder, deck versions. Deferred: battlefield tracking, XP/levels. Not wanted: 4-player boards,
+- Next: sideboard/maybeboard (concept awaiting the owner's pick), deck versions. Deferred: battlefield tracking, XP/levels. Not wanted: 4-player boards,
   card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
   game, central menu button, clean panels); ask the owner for a screen recording.
 - **Minimal UI copy** (owner's request): short one-line headers ("New match", "Settings"), no

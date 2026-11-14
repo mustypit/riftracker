@@ -743,6 +743,44 @@ open class AppTest {
     }
 
     @Test
+    fun bannedCards() {
+        // A saved deck holding a banned card and a banned battlefield.
+        if (io.github.mustypit.rifttracker.game.Cards.all.isEmpty()) io.github.mustypit.rifttracker.game.Cards.install(java.io.File("src/main/assets/cards/cards.json").readText())
+        val cards = io.github.mustypit.rifttracker.game.Cards.all
+        val rules = io.github.mustypit.rifttracker.game.DeckRules
+        val legend = cards.first { it.name == "Daughter of the Void" }
+        val champion = cards.first { it.name == "Kai'Sa, Survivor" }
+        var deck = rules.newDeck(legend, champion, "Kai'Sa Banned")
+        val banned = cards.first { it.banned && rules.allowed(deck, it) }
+        cards.filter { rules.allowed(deck, it) && !it.banned && !it.isChampion && !rules.isSignature(it) }.take(5).forEach { c -> repeat(2) { deck = rules.add(deck, c) } }
+        deck = rules.add(deck, banned)
+        val field = cards.first { it.banned && it.type == "battlefield" }
+        deck = deck.copy(battlefields = listOf(field.name), updatedAt = clock.get())
+        runBlocking(Dispatchers.IO) { io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(context).decks()).save(deck) }
+        launch()
+        click("Decks")
+        rule.waitFor("Kai'Sa Banned")
+        rule.onNode(hasText("Banned")).assertExists()
+        settleImages()
+        shot("40_deck_banned_row")
+        rule.onNode(hasContentDescription("Deck Kai'Sa Banned")).performClick(); rule.waitForIdle()
+        rule.onAllNodes(hasContentDescription("Banned")).fetchSemanticsNodes().let { assert(it.isNotEmpty()) }
+        settleImages()
+        shot("41_deck_banned_list")
+        pick("View", "Grid"); settleImages(); shot("42_deck_banned_grid")
+        pick("View", "List")
+        // The library and the card page label it too.
+        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+        click("Cards")
+        type("Search cards", banned.name)
+        settleImages()
+        shot("43_cards_banned")
+        rule.onNode(hasContentDescription("Card ${banned.name}")).performClick(); rule.waitForIdle()
+        settleImages()
+        shot("44_card_banned")
+    }
+
+    @Test
     fun decksInMatches() {
         // A saved deck with three battlefields.
         if (io.github.mustypit.rifttracker.game.Cards.all.isEmpty()) io.github.mustypit.rifttracker.game.Cards.install(java.io.File("src/main/assets/cards/cards.json").readText())

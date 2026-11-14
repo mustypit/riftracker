@@ -106,10 +106,11 @@ object DeckRules {
         return setRunes(deck, if (a + b == 0) RUNES / 2 else (a * RUNES.toFloat() / (a + b)).roundToInt())
     }
 
-    /** What's wrong with [deck], most important first, as short labels ("37/40", "Runes 10/12"…). Empty = legal. */
+    /** What's wrong with [deck], most important first, as short labels ("Banned", "37/40", "Runes 10/12"…). Empty = legal. */
     fun problems(deck: Deck): List<String> {
         val legend = legendOf(deck) ?: return listOf("No legend")
         val out = mutableListOf<String>()
+        if (bannedCards(deck).isNotEmpty()) out += "Banned"
         val cards = deck.main.mapNotNull { (slug, n) -> Cards.bySlug(slug)?.let { it to n } }
         if (deck.champion == null || deck.count(deck.champion) == 0) out += "No champion"
         if (deck.mainSize != MAIN_SIZE) out += "${deck.mainSize}/$MAIN_SIZE"
@@ -123,6 +124,14 @@ object DeckRules {
     }
 
     fun isLegal(deck: Deck) = problems(deck).isEmpty()
+
+    /** The battlefield card with this name (decks store battlefields by name). */
+    fun battlefieldCard(name: String): Card? = Cards.all.firstOrNull { it.type == "battlefield" && it.name.equals(name, ignoreCase = true) }
+
+    /** Banned cards in [deck]: its legend, main deck cards and battlefields. */
+    fun bannedCards(deck: Deck): List<Card> =
+        (listOfNotNull(legendOf(deck)) + deck.main.keys.mapNotNull(Cards::bySlug) + deck.battlefields.mapNotNull(::battlefieldCard))
+            .filter { it.banned }.distinctBy { it.slug }
 
     /** Main-deck cards with their counts, in deck order (champion, then units, spells, gear; by energy). */
     fun entries(deck: Deck): List<Pair<Card, Int>> = deck.main.mapNotNull { (slug, n) -> Cards.bySlug(slug)?.let { it to n } }

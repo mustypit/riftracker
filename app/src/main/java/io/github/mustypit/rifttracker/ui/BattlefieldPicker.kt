@@ -128,7 +128,10 @@ private fun BattlefieldTile(b: Battlefield, selected: Boolean, onClick: () -> Un
             .border(2.dp, if (selected) C.Ink else Color.Transparent, RoundedCornerShape(14.dp))
             .clickable(onClick = onClick).padding(6.dp).semantics { contentDescription = "Battlefield ${b.name}" },
     ) {
-        BattlefieldThumb(b.name, Modifier.fillMaxWidth().aspectRatio(2.2f))
+        Box {
+            BattlefieldThumb(b.name, Modifier.fillMaxWidth().aspectRatio(2.2f))
+            if (io.github.mustypit.rifttracker.game.DeckRules.battlefieldCard(b.name)?.banned == true) BannedTag(Modifier.align(Alignment.TopEnd).padding(5.dp))
+        }
         Text(b.name, color = C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp, start = 2.dp))
     }
 }

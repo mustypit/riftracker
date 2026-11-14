@@ -24,7 +24,7 @@ class DecksTest {
         repeat(2) { d = DeckRules.add(d, champion) }
         val sig = Cards.all.first { DeckRules.isSignature(it) && "Kai'Sa" in it.tags }
         repeat(3) { d = DeckRules.add(d, sig) }
-        for (c in Cards.all.filter { DeckRules.allowed(d, it) && !DeckRules.isSignature(it) && !it.isChampion }) {
+        for (c in Cards.all.filter { DeckRules.allowed(d, it) && !DeckRules.isSignature(it) && !it.isChampion && !it.banned }) {
             while (d.mainSize < 40 && d.count(c.slug) < 3) d = DeckRules.add(d, c)
             if (d.mainSize == 40) break
         }
@@ -78,6 +78,24 @@ class DecksTest {
         assertEquals(listOf("Fields 2/3"), DeckRules.problems(d.copy(battlefields = d.battlefields.take(2))))
         assertEquals(listOf("Fields 2/3"), DeckRules.problems(d.copy(battlefields = listOf("Cosmic Vista", "Cosmic Vista", "Black Market"))))
         assertEquals(listOf("Runes 13/12"), DeckRules.problems(d.copy(runes = mapOf("FURY" to 8, "MIND" to 5))))
+    }
+
+    @Test
+    fun bannedCardsMakeADeckIllegal() {
+        val d = legalDeck()
+        assertTrue("the shipped library has a banlist", Cards.all.any { it.banned })
+        assertTrue(DeckRules.bannedCards(d).isEmpty())
+        // A banned main-deck card, as the first problem.
+        val banned = Cards.all.first { it.banned && DeckRules.allowed(d, it) }
+        val withBanned = d.copy(main = d.main + (banned.slug to 1))
+        assertEquals(listOf(banned), DeckRules.bannedCards(withBanned))
+        assertEquals("Banned", DeckRules.problems(withBanned).first())
+        assertTrue(!DeckRules.isLegal(withBanned))
+        // A banned battlefield counts too (stored by name, any case).
+        val field = Cards.all.first { it.banned && it.type == "battlefield" }
+        val withField = d.copy(battlefields = d.battlefields.take(2) + field.name.uppercase())
+        assertEquals(listOf("Banned"), DeckRules.problems(withField))
+        assertEquals(listOf(field), DeckRules.bannedCards(withField))
     }
 
     @Test

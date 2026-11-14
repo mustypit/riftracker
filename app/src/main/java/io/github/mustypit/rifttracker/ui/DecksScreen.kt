@@ -270,7 +270,7 @@ fun NewDeckScreen(vm: MainViewModel) {
                     Modifier.padding(top = 12.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).padding(start = 10.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    CardImage(legend, Modifier.width(46.dp), corner = 5.dp)
+                    CardImage(legend, Modifier.width(46.dp), corner = 5.dp, showBanned = false)
                     Column(Modifier.weight(1f)) {
                         Text(legend.name, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = C.Ink)
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -577,12 +577,13 @@ private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: 
             if (p > 0) Row { val ds = c.domainList.ifEmpty { listOf<Domain?>(null) }; repeat(p) { i -> RuneSymbol(ds[i % ds.size], 12.dp) } }
         }
         Box(Modifier.size(34.dp).clip(RoundedCornerShape(7.dp))) {
-            CardImage(c, Modifier.fillMaxWidth().aspectRatio(744f / 1039f).offset(y = (-4).dp).graphicsScale(2.1f), corner = 0.dp)
+            CardImage(c, Modifier.fillMaxWidth().aspectRatio(744f / 1039f).offset(y = (-4).dp).graphicsScale(2.1f), corner = 0.dp, showBanned = false)
         }
         Column(Modifier.weight(1f)) {
             Text(c.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val tag = when { c.slug == deck.champion -> "Chosen"; DeckRules.isSignature(c) -> "Signature"; !DeckRules.allowed(deck, c) -> "Off-domain"; else -> null }
-            if (tag != null) Text(
+            if (c.banned) BannedTag(Modifier.padding(top = 2.dp))
+            else if (tag != null) Text(
                 tag, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp,
                 color = when (tag) { "Chosen" -> C.OnAccent; "Off-domain" -> C.Red; else -> C.Ink },
                 modifier = Modifier.padding(top = 2.dp).clip(RoundedCornerShape(6.dp)).background(when (tag) { "Chosen" -> C.Accent; "Off-domain" -> C.Red.copy(alpha = 0.18f); else -> C.Line }).padding(horizontal = 6.dp, vertical = 1.dp),
@@ -653,7 +654,7 @@ private fun PlusButton(description: String, onClick: () -> Unit) {
 @Composable
 private fun FieldSlots(deck: Deck, onPick: (Int) -> Unit) {
     deck.battlefields.forEachIndexed { i, name ->
-        val card = remember(name, Cards.all) { Cards.all.firstOrNull { it.type == "battlefield" && it.name.equals(name, true) } }
+        val card = remember(name, Cards.all) { DeckRules.battlefieldCard(name) }
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).clickable { onPick(i) }
                 .semantics(mergeDescendants = true) { contentDescription = "Battlefield $name" },
@@ -662,6 +663,7 @@ private fun FieldSlots(deck: Deck, onPick: (Int) -> Unit) {
                 BattlefieldThumb(name, Modifier.matchParentSize(), corner = 0)
                 Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to Color.Black.copy(alpha = 0.65f), 1f to Color.Transparent)))
                 Text(name, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, modifier = Modifier.align(Alignment.BottomStart).padding(12.dp))
+                if (card?.banned == true) BannedTag(Modifier.align(Alignment.TopEnd).padding(8.dp))
             }
             if (card != null && card.text.isNotBlank()) RulesTextView(card.text, Modifier.padding(12.dp), fontSize = 14.sp)
         }
