@@ -136,25 +136,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
         // Battlefields for the next game, picked on the card before it starts (optional).
         val pending by vm.pendingBattlefields.collectAsState()
         var picking by remember { mutableStateOf<Side?>(null) }
-        // Sideboarding before games 2 and 3, when the match's deck has a sideboard.
-        var sideboarding by remember { mutableStateOf(false) }
-        val pendingSwaps by vm.pendingSwaps.collectAsState()
         val battlefieldSlots: @Composable () -> Unit = {
-            val deck = match.deck
-            if (deck != null && deck.side.isNotEmpty() && match.games.isNotEmpty()) {
-                val s = pendingSwaps ?: vm.nextSwaps(match)
-                Spacer(Modifier.height(12.dp))
-                Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp))
-                        .clickable { sideboarding = true }.semantics(mergeDescendants = true) { contentDescription = "Sideboard" }
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Sideboard", fontWeight = FontWeight.ExtraBold, color = C.Ink, modifier = Modifier.weight(1f))
-                    if (!s.isEmpty()) Text("+${s.inCount} −${s.outCount}", fontWeight = FontWeight.Black, color = C.Ink)
-                    Text("  ›", color = C.Muted, fontWeight = FontWeight.Black)
-                }
-            }
             if (Battlefields.all.isNotEmpty()) {
                 Spacer(Modifier.height(14.dp))
                 val deckFields = match.deck?.battlefields.orEmpty().filter { Battlefields.byName(it) != null }
@@ -198,10 +180,6 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                 onPick = { vm.pickPendingBattlefield(side, it); picking = null },
                 onClose = { picking = null },
             )
-        }
-        val deck = match.deck
-        if (sideboarding && deck != null) {
-            SideboardScreen(deck, match, pendingSwaps ?: vm.nextSwaps(match), onChange = vm::setPendingSwaps, onClose = { sideboarding = false })
         }
     }
 }

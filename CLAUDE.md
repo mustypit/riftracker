@@ -40,7 +40,7 @@ report as artifacts.
 | `game/RulesTest` | Scoring with simulated presses: win at 8 (any kind of point), side-track contents, corrections, undo (also of the winning point), draws, timeline; best-of-1/3 flow, who's suggested to go first, logged matches |
 | `game/LegendsTest` | Legend library: unique names/ids, lookup, picker grouping and search, recent legends; the shipped files cover Radiance with art |
 | `game/CardsTest` | Shipped card library: complete with pictures, filters, search, sorting, stats rows (each comparison, might between 4 and 6, power 0), keywords (all must match), name-only search, rules text (any word order, symbols as words), tags, every rules-text symbol drawable |
-| `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label (banned cards and battlefields), sideboard/maybeboard rules and moves, sideboarding swaps, runes stay 12, stats, match runes, text round trip |
+| `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label (banned cards and battlefields), sideboard/maybeboard rules and moves, runes stay 12, stats, match runes, text round trip |
 | `game/DeckCodesTest` | Deck codes: Piltover Archive's golden fixtures (encode and decode, v3–v6), the README deck, our decks round trip, alt-art codes |
 | `data/MigrationTest` | A version-1 database keeps its matches when the decks table is added |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
@@ -137,10 +137,9 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   deck; ⇄ on any row opens `MoveSheet` (1 / All to each other board, card page). Add cards: the dock is a
   Main · Side · Maybe switch (`MainViewModel.addBoard`) choosing where taps go; badges "n×" main, "n S"
   side, "n M" maybe. Text export has "Sideboard:"; import reads Sideboard/Maybeboard sections.
-  **Sideboarding between games** (Bo3, deck with a sideboard): a "Sideboard" row on the game-over / who
-  goes first card opens `SideboardScreen` (OUT · main size · IN, +/− per card; READY only when in = out);
-  stored per game as `Game.swaps` (`Swaps(brought, taken)`, against the match's deck snapshot, carried
-  over to the next game; the saved deck is untouched). Match review lists In/Out per game.
+  **No sideboarding inside a match** (owner): the sideboard is for deckbuilding on the go. During a
+  match the phone lies on the table and isn't touched until the game ends; tapping through swaps
+  would show the opponent what you're siding. A between-games sideboard screen was built and removed.
 - **Deck codes** (`game/DeckCodes.kt`): Piltover Archive's open format (github.com/Piltover-Archive/
   RiftboundDeckCodes, Apache 2.0), used by Piltover Archive, Riftmana, Riftbound Zone and companion apps.
   `DeckCodeFormat` is a port of the reference implementation (format 1, versions 1–6: varints grouped by

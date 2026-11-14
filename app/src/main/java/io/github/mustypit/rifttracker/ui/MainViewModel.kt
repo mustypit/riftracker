@@ -121,16 +121,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _pendingBattlefields.update { if (name == null) it - side else it + (side to name) }
     }
 
-    /** Sideboarding picked before the next game (null = keep the last game's). */
-    private val _pendingSwaps = MutableStateFlow<io.github.mustypit.rifttracker.game.Swaps?>(null)
-    val pendingSwaps: StateFlow<io.github.mustypit.rifttracker.game.Swaps?> = _pendingSwaps.asStateFlow()
-
-    /** Swaps for the game about to start: what was picked, else the previous game's (they carry over). */
-    fun nextSwaps(m: Match): io.github.mustypit.rifttracker.game.Swaps =
-        _pendingSwaps.value ?: m.games.lastOrNull()?.swaps ?: io.github.mustypit.rifttracker.game.Swaps()
-
-    fun setPendingSwaps(s: io.github.mustypit.rifttracker.game.Swaps) { _pendingSwaps.value = s }
-
     /** Starts the next game. [first] null means flip a coin. */
     fun chooseFirst(first: Side?) {
         val m = _active.value ?: return
@@ -138,11 +128,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (first != null) _coin.value = null
         val started = MatchRules.startGame(m, who, now)
         val bfs = _pendingBattlefields.value
-        // Sideboarding only between games, only when it adds up (the main deck keeps its size).
-        val swaps = if (m.deck != null && m.games.isNotEmpty()) nextSwaps(m).takeIf { it.balanced } ?: io.github.mustypit.rifttracker.game.Swaps() else io.github.mustypit.rifttracker.game.Swaps()
-        _active.value = MatchRules.replaceCurrent(started, started.games.last().copy(battlefields = bfs, swaps = swaps))
+        _active.value = MatchRules.replaceCurrent(started, started.games.last().copy(battlefields = bfs))
         _pendingBattlefields.value = emptyMap()
-        _pendingSwaps.value = null
         persist()
     }
 

@@ -833,7 +833,7 @@ open class AppTest {
         rule.onNode(hasContentDescription("Deck record 1–0")).assertExists()
     }
 
-    /** Importing a deck code from a deck site, its sideboard and maybeboard, and sideboarding between games. */
+    /** Importing a deck code from a deck site, its sideboard and maybeboard. */
     @Test
     fun sideboardsAndDeckCodes() {
         val code = "CIAAAAAAAAAQCAAAA4AACAIAABMQAAILAAAAICIMDMOVOX3AM5UHIAIDAAACO6XYAEAQKAAABX3QDGACUABKIAQAAEBQAAAWDBOQCAQAABMHE"
@@ -876,7 +876,7 @@ open class AppTest {
         val back = io.github.mustypit.rifttracker.game.DeckCodes.toDeck(clip, "x").first!!
         assertEquals(8, back.sideSize)
         assertEquals(40, back.mainSize)
-        // A best of 3 with this deck: sideboard before game 2.
+        // No sideboarding during a match: the phone stays on the table, nothing to reveal.
         rule.onNode(hasContentDescription("Back")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
         click("Play")
         rule.waitFor("New match")
@@ -885,34 +885,9 @@ open class AppTest {
         pickLegend("Their legend", "Mordekaiser")
         click("START")
         rule.waitFor("WHO GOES FIRST?")
+        click("YOU")
+        press("You", "CONQUER", 8)
         rule.onAllNodes(hasContentDescription("Sideboard")).assertCountEquals(0)
-        click("YOU")
-        press("You", "CONQUER", 8)
-        rule.onNode(hasContentDescription("Sideboard")).performClick(); rule.waitForIdle()
-        rule.onNode(hasContentDescription("More Mega-Mech in")).performScrollTo().performClick(); rule.waitForIdle()
-        rule.onNode(hasText("1 IN · 0 OUT")).assertExists()
-        rule.onNode(hasContentDescription("More Cleave out")).performScrollTo().performClick(); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Main 40 of 40")).assertExists()
-        settleImages()
-        shot("49_sideboarding")
-        click("READY FOR GAME 2")
-        rule.onNode(hasText("+1 −1")).assertExists()
-        screenShot("50_game_over_sideboard")
-        click("YOU")
-        press("You", "CONQUER", 8)
-        click("SAVE MATCH")
-        rule.waitFor("New match")
-        val m = saved().single()
-        val cleave = io.github.mustypit.rifttracker.game.DeckCodes.cardFor("OGN-004")!!.slug
-        val mech = io.github.mustypit.rifttracker.game.DeckCodes.cardFor("OGN-088")!!.slug
-        assertTrue(m.games[0].swaps.isEmpty())
-        assertEquals(io.github.mustypit.rifttracker.game.Swaps(mapOf(mech to 1), mapOf(cleave to 1)), m.games[1].swaps)
-        assertEquals("the saved deck isn't changed", 3, m.deck!!.count(cleave))
-        click("Matches")
-        rule.onNode(hasText("vs Mordekaiser")).performClick(); rule.waitForIdle()
-        rule.onAllNodes(androidx.compose.ui.test.hasScrollToNodeAction()).onFirst().performScrollToNode(hasText("In: Mega-Mech")); rule.waitForIdle()
-        rule.onNode(hasText("In: Mega-Mech")).assertExists()
-        shot("51_match_swaps")
     }
 
     @Test

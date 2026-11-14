@@ -42,29 +42,6 @@ data class Deck(
     fun runesOf(d: Domain) = runes[d.name] ?: 0
 }
 
-/** Sideboarding between games: copies brought in from the sideboard and taken out of the main deck. */
-@Serializable
-data class Swaps(val brought: Map<String, Int> = emptyMap(), val taken: Map<String, Int> = emptyMap()) {
-    val inCount: Int get() = brought.values.sum()
-    val outCount: Int get() = taken.values.sum()
-    fun isEmpty() = inCount == 0 && outCount == 0
-    /** In and out match, so the main deck keeps its size. */
-    val balanced: Boolean get() = inCount == outCount
-
-    /** One more copy of [slug] in (up to the sideboard's copies) or out (up to the main deck's). */
-    fun bringIn(deck: Deck, slug: String) = if ((brought[slug] ?: 0) < (deck.side[slug] ?: 0)) copy(brought = brought + (slug to (brought[slug] ?: 0) + 1)) else this
-    fun takeOut(deck: Deck, slug: String) = if ((taken[slug] ?: 0) < deck.count(slug)) copy(taken = taken + (slug to (taken[slug] ?: 0) + 1)) else this
-    fun undoIn(slug: String) = copy(brought = dec(brought, slug))
-    fun undoOut(slug: String) = copy(taken = dec(taken, slug))
-    private fun dec(m: Map<String, Int>, slug: String) = (m[slug] ?: 0).let { n -> if (n <= 1) m - slug else m + (slug to n - 1) }
-
-    /** The deck as played: swapped cards moved between main deck and sideboard. */
-    fun applyTo(deck: Deck): Deck {
-        fun plus(a: Map<String, Int>, b: Map<String, Int>, sign: Int) = (a.keys + b.keys).associateWith { (a[it] ?: 0) + sign * (b[it] ?: 0) }.filterValues { it > 0 }
-        return deck.copy(main = plus(plus(deck.main, taken, -1), brought, 1), side = plus(plus(deck.side, brought, -1), taken, 1))
-    }
-}
-
 /** Where a card sits in a deck. */
 enum class Board(val label: String) { MAIN("Main"), SIDE("Side"), MAYBE("Maybe") }
 

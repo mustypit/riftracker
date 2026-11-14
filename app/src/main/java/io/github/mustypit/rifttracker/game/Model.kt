@@ -37,8 +37,6 @@ data class Game(
     val xp: Map<Side, Int> = emptyMap(),
     /** The battlefield each player brought to this game, by name (optional). */
     val battlefields: Map<Side, String> = emptyMap(),
-    /** Sideboarding for this game, against the match's deck: cards brought in from the sideboard and taken out of the main deck (slug -> copies). */
-    val swaps: Swaps = Swaps(),
 ) {
     fun battlefieldOf(side: Side): String? = battlefields[side]
     fun withBattlefield(side: Side, name: String?): Game =

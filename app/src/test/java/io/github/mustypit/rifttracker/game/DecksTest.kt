@@ -141,26 +141,6 @@ class DecksTest {
     }
 
     @Test
-    fun sideboardingBetweenGames() {
-        val d = legalDeck()
-        val spare = Cards.all.first { DeckRules.allowed(d, it) && !it.banned && d.copies(it.slug) == 0 && !DeckRules.isSignature(it) && !it.isChampion }
-        val deck = d.copy(side = mapOf(spare.slug to 2))
-        val out = d.main.keys.first { it != d.champion }
-        var s = Swaps()
-        s = s.bringIn(deck, spare.slug).bringIn(deck, spare.slug).bringIn(deck, spare.slug)
-        assertEquals("only what the sideboard holds", 2, s.inCount)
-        assertFalse(s.balanced)
-        s = s.takeOut(deck, out).takeOut(deck, out)
-        assertTrue(s.balanced)
-        val played = s.applyTo(deck)
-        assertEquals(40, played.mainSize)
-        assertEquals(2, played.count(spare.slug))
-        assertEquals(deck.count(out) - 2, played.count(out))
-        assertEquals(mapOf(out to 2), played.side)
-        assertEquals(Swaps(), s.undoIn(spare.slug).undoIn(spare.slug).undoOut(out).undoOut(out))
-    }
-
-    @Test
     fun runesAlwaysTwelve() {
         var d = DeckRules.newDeck(legend, champion)
         d = DeckRules.addRune(d, Domain.FURY)

@@ -182,12 +182,6 @@ fun MatchDetailScreen(vm: MainViewModel, id: Long) {
                         if (m.logged) null else "\u23F1 " + formatDuration(g.durationMs(g.startedAt)),
                     )
                     Text(facts.joinToString(" · "), color = C.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
-                    // Sideboarding for this game: what came in and went out.
-                    if (!g.swaps.isEmpty()) {
-                        fun names(map: Map<String, Int>) = map.entries.joinToString(", ") { (slug, n) -> (if (n > 1) "$n " else "") + (io.github.mustypit.rifttracker.game.Cards.bySlug(slug)?.name ?: slug) }
-                        Text("In: ${names(g.swaps.brought)}", color = C.Ink, fontSize = 13.sp, modifier = Modifier.padding(top = 6.dp))
-                        Text("Out: ${names(g.swaps.taken)}", color = C.Ink, fontSize = 13.sp)
-                    }
                     // Battlefields: shown when set; tap to set or change (also after the match).
                     if (Battlefields.all.isNotEmpty() || g.battlefields.isNotEmpty()) {
                         Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
