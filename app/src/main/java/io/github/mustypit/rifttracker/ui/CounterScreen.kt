@@ -29,6 +29,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import io.github.mustypit.rifttracker.game.Battlefields
 import io.github.mustypit.rifttracker.game.Dice
+import io.github.mustypit.rifttracker.game.D20
+import io.github.mustypit.rifttracker.game.V3
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import io.github.mustypit.rifttracker.game.Legends
 import androidx.compose.foundation.clickable
@@ -195,8 +199,8 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     }
 }
 
-// Dice for who goes first: both thrown together, a pause after a tie, then the next throw.
-private const val DIE_SIZE = 64f // dp
+// Dice for who goes first: a d20 each, thrown together; after a tie, a pause and the next throw.
+private const val DIE_RADIUS = 48f // dp, circumradius
 private const val TIE_PAUSE = 800f // ms
 private const val WIN_FADE = 450f // ms
 
@@ -205,11 +209,11 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
     androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
         val w = maxWidth.value
         val halfH = (maxHeight.value - 4f) / 2f
-        // One track per die per throw, from the roll's own seed (the faces were drawn before this).
+        // One throw per die per round, from the roll's own seed (the numbers were drawn before this).
         val throws = remember(roll, w, halfH) {
             roll.throws.mapIndexed { i, (me, opp) ->
-                Dice.simulate(kotlin.random.Random(roll.seed + i * 2), w, halfH, DIE_SIZE, me) to
-                    Dice.simulate(kotlin.random.Random(roll.seed + i * 2 + 1), w, halfH, DIE_SIZE, opp)
+                D20.simulate(kotlin.random.Random(roll.seed + i * 2), w, halfH, DIE_RADIUS, me) to
+                    D20.simulate(kotlin.random.Random(roll.seed + i * 2 + 1), w, halfH, DIE_RADIUS, opp)
             }
         }
         val starts = remember(throws) { throws.runningFold(0f) { acc, (a, b) -> acc + maxOf(a.durationMs, b.durationMs) + TIE_PAUSE }.dropLast(1) }
@@ -229,14 +233,13 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
             for (side in listOf(Side.OPP, Side.ME)) {
                 val track = if (side == Side.ME) throws[i].first else throws[i].second
                 val win = settled && roll.winner == side
-                val glow = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side).first
+                val color = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side).first
                 androidx.compose.foundation.Canvas(
                     Modifier.weight(1f).fillMaxWidth().let { if (side == Side.OPP) it.rotate(180f) else it }
                         .semantics { contentDescription = if (settled) "${match.nameOf(side)} rolled ${roll.of(side)}" else "die" },
                 ) {
-                    val f = track.at(local)
-                    drawDie(f, track.face(f), DIE_SIZE * density, alpha = if (settled && !win) 1f - 0.55f * emph else 1f,
-                        scale = if (win) 1f + 0.15f * emph else 1f, glow = if (win) glow.copy(alpha = 0.7f * emph) else null)
+                    drawD20(track.at(local), DIE_RADIUS, color, alpha = if (settled && !win) 1f - 0.55f * emph else 1f,
+                        scale = if (win) 1f + 0.12f * emph else 1f, glow = if (win) color.copy(alpha = 0.75f * emph) else null)
                 }
                 if (side == Side.OPP) Spacer(Modifier.height(4.dp))
             }
@@ -244,43 +247,71 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
     }
 }
 
-/** Pip positions for each face, on a 3×3 grid (0..2, 0..2). */
-private val PIPS = mapOf(
-    1 to listOf(1 to 1), 2 to listOf(0 to 0, 2 to 2), 3 to listOf(0 to 0, 1 to 1, 2 to 2),
-    4 to listOf(0 to 0, 2 to 0, 0 to 2, 2 to 2), 5 to listOf(0 to 0, 2 to 0, 1 to 1, 0 to 2, 2 to 2),
-    6 to listOf(0 to 0, 0 to 1, 0 to 2, 2 to 0, 2 to 1, 2 to 2),
-)
+private val dieText = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+    textAlign = android.graphics.Paint.Align.CENTER
+    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+    textSize = 92f
+}
+private val light = V3(-0.35, -0.55, 1.0).unit()
 
-/** A die seen from above: its shadow on the table, then the die, squashed along its travel while it tumbles. */
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDie(f: Dice.Frame, face: Int, s: Float, alpha: Float, scale: Float, glow: Color?) {
-    val cx = f.x * density; val cy = f.y * density
-    val lift = 1f + f.z / 240f
-    val heading = Math.toDegrees(f.heading.toDouble()).toFloat()
-    val squash = kotlin.math.abs(kotlin.math.cos(f.flip * Math.PI)).toFloat().coerceAtLeast(0.12f)
-    val corner = androidx.compose.ui.geometry.CornerRadius(s * 0.2f)
-    val box = androidx.compose.ui.geometry.Size(s, s)
-    val topLeft = androidx.compose.ui.geometry.Offset(-s / 2, -s / 2)
-    if (glow != null) drawCircle(Brush.radialGradient(listOf(glow, Color.Transparent), center = androidx.compose.ui.geometry.Offset(cx, cy), radius = s * 1.6f), radius = s * 1.6f, center = androidx.compose.ui.geometry.Offset(cx, cy))
-    // Shadow: further away and softer the higher the die is.
-    val off = (4f + f.z * 0.35f) * density
-    withTransform({ translate(cx + off * 0.6f, cy + off); rotate(f.spin, androidx.compose.ui.geometry.Offset.Zero); scale(scale, scale, androidx.compose.ui.geometry.Offset.Zero) }) {
-        drawRoundRect(Color.Black.copy(alpha = 0.38f * alpha / lift), topLeft, box, corner)
+/**
+ * A d20 in perspective from a camera above the middle of the half: lit faces nearest last, numbers
+ * laid onto the faces that look up, and a shadow on the table that softens as the die rises.
+ */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Frame, radiusDp: Float, base: Color, alpha: Float, scale: Float, glow: Color?) {
+    val r = (radiusDp * density * scale).toDouble()
+    val camX = size.width / 2.0; val camY = size.height / 2.0
+    val camZ = 900.0 * density
+    fun project(p: V3): androidx.compose.ui.geometry.Offset {
+        val k = camZ / (camZ - p.z)
+        return androidx.compose.ui.geometry.Offset((camX + (p.x - camX) * k).toFloat(), (camY + (p.y - camY) * k).toFloat())
     }
-    withTransform({
-        translate(cx, cy)
-        rotate(heading, androidx.compose.ui.geometry.Offset.Zero)
-        scale(squash * lift * scale, lift * scale, androidx.compose.ui.geometry.Offset.Zero)
-        rotate(f.spin - heading, androidx.compose.ui.geometry.Offset.Zero)
-    }) {
-        drawRoundRect(Brush.linearGradient(listOf(Color(0xFFFFFFFF), Color(0xFFE4E1DA)), start = topLeft, end = androidx.compose.ui.geometry.Offset(s / 2, s / 2)), topLeft, box, corner, alpha = alpha)
-        drawRoundRect(Color(0xFFBDB8AE), topLeft, box, corner, alpha = alpha, style = androidx.compose.ui.graphics.drawscope.Stroke(s * 0.025f))
-        val step = s * 0.28f
-        PIPS[face].orEmpty().forEach { (gx, gy) ->
-            val c = androidx.compose.ui.geometry.Offset((gx - 1) * step, (gy - 1) * step)
-            drawCircle(Color(0xFF1B1B1D), radius = s * if (face == 1) 0.13f else 0.085f, center = c, alpha = alpha)
+    val lift = f.z * density
+    val center = V3(f.x * density.toDouble(), f.y * density.toDouble(), r * D20.inradius + lift)
+    val sh = project(V3(center.x + lift * 0.3, center.y + lift * 0.5, 0.0))
+    val shR = (r * (1.0 + lift / (220.0 * density))).toFloat()
+    drawCircle(Brush.radialGradient(listOf(Color.Black.copy(alpha = (0.55f * alpha / (1f + f.z / 90f))), Color.Transparent), center = sh, radius = shR), radius = shR, center = sh)
+    if (glow != null) {
+        val c = project(center)
+        drawCircle(Brush.radialGradient(listOf(glow, Color.Transparent), center = c, radius = (r * 2.1).toFloat()), radius = (r * 2.1).toFloat(), center = c)
+    }
+    val verts = D20.vertices.map { f.q.rotate(it) * r + center }
+    val camera = V3(camX, camY, camZ)
+    val visible = D20.faces.indices.mapNotNull { i ->
+        val n = f.q.rotate(D20.normals[i])
+        val c = D20.faces[i].map { verts[it] }.reduce(V3::plus) * (1.0 / 3)
+        if ((n dot (camera - c)) <= 0) null else Triple(i, n, c)
+    }.sortedBy { it.third.z }
+    val edge = androidx.compose.ui.graphics.lerp(base, Color.White, 0.45f).copy(alpha = 0.55f * alpha)
+    for ((i, n, c) in visible) {
+        val pts = D20.faces[i].map { project(verts[it]) }
+        val path = androidx.compose.ui.graphics.Path().apply { moveTo(pts[0].x, pts[0].y); lineTo(pts[1].x, pts[1].y); lineTo(pts[2].x, pts[2].y); close() }
+        val diffuse = (n dot light).coerceAtLeast(0.0)
+        val half = (light + V3(0.0, 0.0, 1.0)).unit()
+        val spec = Math.pow((n dot half).coerceAtLeast(0.0), 40.0)
+        val shade = (0.30 + 0.70 * diffuse).toFloat()
+        val fill = androidx.compose.ui.graphics.lerp(androidx.compose.ui.graphics.lerp(Color.Black, base, shade), Color.White, (0.55 * spec).toFloat())
+        drawPath(path, fill, alpha = alpha)
+        drawPath(path, edge, style = androidx.compose.ui.graphics.drawscope.Stroke(1.2f * density, join = androidx.compose.ui.graphics.StrokeJoin.Round))
+        // The number, laid on the face (only where it can be read).
+        if (n.z > 0.2) {
+            val up = (verts[D20.faces[i][0]] - c).unit()
+            var right = (n cross up).unit()
+            val k = r * 0.27
+            val p0 = project(c); var pr = project(c + right * k); val pu = project(c + up * k)
+            if ((pr.x - p0.x) * (pu.y - p0.y) - (pr.y - p0.y) * (pu.x - p0.x) > 0) { right = right * -1.0; pr = project(c + right * k) }
+            val m = android.graphics.Matrix()
+            m.setPolyToPoly(floatArrayOf(0f, 0f, 100f, 0f, 0f, -100f), 0, floatArrayOf(p0.x, p0.y, pr.x, pr.y, pu.x, pu.y), 0, 3)
+            val num = D20.numbers[i]
+            val label = if (num == 6 || num == 9) "$num." else "$num"
+            drawIntoCanvas { canvas ->
+                val nc = canvas.nativeCanvas
+                nc.save(); nc.concat(m)
+                dieText.color = android.graphics.Color.argb((255 * alpha * (0.4f + 0.6f * ((n.z - 0.2) / 0.8).toFloat().coerceIn(0f, 1f))).toInt(), 255, 255, 255)
+                nc.drawText(label, 0f, 33f, dieText)
+                nc.restore()
+            }
         }
-        // Edge-on faces read darker.
-        if (squash < 0.95f) drawRoundRect(Color.Black, topLeft, box, corner, alpha = alpha * (1f - squash) * 0.35f)
     }
 }
 
