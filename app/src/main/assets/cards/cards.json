@@ -21,6 +21,11 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-T03",
+   "SFD",
+   "UNL-T04"
+  ],
   "image": "buff.webp"
  },
  {
@@ -48,6 +53,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blazing-scorcher.webp"
  },
  {
@@ -73,6 +79,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "brazen-buccaneer.webp"
  },
  {
@@ -99,6 +106,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "chemtech-enforcer.webp"
  },
  {
@@ -124,6 +132,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cleave.webp"
  },
  {
@@ -148,6 +157,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "disintegrate.webp"
  },
  {
@@ -172,6 +182,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "flame-chompers.webp"
  },
  {
@@ -196,6 +207,12 @@
   "artist": "Greg Ghielmetti & Leah Chen",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-R01",
+   "SFD-R01",
+   "UNL-R01",
+   "VEN-R01"
+  ],
   "image": "fury-rune.webp"
  },
  {
@@ -220,6 +237,7 @@
   "artist": "Original Force Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "get-excited.webp"
  },
  {
@@ -244,6 +262,7 @@
   "artist": "League of Legends",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hextech-ray.webp"
  },
  {
@@ -271,6 +290,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "legion-rearguard.webp"
  },
  {
@@ -295,6 +315,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "magma-wurm.webp"
  },
  {
@@ -322,6 +343,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "noxus-hopeful.webp"
  },
  {
@@ -348,6 +370,9 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-220"
+  ],
   "image": "pouty-poro.webp"
  },
  {
@@ -372,6 +397,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sky-splitter.webp"
  },
  {
@@ -399,6 +425,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "captain-farron.webp"
  },
  {
@@ -426,6 +453,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dangerous-duo.webp"
  },
  {
@@ -448,6 +476,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "iron-ballista.webp"
  },
  {
@@ -475,6 +504,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "noxus-saboteur.webp"
  },
  {
@@ -503,6 +533,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "raging-soul.webp"
  },
  {
@@ -530,6 +561,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "scrapyard-champion.webp"
  },
  {
@@ -554,6 +586,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sun-disc.webp"
  },
  {
@@ -578,6 +611,7 @@
   "artist": "Max Grecke",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "thermo-beam.webp"
  },
  {
@@ -600,6 +634,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "unlicensed-armory.webp"
  },
  {
@@ -624,6 +659,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "void-seeker.webp"
  },
  {
@@ -648,6 +684,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blind-fury.webp"
  },
  {
@@ -671,7 +708,8 @@
   "rarity": "rare",
   "artist": "Envar Studio",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "brynhir-thundersong.webp"
  },
  {
@@ -700,6 +738,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "darius-trifarian.webp"
  },
  {
@@ -727,6 +766,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-172"
+  ],
   "image": "draven-showboat.webp"
  },
  {
@@ -749,6 +791,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "falling-star.webp"
  },
  {
@@ -779,6 +822,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-168"
+  ],
   "image": "jinx-demolitionist.webp"
  },
  {
@@ -804,6 +850,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "raging-firebrand.webp"
  },
  {
@@ -826,6 +873,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ravenborn-tome.webp"
  },
  {
@@ -850,6 +898,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shakedown.webp"
  },
  {
@@ -877,6 +926,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tryndamere-barbarian.webp"
  },
  {
@@ -907,6 +957,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-223"
+  ],
   "image": "vayne-hunter.webp"
  },
  {
@@ -936,6 +989,10 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "ARC-001",
+   "VEN-167"
+  ],
   "image": "vi-destructive.webp"
  },
  {
@@ -962,6 +1019,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "immortal-phoenix.webp"
  },
  {
@@ -989,6 +1047,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kadregrin-the-infernal.webp"
  },
  {
@@ -1018,6 +1077,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-SP1"
+  ],
   "image": "kai-sa-survivor.webp"
  },
  {
@@ -1043,6 +1105,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-222"
+  ],
   "image": "seal-of-rage.webp"
  },
  {
@@ -1072,6 +1137,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "volibear-furious.webp"
  },
  {
@@ -1096,6 +1162,12 @@
   "artist": "Greg Ghielmetti & Leah Chen",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-R02",
+   "SFD-R02",
+   "UNL-R02",
+   "VEN-R02"
+  ],
   "image": "calm-rune.webp"
  },
  {
@@ -1118,6 +1190,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "charm.webp"
  },
  {
@@ -1142,6 +1215,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "clockwork-keeper.webp"
  },
  {
@@ -1166,6 +1240,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "defy.webp"
  },
  {
@@ -1190,6 +1265,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "en-garde.webp"
  },
  {
@@ -1214,6 +1290,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "find-your-center.webp"
  },
  {
@@ -1238,6 +1315,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "meditation.webp"
  },
  {
@@ -1263,6 +1341,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "playful-phantom.webp"
  },
  {
@@ -1287,6 +1366,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rune-prison.webp"
  },
  {
@@ -1311,6 +1391,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "solari-shieldbearer.webp"
  },
  {
@@ -1337,6 +1418,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stalwart-poro.webp"
  },
  {
@@ -1362,6 +1444,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stand-united.webp"
  },
  {
@@ -1389,6 +1472,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sunlit-guardian.webp"
  },
  {
@@ -1413,6 +1497,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wielder-of-water.webp"
  },
  {
@@ -1438,6 +1523,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "adaptatron.webp"
  },
  {
@@ -1465,6 +1551,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "block.webp"
  },
  {
@@ -1489,6 +1576,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "discipline.webp"
  },
  {
@@ -1514,6 +1602,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "eclipse-herald.webp"
  },
  {
@@ -1536,6 +1625,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mask-of-foresight.webp"
  },
  {
@@ -1560,6 +1650,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "poro-herder.webp"
  },
  {
@@ -1582,6 +1673,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "reinforce.webp"
  },
  {
@@ -1606,6 +1698,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "spirit-s-refuge.webp"
  },
  {
@@ -1630,6 +1723,7 @@
   "artist": "Max Grecke",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wind-wall.webp"
  },
  {
@@ -1654,6 +1748,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wizened-elder.webp"
  },
  {
@@ -1681,6 +1776,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ahri-alluring.webp"
  },
  {
@@ -1711,6 +1807,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blitzcrank-impassive.webp"
  },
  {
@@ -1738,6 +1835,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "ARC-002"
+  ],
   "image": "caitlyn-patrolling.webp"
  },
  {
@@ -1763,6 +1863,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "last-stand.webp"
  },
  {
@@ -1787,6 +1888,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mageseeker-warden.webp"
  },
  {
@@ -1809,6 +1911,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "party-favors.webp"
  },
  {
@@ -1831,6 +1934,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "solari-shrine.webp"
  },
  {
@@ -1858,6 +1962,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-SP2"
+  ],
   "image": "sona-harmonious.webp"
  },
  {
@@ -1888,6 +1995,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "taric-protector.webp"
  },
  {
@@ -1916,6 +2024,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tasty-faefolk.webp"
  },
  {
@@ -1943,6 +2052,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "yasuo-remorseful.webp"
  },
  {
@@ -1966,7 +2076,8 @@
   "rarity": "rare",
   "artist": "Kudos Productions",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "zhonya-s-hourglass.webp"
  },
  {
@@ -1996,6 +2107,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lee-sin-ascetic.webp"
  },
  {
@@ -2023,6 +2135,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "leona-zealot.webp"
  },
  {
@@ -2047,6 +2160,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mystic-reversal.webp"
  },
  {
@@ -2072,6 +2186,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-226"
+  ],
   "image": "seal-of-focus.webp"
  },
  {
@@ -2097,6 +2214,7 @@
   "artist": "Aron Elekes",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "whiteflame-protector.webp"
  },
  {
@@ -2122,6 +2240,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "consult-the-past.webp"
  },
  {
@@ -2146,6 +2265,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "eager-apprentice.webp"
  },
  {
@@ -2170,6 +2290,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "falling-comet.webp"
  },
  {
@@ -2197,6 +2318,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jeweled-colossus.webp"
  },
  {
@@ -2224,6 +2346,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lecturing-yordle.webp"
  },
  {
@@ -2249,6 +2372,7 @@
   "artist": "Valentin Gloaguen",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mega-mech.webp"
  },
  {
@@ -2273,6 +2397,12 @@
   "artist": "Greg Ghielmetti & Leah Chen",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-R03",
+   "SFD-R03",
+   "UNL-R03",
+   "VEN-R03"
+  ],
   "image": "mind-rune.webp"
  },
  {
@@ -2295,6 +2425,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "orb-of-regret.webp"
  },
  {
@@ -2319,6 +2450,7 @@
   "artist": "Chris Kintner",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pit-crew.webp"
  },
  {
@@ -2344,6 +2476,7 @@
   "artist": "MAR Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "riptide-rex.webp"
  },
  {
@@ -2368,6 +2501,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "smoke-screen.webp"
  },
  {
@@ -2394,6 +2528,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sprite-call.webp"
  },
  {
@@ -2418,6 +2553,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stupefy.webp"
  },
  {
@@ -2444,6 +2580,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "watchful-sentry.webp"
  },
  {
@@ -2471,6 +2608,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blastcone-fae.webp"
  },
  {
@@ -2496,6 +2634,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "energy-conduit.webp"
  },
  {
@@ -2518,6 +2657,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "garbage-grabber.webp"
  },
  {
@@ -2544,6 +2684,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gemcraft-seer.webp"
  },
  {
@@ -2566,6 +2707,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mushroom-pouch.webp"
  },
  {
@@ -2590,6 +2732,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "portal-rescue.webp"
  },
  {
@@ -2614,6 +2757,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ravenbloom-student.webp"
  },
  {
@@ -2638,6 +2782,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "retreat.webp"
  },
  {
@@ -2660,6 +2805,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "singularity.webp"
  },
  {
@@ -2686,6 +2832,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sprite-mother.webp"
  },
  {
@@ -2713,6 +2860,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ava-achiever.webp"
  },
  {
@@ -2737,6 +2885,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "convergent-mutation.webp"
  },
  {
@@ -2764,6 +2913,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dr-mundo-expert.webp"
  },
  {
@@ -2794,6 +2944,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "ekko-recurrent.webp"
  },
  {
@@ -2822,6 +2973,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "ARC-003"
+  ],
   "image": "heimerdinger-inventor.webp"
  },
  {
@@ -2851,6 +3005,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kai-sa-evolutionary.webp"
  },
  {
@@ -2881,6 +3036,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "malzahar-fanatic.webp"
  },
  {
@@ -2903,6 +3059,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "progress-day.webp"
  },
  {
@@ -2925,6 +3082,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "promising-future.webp"
  },
  {
@@ -2951,6 +3109,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "thousand-tailed-watcher.webp"
  },
  {
@@ -2978,6 +3137,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-176"
+  ],
   "image": "viktor-innovator.webp"
  },
  {
@@ -3003,6 +3165,7 @@
   "artist": "Michal Ivan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wraith-of-echoes.webp"
  },
  {
@@ -3030,6 +3193,10 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-227",
+   "VEN-SP3"
+  ],
   "image": "ahri-inquisitive.webp"
  },
  {
@@ -3055,6 +3222,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-229"
+  ],
   "image": "seal-of-insight.webp"
  },
  {
@@ -3085,6 +3255,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-230"
+  ],
   "image": "teemo-strategist.webp"
  },
  {
@@ -3107,6 +3280,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "time-warp.webp"
  },
  {
@@ -3129,6 +3303,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "unchecked-power.webp"
  },
  {
@@ -3151,6 +3326,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "arena-bar.webp"
  },
  {
@@ -3177,6 +3353,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bilgewater-bully.webp"
  },
  {
@@ -3201,6 +3378,12 @@
   "artist": "Greg Ghielmetti & Leah Chen",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-R04",
+   "SFD-R04",
+   "UNL-R04",
+   "VEN-R04"
+  ],
   "image": "body-rune.webp"
  },
  {
@@ -3225,6 +3408,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cannon-barrage.webp"
  },
  {
@@ -3249,6 +3433,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "challenge.webp"
  },
  {
@@ -3273,6 +3458,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "confront.webp"
  },
  {
@@ -3298,6 +3484,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "crackshot-corsair.webp"
  },
  {
@@ -3323,6 +3510,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dune-drake.webp"
  },
  {
@@ -3348,6 +3536,7 @@
   "artist": "Slawomir Maniak",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "first-mate.webp"
  },
  {
@@ -3372,6 +3561,7 @@
   "artist": "Rafael Zanchetin",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "flurry-of-blades.webp"
  },
  {
@@ -3394,6 +3584,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mobilize.webp"
  },
  {
@@ -3421,6 +3612,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pakaa-cub.webp"
  },
  {
@@ -3445,6 +3637,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pit-rookie.webp"
  },
  {
@@ -3471,6 +3664,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stormclaw-ursine.webp"
  },
  {
@@ -3493,6 +3687,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "catalyst-of-aeons.webp"
  },
  {
@@ -3518,6 +3713,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cithria-of-cloudfield.webp"
  },
  {
@@ -3542,6 +3738,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "herald-of-scales.webp"
  },
  {
@@ -3566,6 +3763,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kinkou-monk.webp"
  },
  {
@@ -3590,6 +3788,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mountain-drake.webp"
  },
  {
@@ -3612,6 +3811,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pirate-s-haven.webp"
  },
  {
@@ -3636,6 +3836,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "spoils-of-war.webp"
  },
  {
@@ -3660,6 +3861,7 @@
   "artist": "Max Grecke",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "unyielding-spirit.webp"
  },
  {
@@ -3684,6 +3886,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wallop.webp"
  },
  {
@@ -3708,6 +3911,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wildclaw-shaman.webp"
  },
  {
@@ -3736,6 +3940,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "anivia-primal.webp"
  },
  {
@@ -3760,6 +3965,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "carnivorous-snapvine.webp"
  },
  {
@@ -3788,6 +3994,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kraken-hunter.webp"
  },
  {
@@ -3817,6 +4024,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lee-sin-centered.webp"
  },
  {
@@ -3839,6 +4047,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mistfall.webp"
  },
  {
@@ -3863,6 +4072,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "overt-operation.webp"
  },
  {
@@ -3887,6 +4097,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "primal-strength.webp"
  },
  {
@@ -3916,6 +4127,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "qiyana-victorious.webp"
  },
  {
@@ -3938,6 +4150,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sabotage.webp"
  },
  {
@@ -3967,6 +4180,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "udyr-wildman.webp"
  },
  {
@@ -3997,6 +4211,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "volibear-imposing.webp"
  },
  {
@@ -4025,6 +4240,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "ARC-004"
+  ],
   "image": "warwick-hunter.webp"
  },
  {
@@ -4046,7 +4264,8 @@
   "rarity": "epic",
   "artist": "Six More Vodka",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "dazzling-aurora.webp"
  },
  {
@@ -4073,6 +4292,7 @@
   "artist": "Slawomir Maniak",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "deadbloom-predator.webp"
  },
  {
@@ -4104,6 +4324,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "miss-fortune-captain.webp"
  },
  {
@@ -4129,6 +4350,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-231"
+  ],
   "image": "seal-of-strength.webp"
  },
  {
@@ -4156,6 +4380,10 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-232",
+   "VEN-SP4"
+  ],
   "image": "sett-brawler.webp"
  },
  {
@@ -4181,6 +4409,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cemetery-attendant.webp"
  },
  {
@@ -4205,6 +4434,12 @@
   "artist": "Greg Ghielmetti & Leah Chen",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-R05",
+   "SFD-R05",
+   "UNL-R05",
+   "VEN-R05"
+  ],
   "image": "chaos-rune.webp"
  },
  {
@@ -4231,6 +4466,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ember-monk.webp"
  },
  {
@@ -4256,6 +4492,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "fight-or-flight.webp"
  },
  {
@@ -4280,6 +4517,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gust.webp"
  },
  {
@@ -4304,6 +4542,7 @@
   "artist": "Rafael Zanchetin",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "morbid-return.webp"
  },
  {
@@ -4330,6 +4569,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-224"
+  ],
   "image": "mystic-poro.webp"
  },
  {
@@ -4354,6 +4596,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rebuke.webp"
  },
  {
@@ -4378,6 +4621,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ride-the-wind.webp"
  },
  {
@@ -4404,6 +4648,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sai-scout.webp"
  },
  {
@@ -4429,6 +4674,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shipyard-skulker.webp"
  },
  {
@@ -4454,6 +4700,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sneaky-deckhand.webp"
  },
  {
@@ -4478,6 +4725,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "stealthy-pursuer.webp"
  },
  {
@@ -4502,6 +4750,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "undercover-agent.webp"
  },
  {
@@ -4526,6 +4775,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "acceptable-losses.webp"
  },
  {
@@ -4550,6 +4800,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fading-memories.webp"
  },
  {
@@ -4574,6 +4825,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pack-of-wonders.webp"
  },
  {
@@ -4596,6 +4848,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "scrapheap.webp"
  },
  {
@@ -4620,6 +4873,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "stacked-deck.webp"
  },
  {
@@ -4642,6 +4896,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-syren.webp"
  },
  {
@@ -4666,6 +4921,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "traveling-merchant.webp"
  },
  {
@@ -4688,6 +4944,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "treasure-trove.webp"
  },
  {
@@ -4710,6 +4967,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "whirlwind.webp"
  },
  {
@@ -4734,6 +4992,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zaunite-bouncer.webp"
  },
  {
@@ -4763,6 +5022,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-182"
+  ],
   "image": "kayn-unleashed.webp"
  },
  {
@@ -4792,6 +5054,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kog-maw-caustic.webp"
  },
  {
@@ -4819,6 +5082,7 @@
   "artist": "Alex Heath",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "maddened-marauder.webp"
  },
  {
@@ -4844,6 +5108,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mindsplitter.webp"
  },
  {
@@ -4872,6 +5137,10 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "T1A-004",
+   "T1S-004"
+  ],
   "image": "miss-fortune-buccaneer.webp"
  },
  {
@@ -4899,7 +5168,8 @@
   "rarity": "rare",
   "artist": "Six More Vodka",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "nocturne-horrifying.webp"
  },
  {
@@ -4924,7 +5194,8 @@
   "rarity": "rare",
   "artist": "Six More Vodka",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "rhasa-the-sunderer.webp"
  },
  {
@@ -4950,6 +5221,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "soulgorger.webp"
  },
  {
@@ -4980,6 +5252,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "FND-196"
+  ],
   "image": "teemo-scout.webp"
  },
  {
@@ -5002,6 +5277,7 @@
   "artist": "Rafael Zanchetin",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-harrowing.webp"
  },
  {
@@ -5028,6 +5304,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tideturner.webp"
  },
  {
@@ -5055,6 +5332,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "twisted-fate-gambler.webp"
  },
  {
@@ -5077,6 +5355,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "invert-timelines.webp"
  },
  {
@@ -5104,6 +5383,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "ARC-005"
+  ],
   "image": "jinx-rebel.webp"
  },
  {
@@ -5128,6 +5410,7 @@
   "artist": "League of Legends",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "possession.webp"
  },
  {
@@ -5153,6 +5436,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-234"
+  ],
   "image": "seal-of-discord.webp"
  },
  {
@@ -5182,6 +5468,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-235"
+  ],
   "image": "yasuo-windrider.webp"
  },
  {
@@ -5206,6 +5495,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "back-to-back.webp"
  },
  {
@@ -5230,6 +5520,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "call-to-glory.webp"
  },
  {
@@ -5254,6 +5545,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cruel-patron.webp"
  },
  {
@@ -5276,6 +5568,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cull-the-weak.webp"
  },
  {
@@ -5302,6 +5595,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-225"
+  ],
   "image": "daring-poro.webp"
  },
  {
@@ -5326,6 +5622,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "faithful-manufactor.webp"
  },
  {
@@ -5348,6 +5645,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forge-of-the-future.webp"
  },
  {
@@ -5373,6 +5671,7 @@
   "artist": "Rafael Zanchetin",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hidden-blade.webp"
  },
  {
@@ -5397,6 +5696,12 @@
   "artist": "Greg Ghielmetti & Leah Chen",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-R06",
+   "SFD-R06",
+   "UNL-R06",
+   "VEN-R06"
+  ],
   "image": "order-rune.webp"
  },
  {
@@ -5424,6 +5729,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "petty-officer.webp"
  },
  {
@@ -5451,6 +5757,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "soaring-scout.webp"
  },
  {
@@ -5478,6 +5785,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trifarian-gloryseeker.webp"
  },
  {
@@ -5505,6 +5813,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vanguard-captain.webp"
  },
  {
@@ -5530,6 +5839,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vanguard-sergeant.webp"
  },
  {
@@ -5555,6 +5865,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "facebreaker.webp"
  },
  {
@@ -5579,6 +5890,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "imperial-decree.webp"
  },
  {
@@ -5604,6 +5916,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "noxian-drummer.webp"
  },
  {
@@ -5628,6 +5941,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "peak-guardian.webp"
  },
  {
@@ -5652,6 +5966,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "salvage.webp"
  },
  {
@@ -5676,6 +5991,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "solari-chief.webp"
  },
  {
@@ -5701,6 +6017,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "spectral-matron.webp"
  },
  {
@@ -5723,6 +6040,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "symbol-of-the-solari.webp"
  },
  {
@@ -5745,6 +6063,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vanguard-helm.webp"
  },
  {
@@ -5767,6 +6086,7 @@
   "artist": "Max Grecke",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vengeance.webp"
  },
  {
@@ -5791,6 +6111,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "albus-ferros.webp"
  },
  {
@@ -5819,6 +6140,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "commander-ledros.webp"
  },
  {
@@ -5851,6 +6173,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fiora-victorious.webp"
  },
  {
@@ -5875,6 +6198,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "grand-strategem.webp"
  },
  {
@@ -5900,6 +6224,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "harnessed-dragon.webp"
  },
  {
@@ -5929,6 +6254,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-237"
+  ],
   "image": "karma-channeler.webp"
  },
  {
@@ -5959,6 +6287,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "karthus-eternal.webp"
  },
  {
@@ -5981,6 +6310,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "king-s-edict.webp"
  },
  {
@@ -6010,6 +6340,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-184"
+  ],
   "image": "leona-determined.webp"
  },
  {
@@ -6036,6 +6369,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "machine-evangel.webp"
  },
  {
@@ -6065,6 +6399,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-183"
+  ],
   "image": "sett-kingpin.webp"
  },
  {
@@ -6096,6 +6433,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shen-kinkou.webp"
  },
  {
@@ -6117,7 +6455,8 @@
   "rarity": "epic",
   "artist": "Kudos Productions",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "baited-hook.webp"
  },
  {
@@ -6148,6 +6487,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-236"
+  ],
   "image": "darius-executioner.webp"
  },
  {
@@ -6170,6 +6512,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "divine-judgment.webp"
  },
  {
@@ -6195,6 +6538,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-238"
+  ],
   "image": "seal-of-unity.webp"
  },
  {
@@ -6222,6 +6568,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "ARC-006"
+  ],
   "image": "viktor-leader.webp"
  },
  {
@@ -6250,6 +6599,10 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "KDA-003",
+   "OGN-299"
+  ],
   "image": "daughter-of-the-void.webp"
  },
  {
@@ -6277,6 +6630,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "icathian-rain.webp"
  },
  {
@@ -6304,6 +6658,10 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "FND-249",
+   "OGN-300"
+  ],
   "image": "relentless-storm.webp"
  },
  {
@@ -6331,6 +6689,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stormbringer.webp"
  },
  {
@@ -6356,6 +6715,10 @@
   "artist": "Sugar Free",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "FND-251",
+   "OGN-301"
+  ],
   "image": "loose-cannon.webp"
  },
  {
@@ -6383,6 +6746,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "super-mega-death-rocket.webp"
  },
  {
@@ -6412,6 +6776,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGN-302"
+  ],
   "image": "hand-of-noxus.webp"
  },
  {
@@ -6442,6 +6809,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "noxian-guillotine.webp"
  },
  {
@@ -6467,6 +6835,10 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "KDA-001",
+   "OGN-303"
+  ],
   "image": "nine-tailed-fox.webp"
  },
  {
@@ -6497,6 +6869,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fox-fire.webp"
  },
  {
@@ -6522,6 +6895,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGN-304"
+  ],
   "image": "blind-monk.webp"
  },
  {
@@ -6549,6 +6925,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dragon-s-rage.webp"
  },
  {
@@ -6574,6 +6951,11 @@
   "artist": "TSWCK逍",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "FND-259",
+   "OGN-305",
+   "W26-001"
+  ],
   "image": "unforgiven.webp"
  },
  {
@@ -6603,6 +6985,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "last-breath.webp"
  },
  {
@@ -6628,6 +7011,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGN-306"
+  ],
   "image": "radiant-dawn.webp"
  },
  {
@@ -6657,6 +7043,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zenith-blade.webp"
  },
  {
@@ -6684,6 +7071,9 @@
   "artist": "Shawn Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGN-307"
+  ],
   "image": "swift-scout.webp"
  },
  {
@@ -6713,6 +7103,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "guerilla-warfare.webp"
  },
  {
@@ -6738,6 +7129,10 @@
   "artist": "Fortiche Production",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "FND-265",
+   "OGN-308"
+  ],
   "image": "herald-of-the-arcane.webp"
  },
  {
@@ -6767,6 +7162,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "siphon-power.webp"
  },
  {
@@ -6794,6 +7190,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGN-309"
+  ],
   "image": "bounty-hunter.webp"
  },
  {
@@ -6823,6 +7222,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bullet-time.webp"
  },
  {
@@ -6848,6 +7248,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGN-310"
+  ],
   "image": "the-boss.webp"
  },
  {
@@ -6875,6 +7278,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "showstopper.webp"
  },
  {
@@ -6897,6 +7301,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "altar-to-unity.webp"
  },
  {
@@ -6919,6 +7324,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "aspirant-s-climb.webp"
  },
  {
@@ -6941,6 +7347,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "back-alley-bar.webp"
  },
  {
@@ -6963,6 +7370,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bandle-tree.webp"
  },
  {
@@ -6987,6 +7395,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fortified-position.webp"
  },
  {
@@ -7009,6 +7418,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "grove-of-the-god-willow.webp"
  },
  {
@@ -7031,6 +7441,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hallowed-tomb.webp"
  },
  {
@@ -7053,6 +7464,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "monastery-of-hirana.webp"
  },
  {
@@ -7075,6 +7487,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "navori-fighting-pit.webp"
  },
  {
@@ -7097,6 +7510,7 @@
   "artist": "Chris Kintner",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "obelisk-of-power.webp"
  },
  {
@@ -7119,6 +7533,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "reaver-s-row.webp"
  },
  {
@@ -7141,6 +7556,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "reckoner-s-arena.webp"
  },
  {
@@ -7163,6 +7579,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sigil-of-the-storm.webp"
  },
  {
@@ -7185,6 +7602,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "startipped-peak.webp"
  },
  {
@@ -7207,6 +7625,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "targon-s-peak.webp"
  },
  {
@@ -7229,6 +7648,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "the-arena-s-greatest.webp"
  },
  {
@@ -7251,6 +7671,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-candlelit-sanctum.webp"
  },
  {
@@ -7273,6 +7694,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "the-dreaming-tree.webp"
  },
  {
@@ -7295,6 +7717,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-grand-plaza.webp"
  },
  {
@@ -7317,6 +7740,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trifarian-war-camp.webp"
  },
  {
@@ -7339,6 +7763,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vilemaw-s-lair.webp"
  },
  {
@@ -7361,6 +7786,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "void-gate.webp"
  },
  {
@@ -7385,6 +7811,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "windswept-hillock.webp"
  },
  {
@@ -7407,6 +7834,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zaun-warrens.webp"
  },
  {
@@ -7434,6 +7862,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "annie-fiery.webp"
  },
  {
@@ -7456,6 +7885,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "firestorm.webp"
  },
  {
@@ -7480,6 +7910,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "incinerate.webp"
  },
  {
@@ -7507,6 +7938,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "master-yi-meditative.webp"
  },
  {
@@ -7534,6 +7966,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zephyr-sage.webp"
  },
  {
@@ -7561,6 +7994,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lux-illuminated.webp"
  },
  {
@@ -7592,6 +8026,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "garen-rugged.webp"
  },
  {
@@ -7616,6 +8051,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gentlemen-s-duel.webp"
  },
  {
@@ -7645,6 +8081,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "master-yi-honed.webp"
  },
  {
@@ -7672,6 +8109,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "annie-stubborn.webp"
  },
  {
@@ -7696,6 +8134,7 @@
   "artist": "Sugar Free",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "flash.webp"
  },
  {
@@ -7720,6 +8159,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blast-of-power.webp"
  },
  {
@@ -7748,6 +8188,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "garen-commander.webp"
  },
  {
@@ -7778,6 +8219,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-SP6"
+  ],
   "image": "lux-crownguard.webp"
  },
  {
@@ -7802,6 +8246,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "recruit-the-vanguard.webp"
  },
  {
@@ -7827,6 +8272,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vanguard-attendant.webp"
  },
  {
@@ -7854,6 +8300,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGS-025"
+  ],
   "image": "dark-child-starter.webp"
  },
  {
@@ -7881,6 +8330,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tibbers.webp"
  },
  {
@@ -7908,6 +8358,9 @@
   "artist": "Grafit Studio/Quy Ho",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGS-026"
+  ],
   "image": "wuju-bladesman-starter.webp"
  },
  {
@@ -7937,6 +8390,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "highlander.webp"
  },
  {
@@ -7964,6 +8418,9 @@
   "artist": "Grafit Studio/Maki Planas Mata",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGS-027"
+  ],
   "image": "lady-of-luminosity-starter.webp"
  },
  {
@@ -7993,6 +8450,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "final-spark.webp"
  },
  {
@@ -8020,6 +8478,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "OGS-028"
+  ],
   "image": "might-of-demacia-starter.webp"
  },
  {
@@ -8049,6 +8510,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "decisive-strike.webp"
  },
  {
@@ -8076,6 +8538,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "amateur-demolitionist.webp"
  },
  {
@@ -8101,6 +8564,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "banner-of-conquest.webp"
  },
  {
@@ -8125,6 +8589,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bilgewater-tracker.webp"
  },
  {
@@ -8150,6 +8615,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "brawl.webp"
  },
  {
@@ -8175,6 +8641,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lingering-animus.webp"
  },
  {
@@ -8199,6 +8666,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "scorched-earth.webp"
  },
  {
@@ -8221,6 +8689,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rally-for-war.webp"
  },
  {
@@ -8248,6 +8717,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "war-scout.webp"
  },
  {
@@ -8274,6 +8744,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "antagonistic-apparatus.webp"
  },
  {
@@ -8296,6 +8767,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forbidden-technique.webp"
  },
  {
@@ -8323,6 +8795,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "incorrigible-construct.webp"
  },
  {
@@ -8345,6 +8818,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "runeblade-anvil.webp"
  },
  {
@@ -8369,6 +8843,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lost-to-the-sands.webp"
  },
  {
@@ -8393,6 +8868,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shimmering-swimmer.webp"
  },
  {
@@ -8422,6 +8898,9 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-SP2"
+  ],
   "image": "akali-brash.webp"
  },
  {
@@ -8446,6 +8925,7 @@
   "artist": "Michal Ivan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "coalesced-energy.webp"
  },
  {
@@ -8471,6 +8951,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "detonation-amplifier.webp"
  },
  {
@@ -8495,6 +8976,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "drakehound-packmaster.webp"
  },
  {
@@ -8519,6 +9001,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "firebrand-raider.webp"
  },
  {
@@ -8550,6 +9033,7 @@
   "artist": "Pixelverse",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mordekaiser-twice-slain.webp"
  },
  {
@@ -8580,6 +9064,9 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-177"
+  ],
   "image": "ekko-revolutionary.webp"
  },
  {
@@ -8605,6 +9092,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "whirling-twirligig.webp"
  },
  {
@@ -8635,6 +9123,7 @@
   "artist": "Pixelverse",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ziggs-short-fused.webp"
  },
  {
@@ -8659,6 +9148,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blossoming-dreamroot.webp"
  },
  {
@@ -8685,6 +9175,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "consult-the-heavens.webp"
  },
  {
@@ -8709,6 +9200,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "entrenched-boar.webp"
  },
  {
@@ -8736,6 +9228,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "iridescent-avian.webp"
  },
  {
@@ -8761,6 +9254,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ki-burst.webp"
  },
  {
@@ -8785,6 +9279,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "life-from-stone.webp"
  },
  {
@@ -8809,6 +9304,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sanctum-conservator.webp"
  },
  {
@@ -8836,6 +9332,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stoic-ferryman.webp"
  },
  {
@@ -8861,6 +9358,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "battle-preparations.webp"
  },
  {
@@ -8885,6 +9383,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "command-attack.webp"
  },
  {
@@ -8909,6 +9408,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hunker-down.webp"
  },
  {
@@ -8933,6 +9433,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "invigorating-bloom.webp"
  },
  {
@@ -8960,6 +9461,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "storm-raptor.webp"
  },
  {
@@ -8986,6 +9488,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "watchful-curator.webp"
  },
  {
@@ -9015,6 +9518,9 @@
   "artist": "Naifan Zhang",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-SP1"
+  ],
   "image": "ahri-confident.webp"
  },
  {
@@ -9037,6 +9543,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ephemeral-ward.webp"
  },
  {
@@ -9062,6 +9569,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "heartening-soul.webp"
  },
  {
@@ -9086,6 +9594,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hush.webp"
  },
  {
@@ -9115,6 +9624,7 @@
   "artist": "Pixelverse",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "orianna-exquisite.webp"
  },
  {
@@ -9144,7 +9654,8 @@
   "rarity": "rare",
   "artist": "JunHuan",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "riven-broken-blade.webp"
  },
  {
@@ -9170,6 +9681,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hunting-blind.webp"
  },
  {
@@ -9199,6 +9711,7 @@
   "artist": "Pixelverse",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "k-sante-dauntless.webp"
  },
  {
@@ -9221,6 +9734,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "resplendent-rostrum.webp"
  },
  {
@@ -9243,6 +9757,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fanfare.webp"
  },
  {
@@ -9267,6 +9782,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "high-note.webp"
  },
  {
@@ -9291,6 +9807,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "industrious-mechsmith.webp"
  },
  {
@@ -9318,6 +9835,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mysterious-chronomancer.webp"
  },
  {
@@ -9340,6 +9858,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "parallel-convergence.webp"
  },
  {
@@ -9366,6 +9885,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "resource-extractor.webp"
  },
  {
@@ -9393,6 +9913,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "strigian-oracle.webp"
  },
  {
@@ -9420,6 +9941,7 @@
   "artist": "Alessandro Poli",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trinket-peddler.webp"
  },
  {
@@ -9447,6 +9969,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "clanging-sentry.webp"
  },
  {
@@ -9471,6 +9994,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "improvised-projectile.webp"
  },
  {
@@ -9496,6 +10020,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "piltovan-guidebot.webp"
  },
  {
@@ -9522,6 +10047,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "riptide-mage.webp"
  },
  {
@@ -9544,6 +10070,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "supernova.webp"
  },
  {
@@ -9572,6 +10099,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-empyrean.webp"
  },
  {
@@ -9601,6 +10129,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ekko-ingenious.webp"
  },
  {
@@ -9626,6 +10155,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gravity-field.webp"
  },
  {
@@ -9656,6 +10186,9 @@
   "artist": "Calf Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-SP4"
+  ],
   "image": "kai-sa-rebel.webp"
  },
  {
@@ -9678,6 +10211,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "scrutinizing-scope.webp"
  },
  {
@@ -9707,6 +10241,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "seraphine-inspiring.webp"
  },
  {
@@ -9732,6 +10267,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "spirit-of-the-forge.webp"
  },
  {
@@ -9759,6 +10295,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "clocktower-guardian.webp"
  },
  {
@@ -9786,6 +10323,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "orianna-mechanical-marvel.webp"
  },
  {
@@ -9808,6 +10346,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zero-point-inflection.webp"
  },
  {
@@ -9832,6 +10371,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hold-em.webp"
  },
  {
@@ -9859,6 +10399,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "nazuman-ntofo.webp"
  },
  {
@@ -9886,6 +10427,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "overloaded-traveler.webp"
  },
  {
@@ -9911,6 +10453,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pillaged-armory.webp"
  },
  {
@@ -9937,6 +10480,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "raving-witness.webp"
  },
  {
@@ -9965,6 +10509,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "skystrike-squadron.webp"
  },
  {
@@ -9991,6 +10536,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sneaky-zeebles.webp"
  },
  {
@@ -10018,6 +10564,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wrath-of-the-freljord.webp"
  },
  {
@@ -10045,6 +10592,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "armored-tusker.webp"
  },
  {
@@ -10067,6 +10615,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "avalanche.webp"
  },
  {
@@ -10091,6 +10640,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bloodscent-swarm.webp"
  },
  {
@@ -10117,6 +10667,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "elnuk-herd.webp"
  },
  {
@@ -10141,6 +10692,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "primordial-roar.webp"
  },
  {
@@ -10167,6 +10719,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stalwart-goatherd.webp"
  },
  {
@@ -10189,6 +10742,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cataclysm.webp"
  },
  {
@@ -10216,6 +10770,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "graves-blasting-through.webp"
  },
  {
@@ -10246,6 +10801,9 @@
   "artist": "Pixelverse",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-178"
+  ],
   "image": "k-sante-courageous.webp"
  },
  {
@@ -10271,6 +10829,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "portable-portal.webp"
  },
  {
@@ -10298,6 +10857,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "staunch-survivor.webp"
  },
  {
@@ -10320,6 +10880,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "titanic-shrine.webp"
  },
  {
@@ -10350,6 +10911,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "evelynn-consuming.webp"
  },
  {
@@ -10380,6 +10942,7 @@
   "artist": "JunHuan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jarvan-iv-martial-paragon.webp"
  },
  {
@@ -10405,6 +10968,7 @@
   "artist": "Mogi",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "seraphic-wyvern.webp"
  },
  {
@@ -10432,6 +10996,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "disposal-expert.webp"
  },
  {
@@ -10458,6 +11023,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "explosimian.webp"
  },
  {
@@ -10486,6 +11052,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "momentary-companion.webp"
  },
  {
@@ -10511,6 +11078,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "satchel-charge.webp"
  },
  {
@@ -10538,6 +11106,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "siren-of-the-shallows.webp"
  },
  {
@@ -10562,6 +11131,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "siren-s-song.webp"
  },
  {
@@ -10587,6 +11157,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "suave-negotiator.webp"
  },
  {
@@ -10613,6 +11184,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-waters-wage.webp"
  },
  {
@@ -10639,6 +11211,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "an-offer-you-can-t-refuse.webp"
  },
  {
@@ -10664,6 +11237,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "demon-shade.webp"
  },
  {
@@ -10692,6 +11266,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gutter-guardian.webp"
  },
  {
@@ -10719,6 +11294,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pitiless-stalker.webp"
  },
  {
@@ -10747,6 +11323,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "reckless-innovator.webp"
  },
  {
@@ -10771,6 +11348,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-good-stuff.webp"
  },
  {
@@ -10798,6 +11376,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bedeviling-stranger.webp"
  },
  {
@@ -10822,6 +11401,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bushwhack-trap.webp"
  },
  {
@@ -10851,6 +11431,9 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-SP3"
+  ],
   "image": "evelynn-in-control.webp"
  },
  {
@@ -10879,6 +11462,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lulu-whimsical.webp"
  },
  {
@@ -10901,6 +11485,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mechanical-bandit.webp"
  },
  {
@@ -10931,6 +11516,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ziggs-explosive.webp"
  },
  {
@@ -10958,6 +11544,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "angler-wyrm.webp"
  },
  {
@@ -10985,6 +11572,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "riven-deserter.webp"
  },
  {
@@ -11009,6 +11597,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "transpositionist.webp"
  },
  {
@@ -11033,6 +11622,7 @@
   "artist": "Yeon Art Studio/Anna Nikonova",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "concert-poster.webp"
  },
  {
@@ -11058,6 +11648,7 @@
   "artist": "Original Force",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "for-demacia.webp"
  },
  {
@@ -11082,6 +11673,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "herald-of-the-emperor.webp"
  },
  {
@@ -11110,6 +11702,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hunting-dog.webp"
  },
  {
@@ -11134,6 +11727,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "meticulous-restorationist.webp"
  },
  {
@@ -11160,6 +11754,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "one-two-punch.webp"
  },
  {
@@ -11186,6 +11781,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "party-crasher.webp"
  },
  {
@@ -11215,6 +11811,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "protector-s-shield.webp"
  },
  {
@@ -11239,6 +11836,7 @@
   "artist": "Michal Ivan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "burn-away.webp"
  },
  {
@@ -11265,6 +11863,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dune-devourer.webp"
  },
  {
@@ -11292,6 +11891,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mournful-spirit.webp"
  },
  {
@@ -11316,6 +11916,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rousing-display.webp"
  },
  {
@@ -11342,6 +11943,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "steadfast-outrider.webp"
  },
  {
@@ -11367,6 +11969,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trifarian-captain.webp"
  },
  {
@@ -11391,6 +11994,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "battlefield-armorer.webp"
  },
  {
@@ -11417,6 +12021,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "demacian-illuminators.webp"
  },
  {
@@ -11445,6 +12050,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "heimerdinger-academy-instructor.webp"
  },
  {
@@ -11475,6 +12081,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jarvan-iv-royal-heir.webp"
  },
  {
@@ -11497,6 +12104,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "raucous-anthem.webp"
  },
  {
@@ -11519,6 +12127,7 @@
   "artist": "Original Force",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "remember-the-fallen.webp"
  },
  {
@@ -11543,6 +12152,7 @@
   "artist": "Yeon Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dockside-lock-up.webp"
  },
  {
@@ -11571,6 +12181,7 @@
   "artist": "JunHuan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mordekaiser-dominating.webp"
  },
  {
@@ -11598,6 +12209,11 @@
   "artist": "Pixelverse",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-SP5",
+   "T1A-005",
+   "T1S-005"
+  ],
   "image": "seraphine-not-alone.webp"
  },
  {
@@ -11625,6 +12241,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-168"
+  ],
   "image": "boy-who-shattered-time.webp"
  },
  {
@@ -11652,6 +12271,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "chronobreak.webp"
  },
  {
@@ -11679,6 +12299,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-169"
+  ],
   "image": "hexplosives-expert.webp"
  },
  {
@@ -11708,6 +12331,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hexplosive-minefield.webp"
  },
  {
@@ -11736,6 +12360,9 @@
   "artist": "TUTU",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-170"
+  ],
   "image": "iron-revenant.webp"
  },
  {
@@ -11763,6 +12390,7 @@
   "artist": "Pixelverse",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "realm-of-death.webp"
  },
  {
@@ -11788,6 +12416,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-171"
+  ],
   "image": "lady-of-clockwork.webp"
  },
  {
@@ -11818,6 +12449,7 @@
   "artist": "Calf Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-ball.webp"
  },
  {
@@ -11846,6 +12478,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-172"
+  ],
   "image": "pride-of-nazumah.webp"
  },
  {
@@ -11876,6 +12511,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ntofo-strikes.webp"
  },
  {
@@ -11901,6 +12537,9 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-173"
+  ],
   "image": "the-exile.webp"
  },
  {
@@ -11932,6 +12571,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blade-of-the-exile.webp"
  },
  {
@@ -11957,6 +12597,10 @@
   "artist": "Naifan Zhang",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-174",
+   "RAD-174a"
+  ],
   "image": "starry-eyed-songstress.webp"
  },
  {
@@ -11984,6 +12628,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "encore.webp"
  },
  {
@@ -12009,6 +12654,10 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "KDA-002",
+   "RAD-175"
+  ],
   "image": "agony-s-embrace.webp"
  },
  {
@@ -12039,6 +12688,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "last-caress.webp"
  },
  {
@@ -12066,6 +12716,9 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-176"
+  ],
   "image": "exemplar-of-demacia.webp"
  },
  {
@@ -12095,6 +12748,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "demacian-standard.webp"
  },
  {
@@ -12120,6 +12774,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bandle-scouts-academy.webp"
  },
  {
@@ -12142,6 +12797,9 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "W26-002"
+  ],
   "image": "black-market.webp"
  },
  {
@@ -12164,6 +12822,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "black-rose-sanctum.webp"
  },
  {
@@ -12186,6 +12845,9 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "W26-003"
+  ],
   "image": "cosmic-vista.webp"
  },
  {
@@ -12210,6 +12872,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "durand-memorial.webp"
  },
  {
@@ -12234,6 +12897,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "firelights-hideout.webp"
  },
  {
@@ -12256,6 +12920,9 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "W26-004"
+  ],
   "image": "hunters-circle.webp"
  },
  {
@@ -12278,6 +12945,10 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "KDA-005",
+   "RAD-184"
+  ],
   "image": "packed-amphitheater.webp"
  },
  {
@@ -12302,6 +12973,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rakelstake.webp"
  },
  {
@@ -12324,6 +12996,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ruined-monastery.webp"
  },
  {
@@ -12351,6 +13024,7 @@
   "artist": "Luscinia Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "neeko-blending-in.webp"
  },
  {
@@ -12380,6 +13054,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bomb.webp"
  },
  {
@@ -12404,6 +13079,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "against-the-odds.webp"
  },
  {
@@ -12432,6 +13108,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "armed-assailant.webp"
  },
  {
@@ -12458,6 +13135,7 @@
   "artist": "Rafael Zanchetin",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blood-rush.webp"
  },
  {
@@ -12482,6 +13160,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bushwhack.webp"
  },
  {
@@ -12504,6 +13183,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "detonate.webp"
  },
  {
@@ -12530,6 +13210,7 @@
   "artist": "Michael Ivan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "eager-drakehound.webp"
  },
  {
@@ -12557,6 +13238,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gem-jammer.webp"
  },
  {
@@ -12585,6 +13267,7 @@
   "artist": "Wild Blue Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sentinel-adept.webp"
  },
  {
@@ -12612,6 +13295,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "serrated-dirk.webp"
  },
  {
@@ -12636,6 +13320,7 @@
   "artist": "Wild Blue Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "void-drone.webp"
  },
  {
@@ -12660,6 +13345,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "angle-shot.webp"
  },
  {
@@ -12685,6 +13371,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "battering-ram.webp"
  },
  {
@@ -12709,6 +13396,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blast-corps-cadet.webp"
  },
  {
@@ -12733,6 +13421,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "minotaur-reckoner.webp"
  },
  {
@@ -12758,6 +13447,7 @@
   "artist": "Kudos Productions & 黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "perched-grimwyrm.webp"
  },
  {
@@ -12784,6 +13474,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "recurve-bow.webp"
  },
  {
@@ -12809,6 +13500,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sudden-storm.webp"
  },
  {
@@ -12833,6 +13525,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "void-hatchling.webp"
  },
  {
@@ -12855,6 +13548,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "assembly-rig.webp"
  },
  {
@@ -12882,6 +13576,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "draven-vanquisher.webp"
  },
  {
@@ -12910,6 +13605,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ferrous-forerunner.webp"
  },
  {
@@ -12938,6 +13634,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "long-sword.webp"
  },
  {
@@ -12962,6 +13659,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "piercing-light.webp"
  },
  {
@@ -12991,6 +13689,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rell-magnetic.webp"
  },
  {
@@ -13022,6 +13721,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rengar-pouncing.webp"
  },
  {
@@ -13053,6 +13753,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rumble-hotheaded.webp"
  },
  {
@@ -13077,6 +13778,7 @@
   "artist": "Wild Blue Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dunebreaker.webp"
  },
  {
@@ -13107,6 +13809,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lucian-gunslinger.webp"
  },
  {
@@ -13137,6 +13840,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rek-sai-breacher.webp"
  },
  {
@@ -13163,6 +13867,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "skyfall-of-areion.webp"
  },
  {
@@ -13187,6 +13892,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "desert-s-call.webp"
  },
  {
@@ -13211,6 +13917,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "disarming-rake.webp"
  },
  {
@@ -13238,6 +13945,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "doran-s-shield.webp"
  },
  {
@@ -13263,6 +13971,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "feral-strength.webp"
  },
  {
@@ -13288,6 +13997,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "guardian-of-the-passage.webp"
  },
  {
@@ -13315,6 +14025,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-221"
+  ],
   "image": "lonely-poro.webp"
  },
  {
@@ -13342,6 +14055,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "navori-scout.webp"
  },
  {
@@ -13366,6 +14080,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ribbon-dancer.webp"
  },
  {
@@ -13390,6 +14105,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "royal-entourage.webp"
  },
  {
@@ -13415,6 +14131,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "thwonk.webp"
  },
  {
@@ -13439,6 +14156,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "apprentice-smith.webp"
  },
  {
@@ -13465,6 +14183,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "brutalizer.webp"
  },
  {
@@ -13490,6 +14209,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "emperor-s-divide.webp"
  },
  {
@@ -13515,6 +14235,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "legion-quartermaster.webp"
  },
  {
@@ -13539,6 +14260,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "not-so-fast.webp"
  },
  {
@@ -13561,6 +14283,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "poro-snax.webp"
  },
  {
@@ -13585,6 +14308,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "simian-ancestor.webp"
  },
  {
@@ -13608,7 +14332,8 @@
   "rarity": "uncommon",
   "artist": "Six More Vodka",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "stellacorn-herder.webp"
  },
  {
@@ -13638,6 +14363,10 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-179",
+   "SFD-224"
+  ],
   "image": "aphelios-exalted.webp"
  },
  {
@@ -13668,6 +14397,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "azir-ascendant.webp"
  },
  {
@@ -13694,6 +14424,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "guardian-angel.webp"
  },
  {
@@ -13716,6 +14447,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "heart-of-dark-ice.webp"
  },
  {
@@ -13745,6 +14477,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "janna-savior.webp"
  },
  {
@@ -13776,6 +14509,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jax-unmatched.webp"
  },
  {
@@ -13804,6 +14538,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "needlessly-large-yordle.webp"
  },
  {
@@ -13832,6 +14567,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sterak-s-gage.webp"
  },
  {
@@ -13861,6 +14597,10 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-225",
+   "VEN-174"
+  ],
   "image": "irelia-fervent.webp"
  },
  {
@@ -13888,6 +14628,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ornn-blacksmith.webp"
  },
  {
@@ -13914,6 +14655,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "svellsongur.webp"
  },
  {
@@ -13941,6 +14683,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tianna-crownguard.webp"
  },
  {
@@ -13965,6 +14708,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "aspiring-engineer.webp"
  },
  {
@@ -13991,6 +14735,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bubble-bot.webp"
  },
  {
@@ -14013,6 +14758,7 @@
   "artist": "Six More Vodka & 黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "chemtech-cask.webp"
  },
  {
@@ -14042,6 +14788,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cloth-armor.webp"
  },
  {
@@ -14070,6 +14817,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forecaster.webp"
  },
  {
@@ -14095,6 +14843,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "frigid-touch.webp"
  },
  {
@@ -14120,6 +14869,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "frostcoat-cub.webp"
  },
  {
@@ -14146,6 +14896,7 @@
   "artist": "Six More Vodka & 黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gearhead.webp"
  },
  {
@@ -14172,6 +14923,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-222"
+  ],
   "image": "plundering-poro.webp"
  },
  {
@@ -14197,6 +14951,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wages-of-pain.webp"
  },
  {
@@ -14226,6 +14981,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "breakneck-mech.webp"
  },
  {
@@ -14250,6 +15006,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dropboarder.webp"
  },
  {
@@ -14276,6 +15033,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "experimental-hexplate.webp"
  },
  {
@@ -14300,6 +15058,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pickpocket.webp"
  },
  {
@@ -14325,6 +15084,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "prize-of-progress.webp"
  },
  {
@@ -14347,6 +15107,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "production-surge.webp"
  },
  {
@@ -14371,6 +15132,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rocket-barrage.webp"
  },
  {
@@ -14395,6 +15157,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "temporal-portal.webp"
  },
  {
@@ -14421,6 +15184,9 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-228"
+  ],
   "image": "bard-mercurial.webp"
  },
  {
@@ -14446,6 +15212,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bellows-breath.webp"
  },
  {
@@ -14470,6 +15237,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "card-sharp.webp"
  },
  {
@@ -14499,6 +15267,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-180"
+  ],
   "image": "ezreal-dashing.webp"
  },
  {
@@ -14524,6 +15295,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hextech-anomaly.webp"
  },
  {
@@ -14551,6 +15323,9 @@
   "artist": "TUTU",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-175"
+  ],
   "image": "jayce-man-of-progress.webp"
  },
  {
@@ -14582,6 +15357,7 @@
   "artist": "Will Gist",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ornn-forge-god.webp"
  },
  {
@@ -14608,6 +15384,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "world-atlas.webp"
  },
  {
@@ -14632,6 +15409,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "premonition.webp"
  },
  {
@@ -14659,6 +15437,7 @@
   "artist": "League of Legends",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "renata-glasc-mastermind.webp"
  },
  {
@@ -14688,6 +15467,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rumble-scrapper.webp"
  },
  {
@@ -14715,6 +15495,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-zero-drive.webp"
  },
  {
@@ -14739,6 +15520,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "buhru-captain.webp"
  },
  {
@@ -14766,6 +15548,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "combat-chef.webp"
  },
  {
@@ -14791,6 +15574,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dauntless-vanguard.webp"
  },
  {
@@ -14816,6 +15600,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "direwing.webp"
  },
  {
@@ -14842,6 +15627,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "doran-s-blade.webp"
  },
  {
@@ -14868,6 +15654,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "laurent-bladekeeper.webp"
  },
  {
@@ -14892,6 +15679,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "punch-first.webp"
  },
  {
@@ -14917,6 +15705,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sea-monkey.webp"
  },
  {
@@ -14945,6 +15734,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-223"
+  ],
   "image": "veteran-poro.webp"
  },
  {
@@ -14970,6 +15762,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "yordle-explorer.webp"
  },
  {
@@ -14996,6 +15789,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fae-dragon.webp"
  },
  {
@@ -15023,6 +15817,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hexdrinker.webp"
  },
  {
@@ -15050,6 +15845,7 @@
   "artist": "MAR Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jaull-fish.webp"
  },
  {
@@ -15075,6 +15871,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "petricite-monument.webp"
  },
  {
@@ -15099,6 +15896,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ruin-runner.webp"
  },
  {
@@ -15124,6 +15922,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "show-of-strength.webp"
  },
  {
@@ -15146,6 +15945,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "strike-down.webp"
  },
  {
@@ -15172,6 +15972,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "warmog-s-armor.webp"
  },
  {
@@ -15202,6 +16003,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "akshan-mischievous.webp"
  },
  {
@@ -15229,6 +16031,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fiora-peerless.webp"
  },
  {
@@ -15254,6 +16057,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "here-to-help.webp"
  },
  {
@@ -15280,6 +16084,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kato-the-arm.webp"
  },
  {
@@ -15311,6 +16116,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lucian-merciless.webp"
  },
  {
@@ -15336,6 +16142,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "marching-orders.webp"
  },
  {
@@ -15362,6 +16169,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trinity-force.webp"
  },
  {
@@ -15393,6 +16201,10 @@
   "artist": "蛋费鸡丁",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-181",
+   "SFD-233"
+  ],
   "image": "yone-blademaster.webp"
  },
  {
@@ -15418,6 +16230,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ancient-henge.webp"
  },
  {
@@ -15444,6 +16257,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "boneshiver.webp"
  },
  {
@@ -15474,6 +16288,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jax-unrelenting.webp"
  },
  {
@@ -15503,6 +16318,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sivir-ambitious.webp"
  },
  {
@@ -15527,6 +16343,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "black-market-broker.webp"
  },
  {
@@ -15552,6 +16369,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": true,
+  "codes": [],
   "image": "called-shot.webp"
  },
  {
@@ -15576,6 +16394,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "corrupt-enforcer.webp"
  },
  {
@@ -15602,6 +16421,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "doran-s-ring.webp"
  },
  {
@@ -15627,6 +16447,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fae-porter.webp"
  },
  {
@@ -15652,6 +16473,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "loyal-pup.webp"
  },
  {
@@ -15679,6 +16501,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "master-bingwen.webp"
  },
  {
@@ -15703,6 +16526,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "overzealous-fan.webp"
  },
  {
@@ -15727,6 +16551,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "temptation.webp"
  },
  {
@@ -15751,6 +16576,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "treasure-hunter.webp"
  },
  {
@@ -15779,6 +16605,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ancient-warmonger.webp"
  },
  {
@@ -15803,6 +16630,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "beast-below.webp"
  },
  {
@@ -15830,6 +16658,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "boots-of-swiftness.webp"
  },
  {
@@ -15856,6 +16685,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cull.webp"
  },
  {
@@ -15880,6 +16710,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "factory-recall.webp"
  },
  {
@@ -15905,6 +16736,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hard-bargain.webp"
  },
  {
@@ -15930,6 +16762,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "harpoon-squad.webp"
  },
  {
@@ -15954,6 +16787,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "windsinger.webp"
  },
  {
@@ -15981,6 +16815,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "edge-of-night.webp"
  },
  {
@@ -16009,6 +16844,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fizz-trickster.webp"
  },
  {
@@ -16036,6 +16872,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "irelia-graceful.webp"
  },
  {
@@ -16060,6 +16897,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jae-medarda.webp"
  },
  {
@@ -16090,6 +16928,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sivir-mercenary.webp"
  },
  {
@@ -16112,6 +16951,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "spirit-wheel.webp"
  },
  {
@@ -16137,6 +16977,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "switcheroo.webp"
  },
  {
@@ -16165,6 +17006,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vex-cheerless.webp"
  },
  {
@@ -16187,6 +17029,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "downwell.webp"
  },
  {
@@ -16216,6 +17059,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "draven-audacious.webp"
  },
  {
@@ -16243,6 +17087,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-SP5"
+  ],
   "image": "ezreal-prodigy.webp"
  },
  {
@@ -16269,6 +17116,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "last-rites.webp"
  },
  {
@@ -16294,6 +17142,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bonds-of-strength.webp"
  },
  {
@@ -16318,6 +17167,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "eminent-benefactor.webp"
  },
  {
@@ -16344,6 +17194,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "eye-of-the-herald.webp"
  },
  {
@@ -16368,6 +17219,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "guards.webp"
  },
  {
@@ -16394,6 +17246,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "honest-broker.webp"
  },
  {
@@ -16420,6 +17273,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "laurent-duelist.webp"
  },
  {
@@ -16444,6 +17298,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "royal-guard.webp"
  },
  {
@@ -16468,6 +17323,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sandshifter.webp"
  },
  {
@@ -16494,6 +17350,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trusty-ramhound.webp"
  },
  {
@@ -16518,6 +17375,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zaun-punk.webp"
  },
  {
@@ -16544,6 +17402,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "b-f-sword.webp"
  },
  {
@@ -16568,6 +17427,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blood-money.webp"
  },
  {
@@ -16592,6 +17452,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "deathgrip.webp"
  },
  {
@@ -16616,6 +17477,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "drag-under.webp"
  },
  {
@@ -16642,6 +17504,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "glasc-mixologist.webp"
  },
  {
@@ -16666,6 +17529,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rally-the-troops.webp"
  },
  {
@@ -16694,6 +17558,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "unsung-hero.webp"
  },
  {
@@ -16716,6 +17581,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vanguard-armory.webp"
  },
  {
@@ -16738,6 +17604,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "altar-of-memories.webp"
  },
  {
@@ -16765,6 +17632,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rek-sai-swarm-queen.webp"
  },
  {
@@ -16792,6 +17660,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "renata-glasc-industrialist.webp"
  },
  {
@@ -16819,6 +17688,7 @@
   "artist": "Polar Engine",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sacred-shears.webp"
  },
  {
@@ -16846,6 +17716,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-239"
+  ],
   "image": "soraka-wanderer.webp"
  },
  {
@@ -16870,6 +17743,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trove-golem.webp"
  },
  {
@@ -16896,6 +17770,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "undertitan.webp"
  },
  {
@@ -16925,6 +17800,10 @@
   "artist": "JunHuan",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "T1A-002",
+   "T1S-002"
+  ],
   "image": "xin-zhao-vigilant.webp"
  },
  {
@@ -16955,6 +17834,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "azir-sovereign.webp"
  },
  {
@@ -16981,6 +17861,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blade-of-the-ruined-king.webp"
  },
  {
@@ -17007,6 +17888,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "corina-veraza.webp"
  },
  {
@@ -17036,6 +17918,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fiora-worthy.webp"
  },
  {
@@ -17063,6 +17946,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-240"
+  ],
   "image": "mechanized-menace.webp"
  },
  {
@@ -17093,6 +17979,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "danger-zone.webp"
  },
  {
@@ -17120,6 +18007,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-241"
+  ],
   "image": "purifier.webp"
  },
  {
@@ -17149,6 +18039,7 @@
   "artist": "Max Grecke",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "relentless-pursuit.webp"
  },
  {
@@ -17174,6 +18065,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-242"
+  ],
   "image": "glorious-executioner.webp"
  },
  {
@@ -17207,6 +18101,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "spinning-axe.webp"
  },
  {
@@ -17232,6 +18127,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-243"
+  ],
   "image": "void-burrower.webp"
  },
  {
@@ -17259,6 +18157,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "void-rush.webp"
  },
  {
@@ -17287,6 +18186,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-244"
+  ],
   "image": "fire-below-the-mountain.webp"
  },
  {
@@ -17318,6 +18220,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forgefire-cape.webp"
  },
  {
@@ -17349,6 +18252,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rabadon-s-deathcrown.webp"
  },
  {
@@ -17381,6 +18285,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shurelya-s-requiem.webp"
  },
  {
@@ -17406,6 +18311,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-245"
+  ],
   "image": "grandmaster-at-arms.webp"
  },
  {
@@ -17435,6 +18343,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "counter-strike.webp"
  },
  {
@@ -17460,6 +18369,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-246"
+  ],
   "image": "blade-dancer.webp"
  },
  {
@@ -17489,6 +18401,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "defiant-dance.webp"
  },
  {
@@ -17517,6 +18430,9 @@
   "artist": "蛋费鸡丁",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-247"
+  ],
   "image": "emperor-of-the-sands.webp"
  },
  {
@@ -17544,6 +18460,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "arise.webp"
  },
  {
@@ -17571,6 +18488,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-248"
+  ],
   "image": "prodigal-explorer.webp"
  },
  {
@@ -17600,6 +18520,7 @@
   "artist": "Original Force",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "arcane-shift.webp"
  },
  {
@@ -17627,6 +18548,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-249"
+  ],
   "image": "chem-baroness.webp"
  },
  {
@@ -17656,6 +18580,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hostile-takeover.webp"
  },
  {
@@ -17681,6 +18606,9 @@
   "artist": "Zhongqi Li",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-250"
+  ],
   "image": "battle-mistress.webp"
  },
  {
@@ -17708,6 +18636,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "on-the-hunt.webp"
  },
  {
@@ -17735,6 +18664,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SFD-251"
+  ],
   "image": "grand-duelist.webp"
  },
  {
@@ -17764,6 +18696,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "riposte.webp"
  },
  {
@@ -17785,7 +18718,8 @@
   "rarity": "uncommon",
   "artist": "Kudos Productions",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "emperor-s-dais.webp"
  },
  {
@@ -17808,6 +18742,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forge-of-the-fluft.webp"
  },
  {
@@ -17830,6 +18765,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forgotten-monument.webp"
  },
  {
@@ -17852,6 +18788,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hall-of-legends.webp"
  },
  {
@@ -17876,6 +18813,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "marai-spire.webp"
  },
  {
@@ -17898,6 +18836,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "minefield.webp"
  },
  {
@@ -17920,6 +18859,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ornn-s-forge.webp"
  },
  {
@@ -17942,6 +18882,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "power-nexus.webp"
  },
  {
@@ -17964,6 +18905,7 @@
   "artist": "Will Gist",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ravenbloom-conservatory.webp"
  },
  {
@@ -17986,6 +18928,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rockfall-path.webp"
  },
  {
@@ -18008,6 +18951,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "seat-of-power.webp"
  },
  {
@@ -18032,6 +18976,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sunken-temple.webp"
  },
  {
@@ -18054,6 +18999,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-papertree.webp"
  },
  {
@@ -18076,6 +19022,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "treasure-hoard.webp"
  },
  {
@@ -18098,6 +19045,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "veiled-temple.webp"
  },
  {
@@ -18124,6 +19072,10 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-T06",
+   "VEN-T03"
+  ],
   "image": "mech.webp"
  },
  {
@@ -18149,6 +19101,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "arena-kingpin.webp"
  },
  {
@@ -18177,6 +19130,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "inferna.webp"
  },
  {
@@ -18203,6 +19157,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mischievous-marai.webp"
  },
  {
@@ -18227,6 +19182,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "prepared-neophyte.webp"
  },
  {
@@ -18253,6 +19209,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "revna-the-lorekeeper.webp"
  },
  {
@@ -18280,6 +19237,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sharkling.webp"
  },
  {
@@ -18304,6 +19262,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "smite.webp"
  },
  {
@@ -18330,6 +19289,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "towering-pairofant.webp"
  },
  {
@@ -18354,6 +19314,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "upstage-comedy.webp"
  },
  {
@@ -18380,6 +19341,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vault-breaker.webp"
  },
  {
@@ -18402,6 +19364,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fresh-beans.webp"
  },
  {
@@ -18430,6 +19393,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lord-broadmane.webp"
  },
  {
@@ -18455,6 +19419,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lotus-trap.webp"
  },
  {
@@ -18479,6 +19444,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "monster-harpoon.webp"
  },
  {
@@ -18501,6 +19467,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "right-of-conquest.webp"
  },
  {
@@ -18529,6 +19496,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "scorchclaw.webp"
  },
  {
@@ -18554,6 +19522,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "square-up.webp"
  },
  {
@@ -18581,6 +19550,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "yeti-brawler.webp"
  },
  {
@@ -18607,6 +19577,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blighted-battleaxe.webp"
  },
  {
@@ -18629,6 +19600,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dancing-grenade.webp"
  },
  {
@@ -18656,6 +19628,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "grim-apothecary.webp"
  },
  {
@@ -18687,6 +19660,7 @@
   "artist": "Alessandro Poli",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jhin-murderous-artist.webp"
  },
  {
@@ -18714,6 +19688,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "katarina-reckless.webp"
  },
  {
@@ -18747,6 +19722,7 @@
   "artist": "HCuu",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rengar-unseen.webp"
  },
  {
@@ -18774,6 +19750,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "undying-legion.webp"
  },
  {
@@ -18801,6 +19778,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "xerath-freed.webp"
  },
  {
@@ -18826,6 +19804,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "inviolus-vox.webp"
  },
  {
@@ -18856,6 +19835,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pyke-dockside-butcher.webp"
  },
  {
@@ -18883,6 +19863,7 @@
   "artist": "JunHuan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "red-brambleback.webp"
  },
  {
@@ -18912,6 +19893,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vi-hotheaded.webp"
  },
  {
@@ -18937,6 +19919,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "combat-experience.webp"
  },
  {
@@ -18961,6 +19944,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "double-trouble.webp"
  },
  {
@@ -18988,6 +19972,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "frisky-hunter.webp"
  },
  {
@@ -19014,6 +19999,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "herald-of-spring.webp"
  },
  {
@@ -19038,6 +20024,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "monch.webp"
  },
  {
@@ -19066,6 +20053,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mutated-mouser.webp"
  },
  {
@@ -19090,6 +20078,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-watcher.webp"
  },
  {
@@ -19115,6 +20104,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "skyward-strike.webp"
  },
  {
@@ -19142,6 +20132,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "soul-sword.webp"
  },
  {
@@ -19169,6 +20160,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wuju-apprentice.webp"
  },
  {
@@ -19196,6 +20188,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "allay-eager-admirer.webp"
  },
  {
@@ -19222,6 +20215,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "back-off.webp"
  },
  {
@@ -19250,6 +20244,7 @@
   "artist": "Valentin Gloaguen",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "enthusiastic-promoter.webp"
  },
  {
@@ -19275,6 +20270,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "flurry-of-feathers.webp"
  },
  {
@@ -19299,6 +20295,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forgotten-signpost.webp"
  },
  {
@@ -19323,6 +20320,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "friendship.webp"
  },
  {
@@ -19352,6 +20350,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mosstomper.webp"
  },
  {
@@ -19380,6 +20379,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trevor-snoozebottom.webp"
  },
  {
@@ -19406,6 +20406,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "honeyfruit.webp"
  },
  {
@@ -19430,6 +20431,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "iascylla.webp"
  },
  {
@@ -19459,6 +20461,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ivern-nurturer.webp"
  },
  {
@@ -19489,6 +20492,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "nami-headstrong.webp"
  },
  {
@@ -19515,6 +20519,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "scuttle-crab.webp"
  },
  {
@@ -19537,6 +20542,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tricksy-tentacles.webp"
  },
  {
@@ -19569,6 +20575,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vex-mocking.webp"
  },
  {
@@ -19600,6 +20607,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "yuumi-magical-cat.webp"
  },
  {
@@ -19627,6 +20635,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "alpha-wildclaw.webp"
  },
  {
@@ -19657,6 +20666,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lillia-protector-of-dreams.webp"
  },
  {
@@ -19686,6 +20696,7 @@
   "artist": "Ziyan Lin",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "master-yi-unstoppable.webp"
  },
  {
@@ -19714,6 +20725,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vilemaw.webp"
  },
  {
@@ -19739,6 +20751,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "downstage-dramatics.webp"
  },
  {
@@ -19766,6 +20779,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dramatic-visionary.webp"
  },
  {
@@ -19791,6 +20805,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "eclipse.webp"
  },
  {
@@ -19815,6 +20830,7 @@
   "artist": "Valentin Gloaguen",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fate-weaver.webp"
  },
  {
@@ -19839,6 +20855,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "icevale-archer.webp"
  },
  {
@@ -19863,6 +20880,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "moonlight-affliction.webp"
  },
  {
@@ -19889,6 +20907,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ruined-rex.webp"
  },
  {
@@ -19914,6 +20933,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "spectral-centaur.webp"
  },
  {
@@ -19938,6 +20958,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sprite-burst.webp"
  },
  {
@@ -19962,6 +20983,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "turn-to-dust.webp"
  },
  {
@@ -19990,6 +21012,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "chakram-dancer.webp"
  },
  {
@@ -20014,6 +21037,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "crescent-strike.webp"
  },
  {
@@ -20039,6 +21063,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "deadly-flourish.webp"
  },
  {
@@ -20061,6 +21086,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "frigid-jewel.webp"
  },
  {
@@ -20090,6 +21116,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gustwalker.webp"
  },
  {
@@ -20117,6 +21144,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "petal-pixie.webp"
  },
  {
@@ -20141,6 +21169,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "soul-shepherd.webp"
  },
  {
@@ -20166,6 +21195,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sprite-fountain.webp"
  },
  {
@@ -20195,6 +21225,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "diana-lunari.webp"
  },
  {
@@ -20222,6 +21253,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hwei-brooding-painter.webp"
  },
  {
@@ -20249,6 +21281,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "keeper-of-masks.webp"
  },
  {
@@ -20280,6 +21313,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lillia-fae-fawn.webp"
  },
  {
@@ -20306,6 +21340,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "smoke-and-mirrors.webp"
  },
  {
@@ -20333,6 +21368,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sprite-queen.webp"
  },
  {
@@ -20358,6 +21394,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sumpworks-map.webp"
  },
  {
@@ -20385,6 +21422,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zilean-time-mage.webp"
  },
  {
@@ -20412,6 +21450,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blue-sentinel.webp"
  },
  {
@@ -20436,6 +21475,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gutter-palace.webp"
  },
  {
@@ -20465,6 +21505,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jhin-meticulous-killer.webp"
  },
  {
@@ -20495,6 +21536,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "leblanc-everywhere-at-once.webp"
  },
  {
@@ -20519,6 +21561,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "concentrate.webp"
  },
  {
@@ -20543,6 +21586,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "demacian-diplomat.webp"
  },
  {
@@ -20570,6 +21614,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dragonsoul-sage.webp"
  },
  {
@@ -20598,6 +21643,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gemhand-hunter.webp"
  },
  {
@@ -20622,6 +21668,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "grim-resolve.webp"
  },
  {
@@ -20649,6 +21696,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hunter-s-machete.webp"
  },
  {
@@ -20673,6 +21721,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kinkou-initiate.webp"
  },
  {
@@ -20699,6 +21748,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "targonian-visionary.webp"
  },
  {
@@ -20726,6 +21776,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "towering-combatant.webp"
  },
  {
@@ -20752,6 +21803,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "voracious-gromp.webp"
  },
  {
@@ -20774,6 +21826,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "call-to-battle.webp"
  },
  {
@@ -20801,6 +21854,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "crowd-favorite.webp"
  },
  {
@@ -20825,6 +21879,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "disposal-order.webp"
  },
  {
@@ -20850,6 +21905,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gentle-gemdragon.webp"
  },
  {
@@ -20874,6 +21930,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "imposing-challenger.webp"
  },
  {
@@ -20898,6 +21955,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "repulse.webp"
  },
  {
@@ -20920,6 +21978,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stare-down.webp"
  },
  {
@@ -20946,6 +22005,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wily-newtfish.webp"
  },
  {
@@ -20968,6 +22028,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blood-rose.webp"
  },
  {
@@ -20990,6 +22051,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "clash-of-giants.webp"
  },
  {
@@ -21015,6 +22077,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "determined-sentry.webp"
  },
  {
@@ -21040,6 +22103,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "irresistible-faefolk.webp"
  },
  {
@@ -21072,6 +22136,7 @@
   "artist": "HXY",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "master-yi-tempered.webp"
  },
  {
@@ -21103,6 +22168,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "nidalee-cat-form.webp"
  },
  {
@@ -21134,6 +22200,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "nilah-joyful-ascetic.webp"
  },
  {
@@ -21164,6 +22231,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "poppy-paragon.webp"
  },
  {
@@ -21191,6 +22259,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "arachnoid-horror.webp"
  },
  {
@@ -21216,6 +22285,7 @@
   "artist": "Sugar Free",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "elder-dragon.webp"
  },
  {
@@ -21245,6 +22315,9 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-180"
+  ],
   "image": "kha-zix-evolving-hunter.webp"
  },
  {
@@ -21276,6 +22349,9 @@
   "artist": "TSWCK逍",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-179"
+  ],
   "image": "rengar-trophy-hunter.webp"
  },
  {
@@ -21301,6 +22377,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bewitching-spirit.webp"
  },
  {
@@ -21325,6 +22402,7 @@
   "artist": "Aron Elekes",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "crescent-guardian.webp"
  },
  {
@@ -21349,6 +22427,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "evershade-stalker.webp"
  },
  {
@@ -21371,6 +22450,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "isolate.webp"
  },
  {
@@ -21395,6 +22475,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lunar-boon.webp"
  },
  {
@@ -21421,6 +22502,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "megatusk.webp"
  },
  {
@@ -21448,6 +22530,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mister-root.webp"
  },
  {
@@ -21472,6 +22555,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "star-crossed.webp"
  },
  {
@@ -21496,6 +22580,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vicious-snapjaws.webp"
  },
  {
@@ -21522,6 +22607,7 @@
   "artist": "Xavier Leroux",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "walking-roost.webp"
  },
  {
@@ -21547,6 +22633,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "abandon.webp"
  },
  {
@@ -21571,6 +22658,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "angler-beast.webp"
  },
  {
@@ -21595,6 +22683,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blast-cone.webp"
  },
  {
@@ -21621,6 +22710,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "existential-dread.webp"
  },
  {
@@ -21645,6 +22735,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "insightful-investigator.webp"
  },
  {
@@ -21669,6 +22760,7 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "scryer-s-bloom.webp"
  },
  {
@@ -21694,6 +22786,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sinister-poro.webp"
  },
  {
@@ -21716,6 +22809,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-list.webp"
  },
  {
@@ -21741,6 +22835,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bone-skewer.webp"
  },
  {
@@ -21763,6 +22858,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "conscription.webp"
  },
  {
@@ -21793,6 +22889,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "evelynn-entrancing.webp"
  },
  {
@@ -21817,6 +22914,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "heedless-resurrection.webp"
  },
  {
@@ -21847,6 +22945,7 @@
   "artist": "蛋费鸡丁",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kha-zix-mutating-horror.webp"
  },
  {
@@ -21871,6 +22970,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "maduli-the-gatekeeper.webp"
  },
  {
@@ -21903,6 +23003,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pyke-returned.webp"
  },
  {
@@ -21932,6 +23033,7 @@
   "artist": "Naifan Zhang",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "syndra-transcendent.webp"
  },
  {
@@ -21956,6 +23058,9 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-238"
+  ],
   "image": "baron-nashor.webp"
  },
  {
@@ -21978,6 +23083,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cursed-sarcophagus.webp"
  },
  {
@@ -22008,6 +23114,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-183"
+  ],
   "image": "diana-no-longer-human.webp"
  },
  {
@@ -22039,6 +23148,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vex-apathetic.webp"
  },
  {
@@ -22066,6 +23176,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bandle-soldier.webp"
  },
  {
@@ -22093,6 +23204,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "black-rose-dignitary.webp"
  },
  {
@@ -22121,6 +23233,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "carrion-dredger.webp"
  },
  {
@@ -22146,6 +23259,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "crimson-pigeons.webp"
  },
  {
@@ -22171,6 +23285,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "heroic-charge.webp"
  },
  {
@@ -22198,6 +23313,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "loyal-poro.webp"
  },
  {
@@ -22223,6 +23339,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "scrutinizing-sergeant.webp"
  },
  {
@@ -22249,6 +23366,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shepherd-s-heirloom.webp"
  },
  {
@@ -22271,6 +23389,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "soul-harvest.webp"
  },
  {
@@ -22298,6 +23417,9 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SGN-003"
+  ],
   "image": "ultrasoft-poro.webp"
  },
  {
@@ -22323,6 +23445,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "divining-shells.webp"
  },
  {
@@ -22351,6 +23474,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "enthralling-protector.webp"
  },
  {
@@ -22375,6 +23499,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mageseeker-investigator.webp"
  },
  {
@@ -22400,6 +23525,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "safety-inspector.webp"
  },
  {
@@ -22424,6 +23550,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-s-call.webp"
  },
  {
@@ -22452,6 +23579,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stalking-wolf.webp"
  },
  {
@@ -22477,6 +23605,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "starhound.webp"
  },
  {
@@ -22499,6 +23628,7 @@
   "artist": "Max Grecke",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "undying-loyalty.webp"
  },
  {
@@ -22526,6 +23656,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ashe-focused.webp"
  },
  {
@@ -22553,6 +23684,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "atakhan.webp"
  },
  {
@@ -22583,6 +23715,10 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "T1A-003",
+   "T1S-003"
+  ],
   "image": "galio-indefatigable.webp"
  },
  {
@@ -22613,6 +23749,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "leblanc-fragmented.webp"
  },
  {
@@ -22638,6 +23775,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sacrifice.webp"
  },
  {
@@ -22660,6 +23798,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shard-of-undoing.webp"
  },
  {
@@ -22684,6 +23823,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tactical-retreat.webp"
  },
  {
@@ -22715,6 +23855,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vi-peacekeeper.webp"
  },
  {
@@ -22742,6 +23883,7 @@
   "artist": "Zhongqi Li",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ivern-friend-to-all.webp"
  },
  {
@@ -22774,6 +23916,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "poppy-defender-of-the-meek.webp"
  },
  {
@@ -22800,6 +23943,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rift-herald.webp"
  },
  {
@@ -22822,6 +23966,7 @@
   "artist": "Oliver Chipping",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-ruination.webp"
  },
  {
@@ -22847,6 +23992,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-226"
+  ],
   "image": "virtuoso.webp"
  },
  {
@@ -22876,6 +24024,7 @@
   "artist": "华锐",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "curtain-call.webp"
  },
  {
@@ -22901,6 +24050,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-227"
+  ],
   "image": "pridestalker.webp"
  },
  {
@@ -22930,6 +24082,7 @@
   "artist": "华锐",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "thrill-of-the-hunt.webp"
  },
  {
@@ -22958,6 +24111,9 @@
   "artist": "TSWCK逍",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-228"
+  ],
   "image": "bloodharbor-ripper.webp"
  },
  {
@@ -22985,6 +24141,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "death-from-below.webp"
  },
  {
@@ -23010,6 +24167,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-229"
+  ],
   "image": "piltover-enforcer.webp"
  },
  {
@@ -23040,6 +24200,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hextech-gauntlets.webp"
  },
  {
@@ -23067,6 +24228,10 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SGN-001",
+   "UNL-230"
+  ],
   "image": "bashful-bloom.webp"
  },
  {
@@ -23096,6 +24261,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lilting-lullaby.webp"
  },
  {
@@ -23123,6 +24289,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-231"
+  ],
   "image": "wuju-master.webp"
  },
  {
@@ -23152,6 +24321,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "alpha-strike.webp"
  },
  {
@@ -23177,6 +24347,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-232"
+  ],
   "image": "gloomist.webp"
  },
  {
@@ -23208,6 +24381,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow.webp"
  },
  {
@@ -23233,6 +24407,10 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SGN-002",
+   "UNL-233"
+  ],
   "image": "green-father.webp"
  },
  {
@@ -23263,6 +24441,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "daisy.webp"
  },
  {
@@ -23291,6 +24470,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-234"
+  ],
   "image": "scorn-of-the-moon.webp"
  },
  {
@@ -23320,6 +24502,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "moonfall.webp"
  },
  {
@@ -23347,6 +24530,9 @@
   "artist": "黯荧岛Dark Glow",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-235"
+  ],
   "image": "deceiver.webp"
  },
  {
@@ -23376,6 +24562,7 @@
   "artist": "华锐",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mirror-image.webp"
  },
  {
@@ -23403,6 +24590,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-236"
+  ],
   "image": "voidreaver.webp"
  },
  {
@@ -23430,6 +24620,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "void-assault.webp"
  },
  {
@@ -23455,6 +24646,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "UNL-237"
+  ],
   "image": "keeper-of-the-hammer.webp"
  },
  {
@@ -23484,6 +24678,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "keeper-s-verdict.webp"
  },
  {
@@ -23506,6 +24701,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "abandoned-hall.webp"
  },
  {
@@ -23528,6 +24724,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "altar-of-blood.webp"
  },
  {
@@ -23550,6 +24747,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "amateur-recital.webp"
  },
  {
@@ -23575,6 +24773,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "black-flame-altar.webp"
  },
  {
@@ -23597,6 +24796,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dusk-rose-lab.webp"
  },
  {
@@ -23619,6 +24819,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forbidding-waste.webp"
  },
  {
@@ -23643,6 +24844,7 @@
   "artist": "Chris Kintner",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forgotten-library.webp"
  },
  {
@@ -23665,6 +24867,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "frozen-fortress.webp"
  },
  {
@@ -23687,6 +24890,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gardens-of-becoming.webp"
  },
  {
@@ -23709,6 +24913,7 @@
   "artist": "MAR Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ripper-s-bay.webp"
  },
  {
@@ -23730,7 +24935,8 @@
   "rarity": "uncommon",
   "artist": "Six More Vodka",
   "maxCopies": null,
-  "banned": false,
+  "banned": true,
+  "codes": [],
   "image": "star-spring.webp"
  },
  {
@@ -23755,6 +24961,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "the-academy.webp"
  },
  {
@@ -23779,6 +24986,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "trapping-grounds.webp"
  },
  {
@@ -23803,6 +25011,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "valley-of-idols.webp"
  },
  {
@@ -23825,6 +25034,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "vaults-of-helia.webp"
  },
  {
@@ -23849,6 +25059,7 @@
   "artist": "Fish Art Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "baron-pit.webp"
  },
  {
@@ -23877,6 +25088,11 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-T01",
+   "SGN-T01",
+   "SGN-T02"
+  ],
   "image": "bird.webp"
  },
  {
@@ -23901,6 +25117,9 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "SGN-T04"
+  ],
   "image": "brush.webp"
  },
  {
@@ -23928,6 +25147,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gold.webp"
  },
  {
@@ -23957,6 +25177,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "baccai-sandspinner.webp"
  },
  {
@@ -23984,6 +25205,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "blade-twirler.webp"
  },
  {
@@ -24008,6 +25230,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "brittle-steel.webp"
  },
  {
@@ -24034,6 +25257,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dune-surfer.webp"
  },
  {
@@ -24058,6 +25282,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forsaken-baccai.webp"
  },
  {
@@ -24084,6 +25309,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "oasis-raider.webp"
  },
  {
@@ -24112,6 +25338,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "punching-poro.webp"
  },
  {
@@ -24136,6 +25363,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ruthless-strike.webp"
  },
  {
@@ -24162,6 +25390,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "baccai-reaper.webp"
  },
  {
@@ -24186,6 +25415,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "consuming-curse.webp"
  },
  {
@@ -24212,6 +25442,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pendulum-blade.webp"
  },
  {
@@ -24237,6 +25468,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "perfect-execution.webp"
  },
  {
@@ -24261,6 +25493,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-assassin.webp"
  },
  {
@@ -24289,6 +25522,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-fiend.webp"
  },
  {
@@ -24313,6 +25547,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "decree-of-rage.webp"
  },
  {
@@ -24340,6 +25575,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "eclipse-dragon.webp"
  },
  {
@@ -24370,6 +25606,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-186"
+  ],
   "image": "morgana-vindictive.webp"
  },
  {
@@ -24395,6 +25634,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rage-amplifier.webp"
  },
  {
@@ -24424,6 +25664,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "renekton-rage-fueled.webp"
  },
  {
@@ -24448,6 +25689,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "twilight-reveler.webp"
  },
  {
@@ -24478,6 +25720,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "akali-deadly-weapon.webp"
  },
  {
@@ -24502,6 +25745,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "endless-riches.webp"
  },
  {
@@ -24531,6 +25775,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-169"
+  ],
   "image": "zed-from-the-shadows.webp"
  },
  {
@@ -24556,6 +25803,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "affectionate-poro.webp"
  },
  {
@@ -24580,6 +25828,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "esteemed-hierophant.webp"
  },
  {
@@ -24604,6 +25853,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "field-musicians.webp"
  },
  {
@@ -24630,6 +25880,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hand-hammer.webp"
  },
  {
@@ -24657,6 +25908,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mournful-witness.webp"
  },
  {
@@ -24682,6 +25934,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ol-poro.webp"
  },
  {
@@ -24711,6 +25964,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "serene-ascetic.webp"
  },
  {
@@ -24735,6 +25989,7 @@
   "artist": "小牛设计",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "twilight-shroud.webp"
  },
  {
@@ -24763,6 +26018,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "frostcoat-mother.webp"
  },
  {
@@ -24788,6 +26044,7 @@
   "artist": "Bubble Cat Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "pakaa-protector.webp"
  },
  {
@@ -24813,6 +26070,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "resonating-strike.webp"
  },
  {
@@ -24838,6 +26096,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sanction.webp"
  },
  {
@@ -24862,6 +26121,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sandstone-chimera.webp"
  },
  {
@@ -24888,6 +26148,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tomb-raider-barbara.webp"
  },
  {
@@ -24915,6 +26176,7 @@
   "artist": "League Splash Team",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "akali-silent.webp"
  },
  {
@@ -24939,6 +26201,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "crumbling-sands.webp"
  },
  {
@@ -24963,6 +26226,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "decree-of-focus.webp"
  },
  {
@@ -24993,6 +26257,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-171"
+  ],
   "image": "riven-shattered.webp"
  },
  {
@@ -25020,6 +26287,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-170"
+  ],
   "image": "shen-scourge-of-shadows.webp"
  },
  {
@@ -25049,6 +26319,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "steel-paws.webp"
  },
  {
@@ -25074,6 +26345,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "astral-heron.webp"
  },
  {
@@ -25099,6 +26371,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "helm-of-suppression.webp"
  },
  {
@@ -25131,6 +26404,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "nasus-ascended.webp"
  },
  {
@@ -25159,6 +26433,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "apprentice-mage.webp"
  },
  {
@@ -25184,6 +26459,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cloud-drake.webp"
  },
  {
@@ -25208,6 +26484,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dredge-up.webp"
  },
  {
@@ -25237,6 +26514,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "grumpy-rockbear.webp"
  },
  {
@@ -25261,6 +26539,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "iterative-design.webp"
  },
  {
@@ -25285,6 +26564,7 @@
   "artist": "小牛设计",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mesmerize.webp"
  },
  {
@@ -25309,6 +26589,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "otterpus.webp"
  },
  {
@@ -25333,6 +26614,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "questionable-tome.webp"
  },
  {
@@ -25360,6 +26642,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "applied-researchers.webp"
  },
  {
@@ -25385,6 +26668,7 @@
   "artist": "Max Grecke",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "clairvoyance.webp"
  },
  {
@@ -25412,6 +26696,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "covert-informant.webp"
  },
  {
@@ -25438,6 +26723,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "patched-porobot.webp"
  },
  {
@@ -25463,6 +26749,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shock-blast.webp"
  },
  {
@@ -25487,6 +26774,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sky-cruiser.webp"
  },
  {
@@ -25512,6 +26800,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "decree-of-insight.webp"
  },
  {
@@ -25534,6 +26823,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hextech-formula.webp"
  },
  {
@@ -25562,6 +26852,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-178"
+  ],
   "image": "nasus-guardian-of-knowledge.webp"
  },
  {
@@ -25589,6 +26882,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "plaza-guardian.webp"
  },
  {
@@ -25619,6 +26913,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-173"
+  ],
   "image": "swain-visionary.webp"
  },
  {
@@ -25643,6 +26940,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "temporal-breach.webp"
  },
  {
@@ -25665,6 +26963,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "bottled-constellation.webp"
  },
  {
@@ -25692,6 +26991,7 @@
   "artist": "League of Legends",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jayce-brilliant-inventor.webp"
  },
  {
@@ -25722,6 +27022,7 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mel-newly-awakened.webp"
  },
  {
@@ -25750,6 +27051,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "brutal-hunter.webp"
  },
  {
@@ -25775,6 +27077,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fretful-feline.webp"
  },
  {
@@ -25800,6 +27103,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "guttural-roar.webp"
  },
  {
@@ -25824,6 +27128,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jagged-cutlass.webp"
  },
  {
@@ -25852,6 +27157,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "legion-marauder.webp"
  },
  {
@@ -25879,6 +27185,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "platewyrm-egg.webp"
  },
  {
@@ -25905,6 +27212,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "repair-specialist.webp"
  },
  {
@@ -25930,6 +27238,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tools-of-empire.webp"
  },
  {
@@ -25958,6 +27267,7 @@
   "artist": "Will Gist",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "baccai-witherclaw.webp"
  },
  {
@@ -25985,6 +27295,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dame-the-despoiler.webp"
  },
  {
@@ -26009,6 +27320,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "noxian-demolitionist.webp"
  },
  {
@@ -26033,6 +27345,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "onslaught.webp"
  },
  {
@@ -26057,6 +27370,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "profiteer.webp"
  },
  {
@@ -26079,6 +27393,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rampage.webp"
  },
  {
@@ -26109,6 +27424,10 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "T1A-001",
+   "T1S-001"
+  ],
   "image": "ambessa-the-wolf.webp"
  },
  {
@@ -26131,6 +27450,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "decree-of-strength.webp"
  },
  {
@@ -26162,6 +27482,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-181"
+  ],
   "image": "gangplank-naval.webp"
  },
  {
@@ -26186,6 +27509,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hextech-disc.webp"
  },
  {
@@ -26217,6 +27541,7 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "jayce-hammer-in-hand.webp"
  },
  {
@@ -26239,6 +27564,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wild-claw.webp"
  },
  {
@@ -26261,6 +27587,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "cataclysmic-duel.webp"
  },
  {
@@ -26286,6 +27613,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "corrupted-dragon.webp"
  },
  {
@@ -26317,6 +27645,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-177"
+  ],
   "image": "renekton-brute.webp"
  },
  {
@@ -26345,6 +27676,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kinkou-lifeblade.webp"
  },
  {
@@ -26370,6 +27702,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mask-mother.webp"
  },
  {
@@ -26396,6 +27729,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-order-disciple.webp"
  },
  {
@@ -26420,6 +27754,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadowblade-lurker.webp"
  },
  {
@@ -26447,6 +27782,7 @@
   "artist": "Six More Vodka",
   "maxCopies": 0,
   "banned": false,
+  "codes": [],
   "image": "spiderling.webp"
  },
  {
@@ -26473,6 +27809,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "stargazer.webp"
  },
  {
@@ -26500,6 +27837,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tornado-warrior.webp"
  },
  {
@@ -26524,6 +27862,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "up-from-the-deep.webp"
  },
  {
@@ -26551,6 +27890,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "gust-monk.webp"
  },
  {
@@ -26575,6 +27915,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ravenbloom-prefect.webp"
  },
  {
@@ -26597,6 +27938,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadows-of-the-past.webp"
  },
  {
@@ -26624,6 +27966,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "tail-cloaked-matriarch.webp"
  },
  {
@@ -26648,6 +27991,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "twilight-step.webp"
  },
  {
@@ -26672,6 +28016,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "wind-and-ghosts.webp"
  },
  {
@@ -26694,6 +28039,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "decree-of-discord.webp"
  },
  {
@@ -26718,6 +28064,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "forgotten-relic.webp"
  },
  {
@@ -26745,6 +28092,9 @@
   "artist": "Michal Ivan",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-182"
+  ],
   "image": "illaoi-prophet-of-the-great-kraken.webp"
  },
  {
@@ -26775,6 +28125,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-188"
+  ],
   "image": "mel-defiant-soul.webp"
  },
  {
@@ -26799,6 +28152,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "minah-swiftfoot.webp"
  },
  {
@@ -26829,6 +28183,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "zed-without-a-sound.webp"
  },
  {
@@ -26860,6 +28215,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kennen-storm-of-shuriken.webp"
  },
  {
@@ -26889,6 +28245,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kharox.webp"
  },
  {
@@ -26914,6 +28271,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ocean-drake.webp"
  },
  {
@@ -26938,6 +28296,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dragon-form.webp"
  },
  {
@@ -26965,6 +28324,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "disciple-of-shen.webp"
  },
  {
@@ -26991,6 +28351,7 @@
   "artist": "JiHun Lee",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "horns-of-the-dragon.webp"
  },
  {
@@ -27015,6 +28376,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "keeper-of-law.webp"
  },
  {
@@ -27042,6 +28404,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "masa-crashing-thunder.webp"
  },
  {
@@ -27066,6 +28429,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "reluctant-leader.webp"
  },
  {
@@ -27095,6 +28459,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "solari-sunhawk.webp"
  },
  {
@@ -27123,6 +28488,7 @@
   "artist": "Wild Blue Studios",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "soulspinner.webp"
  },
  {
@@ -27150,6 +28516,7 @@
   "artist": "Michal Ivan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "escaped-grayback.webp"
  },
  {
@@ -27175,6 +28542,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "hungry-wolf.webp"
  },
  {
@@ -27199,6 +28567,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "ki-barrier.webp"
  },
  {
@@ -27224,6 +28593,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lacerate.webp"
  },
  {
@@ -27252,6 +28622,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "noxian-emissary.webp"
  },
  {
@@ -27277,6 +28648,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sacred-protector.webp"
  },
  {
@@ -27305,6 +28677,7 @@
   "artist": "Slawomir Maniak",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "aurok-general.webp"
  },
  {
@@ -27327,6 +28700,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "decree-of-unity.webp"
  },
  {
@@ -27352,6 +28726,7 @@
   "artist": "Dao Trong Le",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "fallen-feline.webp"
  },
  {
@@ -27376,6 +28751,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "glowstone.webp"
  },
  {
@@ -27408,6 +28784,9 @@
   "artist": "Michal Ivan",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-185"
+  ],
   "image": "kayle-justified.webp"
  },
  {
@@ -27439,6 +28818,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kennen-keeper-of-balance.webp"
  },
  {
@@ -27470,6 +28850,9 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-187"
+  ],
   "image": "ambessa-respected-and-feared.webp"
  },
  {
@@ -27496,6 +28879,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shady-spectacles.webp"
  },
  {
@@ -27525,6 +28909,7 @@
   "artist": "Pandart Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shen-leader-of-the-kinkou-order.webp"
  },
  {
@@ -27554,6 +28939,10 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "KDA-004",
+   "VEN-189"
+  ],
   "image": "rogue-assassin.webp"
  },
  {
@@ -27583,6 +28972,7 @@
   "artist": "莺之歌",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shuriken-flip.webp"
  },
  {
@@ -27611,6 +29001,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-190"
+  ],
   "image": "butcher-of-the-sands.webp"
  },
  {
@@ -27640,6 +29033,7 @@
   "artist": "小牛设计",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dominus.webp"
  },
  {
@@ -27667,6 +29061,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-191"
+  ],
   "image": "master-of-shadows.webp"
  },
  {
@@ -27698,6 +29095,7 @@
   "artist": "JunHuan",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "death-mark.webp"
  },
  {
@@ -27723,6 +29121,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-192"
+  ],
   "image": "curator-of-the-sands.webp"
  },
  {
@@ -27750,6 +29151,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "siphoning-strike.webp"
  },
  {
@@ -27778,6 +29180,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-193"
+  ],
   "image": "eye-of-twilight.webp"
  },
  {
@@ -27807,6 +29212,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-dash.webp"
  },
  {
@@ -27835,6 +29241,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-194"
+  ],
   "image": "defender-of-tomorrow.webp"
  },
  {
@@ -27862,6 +29271,7 @@
   "artist": "小牛设计/Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "acceleration-gate.webp"
  },
  {
@@ -27887,6 +29297,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-195"
+  ],
   "image": "soul-s-reflection.webp"
  },
  {
@@ -27916,6 +29329,7 @@
   "artist": "小牛设计",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "rebuttal.webp"
  },
  {
@@ -27941,6 +29355,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-196"
+  ],
   "image": "matriarch-of-war.webp"
  },
  {
@@ -27970,6 +29387,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "public-execution.webp"
  },
  {
@@ -27998,6 +29416,9 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "VEN-197"
+  ],
   "image": "heart-of-the-tempest.webp"
  },
  {
@@ -28027,6 +29448,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "lightning-rush.webp"
  },
  {
@@ -28049,6 +29471,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "dragon-roost.webp"
  },
  {
@@ -28073,6 +29496,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "heisho-shell-of-the-world.webp"
  },
  {
@@ -28097,6 +29521,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "kinkou-temple.webp"
  },
  {
@@ -28121,6 +29546,7 @@
   "artist": "Caravan Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "mystic-vortex.webp"
  },
  {
@@ -28143,6 +29569,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "piltovan-forge.webp"
  },
  {
@@ -28165,6 +29592,7 @@
   "artist": "Polar Engine Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "protective-sands.webp"
  },
  {
@@ -28189,6 +29617,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "risen-altar.webp"
  },
  {
@@ -28211,6 +29640,7 @@
   "artist": "Kudos Productions",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "sandswept-tomb.webp"
  },
  {
@@ -28235,6 +29665,7 @@
   "artist": "Grafit Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-temple.webp"
  },
  {
@@ -28259,6 +29690,7 @@
   "artist": "Envar Studio",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "threshold-of-the-gray.webp"
  },
  {
@@ -28285,6 +29717,9 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [
+   "RAD-T04"
+  ],
   "image": "empowered.webp"
  },
  {
@@ -28311,6 +29746,7 @@
   "artist": "Six More Vodka",
   "maxCopies": null,
   "banned": false,
+  "codes": [],
   "image": "shadow-clone.webp"
  }
 ]
