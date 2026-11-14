@@ -281,9 +281,11 @@ open class AppTest {
         launch()
         pickLegend("Your legend", "Garen"); pickLegend("Their legend", "Zed")
         click("Best of 1")
-        click("START"); click("FLIP A COIN")
-        rule.waitFor("COIN:", substring = true)
-        shot("10_coin_flip")
+        click("START"); click("ROLL")
+        rule.onNode(hasContentDescription("rolled", substring = true)).assertExists()
+        screenShot("10_high_roll")
+        rule.onNode(hasContentDescription("Start game")).performClick(); rule.waitForIdle()
+        rule.waitUntilAtLeastOneExists(hasContentDescription("You score 0"), 5_000)
         press("You", "HOLD", 3)
         press("Zed", "CONQUER", 2)
         Thread.sleep(300) // let the save land
@@ -464,6 +466,31 @@ open class AppTest {
         tap(rule.onNode(hasText("Ahri")), 42)              // legend: slide in, big win rate counts up
         rule.mainClock.autoAdvance = true
         rule.waitFor("best run")
+    }
+
+    /** Records the dice for who goes first (screenshots/anim/roll_*): thrown, rolling, settled, tap back to the board. */
+    @Test
+    fun highRollFrames() {
+        if (prefix.isNotEmpty()) return
+        launch()
+        pickLegend("Your legend", "Kai'Sa"); pickLegend("Their legend", "Mordekaiser")
+        click("Best of 1")
+        click("START")
+        rule.waitFor("WHO GOES FIRST?")
+        rule.mainClock.autoAdvance = false
+        var frame = 0
+        fun frames(count: Int, step: Long = 40) = repeat(count) {
+            captureScreenRoboImage("screenshots/anim/roll_%03d.png".format(frame++))
+            rule.mainClock.advanceTimeBy(step)
+        }
+        frames(3)
+        rule.onNode(hasText("ROLL")).performClick()
+        frames(110)                    // 4.4 s: thrown in, bouncing, tumbling, settling, the winner lights up
+        frames(12, 100)                // stars keep twinkling
+        rule.onNode(hasContentDescription("Start game")).performClick()
+        frames(14)                     // fade back to the board
+        rule.mainClock.autoAdvance = true
+        rule.waitUntilAtLeastOneExists(hasContentDescription("You score 0"), 5_000)
     }
 
     /** Card images load off the main thread; give them a moment before a screenshot. */

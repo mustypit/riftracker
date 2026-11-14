@@ -42,6 +42,7 @@ report as artifacts.
 | `game/CardsTest` | Shipped card library: complete with pictures, filters, search, sorting, stats rows (each comparison, might between 4 and 6, power 0), keywords (all must match), name-only search, rules text (any word order, symbols as words), tags, every rules-text symbol drawable |
 | `game/DecksTest` | Deck rules: champions, what may go in, copies, every problem label (banned cards and battlefields), sideboard/maybeboard rules and moves, runes stay 12, stats, match runes, text round trip |
 | `game/DeckCodesTest` | Deck codes: Piltover Archive's golden fixtures (encode and decode, v3–v6), the README deck, our decks round trip, alt-art codes |
+| `game/DiceTest` | The d20 for who goes first: geometry, fair results (chi² over 100,000 rolls, either player first half the time), every throw lands flat with the drawn number up and stays on screen |
 | `data/MigrationTest` | A version-1 database keeps its matches when the decks table is added |
 | `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
@@ -177,12 +178,24 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   domain colours; without domains: the seat colour. Text on coloured buttons picks dark/white by
   luminance. Raw art behind the score failed the readability check (32% of pixels under 3:1); keep
   the veil. `MainViewModel` holds navigation (tab + screen stack), the running match and actions.
-  `AppGraph` is where tests swap the clock and the coin-flip random.
+  `AppGraph` is where tests swap the clock and the dice's random source.
 
 ## Product decisions
 
 - No turn tracking (people forget to press it); only how long each game and match lasts.
 - Who goes first is asked at the start of each game (loser of the previous game is suggested).
+  **ROLL** (replaced "flip a coin"; owner's idea from Lotus's high roll, then "a real 3D d20"): each
+  player's d20 is thrown in from their edge and rolls to a stop (`game/D20.kt`: icosahedron, opposite
+  faces sum to 21, rigid-body throw with bounces, walls, rolling, settling flat), higher goes first,
+  ties are thrown again (`game/Dice.kt`). **Fairness**: numbers are drawn first from `AppGraph.random`
+  (SecureRandom in the app), then the free simulation is relabelled by one of the die's 60 symmetries so
+  that number lands on top (the motion never decides the result). Drawn in `CounterScreen.drawD20`:
+  perspective from above, faces lit and tinted across the legend's two domain colours, white outlined
+  numbers (6. and 9.), soft shadow; the opponent's die faces them. Settled: winner's die grows, their
+  half lights up (gradient of their colours, white glow, twinkling stars `Sparkles`), loser's die dims;
+  one tap fades back to the board and starts the game. `DiceTest` checks geometry, fairness (chi² over
+  100,000 rolls) and that every throw ends flat with the drawn number up; `AppTest.highRollFrames`
+  records `anim/roll_*`. Rejected: tumbling digits with a glow (owner didn't like it), flat 2D d6.
 - No rules nagging: the owner removed the "winning point by conquering?" check (players know the
   rules). After a match, SAVE MATCH returns to New match (prefilled for a rematch); no review
   screen pops up: matches are reviewed from the Matches tab.
