@@ -203,6 +203,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
 private const val DIE_RADIUS = 48f // dp, circumradius
 private const val TIE_PAUSE = 800f // ms
 private const val WIN_FADE = 450f // ms
+private const val SPARKLE_TIME = 8000f // ms of twinkling after the dice settle (then it holds still)
 
 @Composable
 private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
@@ -219,7 +220,7 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
         val starts = remember(throws) { throws.runningFold(0f) { acc, (a, b) -> acc + maxOf(a.durationMs, b.durationMs) + TIE_PAUSE }.dropLast(1) }
         val end = starts.last() + maxOf(throws.last().first.durationMs, throws.last().second.durationMs)
         val t = remember(roll) { androidx.compose.animation.core.Animatable(0f) }
-        LaunchedEffect(roll) { t.animateTo(end + WIN_FADE, tween((end + WIN_FADE).toInt(), easing = androidx.compose.animation.core.LinearEasing)) }
+        LaunchedEffect(roll) { t.animateTo(end + SPARKLE_TIME, tween((end + SPARKLE_TIME).toInt(), easing = androidx.compose.animation.core.LinearEasing)) }
         val ms = t.value
         val settled = ms >= end
         val i = starts.indexOfLast { it <= ms }.coerceAtLeast(0)
@@ -233,13 +234,22 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
             for (side in listOf(Side.OPP, Side.ME)) {
                 val track = if (side == Side.ME) throws[i].first else throws[i].second
                 val win = settled && roll.winner == side
-                val color = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side).first
-                androidx.compose.foundation.Canvas(
-                    Modifier.weight(1f).fillMaxWidth().let { if (side == Side.OPP) it.rotate(180f) else it }
-                        .semantics { contentDescription = if (settled) "${match.nameOf(side)} rolled ${roll.of(side)}" else "die" },
-                ) {
-                    drawD20(track.at(local), DIE_RADIUS, color, alpha = if (settled && !win) 1f - 0.55f * emph else 1f,
-                        scale = if (win) 1f + 0.12f * emph else 1f, glow = if (win) color.copy(alpha = 0.75f * emph) else null)
+                val (c1, c2) = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side)
+                Box(Modifier.weight(1f).fillMaxWidth().let { if (side == Side.OPP) it.rotate(180f) else it }) {
+                    // Once rolled: the winner's half lights up in their colours, with stars.
+                    if (win) {
+                        val l1 = androidx.compose.ui.graphics.lerp(c1, Color.White, 0.35f)
+                        val l2 = androidx.compose.ui.graphics.lerp(c2, Color.White, 0.35f)
+                        Box(Modifier.matchParentSize().graphicsLayer { alpha = emph }.background(Brush.linearGradient(listOf(l1, l2))))
+                        Box(Modifier.matchParentSize().graphicsLayer { alpha = emph }.background(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.6f), Color.Transparent))))
+                        Sparkles(roll, ms - end, listOf(Color.White, l1, l2, Color.White), Modifier.matchParentSize().graphicsLayer { alpha = emph })
+                    }
+                    androidx.compose.foundation.Canvas(
+                        Modifier.matchParentSize().semantics { contentDescription = if (settled) "${match.nameOf(side)} rolled ${roll.of(side)}" else "die" },
+                    ) {
+                        drawD20(track.at(local), DIE_RADIUS, c1, c2, alpha = if (settled && !win) 1f - 0.5f * emph else 1f,
+                            scale = if (win) 1f + 0.15f * emph else 1f)
+                    }
                 }
                 if (side == Side.OPP) Spacer(Modifier.height(4.dp))
             }
@@ -250,7 +260,15 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
 private val dieText = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
     textAlign = android.graphics.Paint.Align.CENTER
     typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
-    textSize = 92f
+    textSize = 104f
+}
+private val dieOutline = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+    textAlign = android.graphics.Paint.Align.CENTER
+    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+    textSize = 104f
+    style = android.graphics.Paint.Style.STROKE
+    strokeWidth = 14f
+    strokeJoin = android.graphics.Paint.Join.ROUND
 }
 private val light = V3(-0.35, -0.55, 1.0).unit()
 
@@ -258,7 +276,7 @@ private val light = V3(-0.35, -0.55, 1.0).unit()
  * A d20 in perspective from a camera above the middle of the half: lit faces nearest last, numbers
  * laid onto the faces that look up, and a shadow on the table that softens as the die rises.
  */
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Frame, radiusDp: Float, base: Color, alpha: Float, scale: Float, glow: Color?) {
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Frame, radiusDp: Float, c1: Color, c2: Color, alpha: Float, scale: Float) {
     val r = (radiusDp * density * scale).toDouble()
     val camX = size.width / 2.0; val camY = size.height / 2.0
     val camZ = 900.0 * density
@@ -271,10 +289,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Fram
     val sh = project(V3(center.x + lift * 0.3, center.y + lift * 0.5, 0.0))
     val shR = (r * (1.0 + lift / (220.0 * density))).toFloat()
     drawCircle(Brush.radialGradient(listOf(Color.Black.copy(alpha = (0.55f * alpha / (1f + f.z / 90f))), Color.Transparent), center = sh, radius = shR), radius = shR, center = sh)
-    if (glow != null) {
-        val c = project(center)
-        drawCircle(Brush.radialGradient(listOf(glow, Color.Transparent), center = c, radius = (r * 2.1).toFloat()), radius = (r * 2.1).toFloat(), center = c)
-    }
     val verts = D20.vertices.map { f.q.rotate(it) * r + center }
     val camera = V3(camX, camY, camZ)
     val visible = D20.faces.indices.mapNotNull { i ->
@@ -282,14 +296,16 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Fram
         val c = D20.faces[i].map { verts[it] }.reduce(V3::plus) * (1.0 / 3)
         if ((n dot (camera - c)) <= 0) null else Triple(i, n, c)
     }.sortedBy { it.third.z }
-    val edge = androidx.compose.ui.graphics.lerp(base, Color.White, 0.45f).copy(alpha = 0.55f * alpha)
+    val edge = Color.White.copy(alpha = 0.35f * alpha)
     for ((i, n, c) in visible) {
+        // The legend's two domain colours across the die (each face keeps its own tone as it turns).
+        val base = androidx.compose.ui.graphics.lerp(c1, c2, ((D20.normals[i].x + D20.normals[i].y * 0.5 + 1.5) / 3.0).toFloat().coerceIn(0f, 1f))
         val pts = D20.faces[i].map { project(verts[it]) }
         val path = androidx.compose.ui.graphics.Path().apply { moveTo(pts[0].x, pts[0].y); lineTo(pts[1].x, pts[1].y); lineTo(pts[2].x, pts[2].y); close() }
         val diffuse = (n dot light).coerceAtLeast(0.0)
         val half = (light + V3(0.0, 0.0, 1.0)).unit()
         val spec = Math.pow((n dot half).coerceAtLeast(0.0), 40.0)
-        val shade = (0.30 + 0.70 * diffuse).toFloat()
+        val shade = (0.45 + 0.55 * diffuse).toFloat()
         val fill = androidx.compose.ui.graphics.lerp(androidx.compose.ui.graphics.lerp(Color.Black, base, shade), Color.White, (0.55 * spec).toFloat())
         drawPath(path, fill, alpha = alpha)
         drawPath(path, edge, style = androidx.compose.ui.graphics.drawscope.Stroke(1.2f * density, join = androidx.compose.ui.graphics.StrokeJoin.Round))
@@ -297,7 +313,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Fram
         if (n.z > 0.2) {
             val up = (verts[D20.faces[i][0]] - c).unit()
             var right = (n cross up).unit()
-            val k = r * 0.27
+            val k = r * 0.25
             val p0 = project(c); var pr = project(c + right * k); val pu = project(c + up * k)
             if ((pr.x - p0.x) * (pu.y - p0.y) - (pr.y - p0.y) * (pu.x - p0.x) > 0) { right = right * -1.0; pr = project(c + right * k) }
             val m = android.graphics.Matrix()
@@ -307,10 +323,43 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Fram
             drawIntoCanvas { canvas ->
                 val nc = canvas.nativeCanvas
                 nc.save(); nc.concat(m)
-                dieText.color = android.graphics.Color.argb((255 * alpha * (0.4f + 0.6f * ((n.z - 0.2) / 0.8).toFloat().coerceIn(0f, 1f))).toInt(), 255, 255, 255)
-                nc.drawText(label, 0f, 33f, dieText)
+                val a = (255 * alpha * (0.75f + 0.25f * ((n.z - 0.2) / 0.8).toFloat().coerceIn(0f, 1f))).toInt()
+                // A dark outline under bright white, readable on any domain colour.
+                dieOutline.color = android.graphics.Color.argb((a * 0.75f).toInt(), 0, 0, 0)
+                nc.drawText(label, 0f, 36f, dieOutline)
+                dieText.color = android.graphics.Color.argb(a, 255, 255, 255)
+                nc.drawText(label, 0f, 36f, dieText)
                 nc.restore()
             }
+        }
+    }
+}
+
+private data class Star(val x: Float, val y: Float, val size: Float, val phase: Float, val speed: Float, val color: Int)
+
+/** Little stars that twinkle and drift up over the winner's half. */
+@Composable
+private fun Sparkles(roll: Dice.Roll, ms: Float, colors: List<Color>, modifier: Modifier) {
+    val stars = remember(roll) {
+        val r = kotlin.random.Random(roll.seed)
+        List(50) { Star(r.nextFloat(), r.nextFloat(), 3f + r.nextFloat() * 8f, r.nextFloat() * 6.28f, 0.02f + r.nextFloat() * 0.05f, r.nextInt(colors.size)) }
+    }
+    androidx.compose.foundation.Canvas(modifier) {
+        val s = ms.coerceAtLeast(0f) / 1000f
+        stars.forEach { st ->
+            val yy = ((st.y - s * st.speed) % 1f + 1f) % 1f
+            val twinkle = 0.35f + 0.65f * ((kotlin.math.sin(st.phase + s * 4f) + 1f) / 2f)
+            val rad = st.size * density * (0.7f + 0.3f * twinkle)
+            val cx = st.x * size.width; val cy = yy * size.height
+            val path = androidx.compose.ui.graphics.Path()
+            for (i in 0 until 10) {
+                val a = -Math.PI / 2 + i * Math.PI / 5
+                val rr = if (i % 2 == 0) rad else rad * 0.42f
+                val px = cx + (rr * kotlin.math.cos(a)).toFloat(); val py = cy + (rr * kotlin.math.sin(a)).toFloat()
+                if (i == 0) path.moveTo(px, py) else path.lineTo(px, py)
+            }
+            path.close()
+            drawPath(path, colors[st.color].copy(alpha = twinkle))
         }
     }
 }

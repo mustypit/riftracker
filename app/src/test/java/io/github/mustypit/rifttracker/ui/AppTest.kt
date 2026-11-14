@@ -485,7 +485,8 @@ open class AppTest {
         }
         frames(3)
         rule.onNode(hasText("ROLL")).performClick()
-        frames(110)                    // 4.4 s: thrown in, bouncing, tumbling, settling, the winner shown
+        frames(110)                    // 4.4 s: thrown in, bouncing, tumbling, settling, the winner lights up
+        frames(12, 100)                // stars keep twinkling
         rule.onNode(hasContentDescription("Start game")).performClick()
         frames(14)                     // fade back to the board
         rule.mainClock.autoAdvance = true
