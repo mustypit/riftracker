@@ -95,6 +95,7 @@ private fun Match.nameOf(side: Side) = if (side == Side.ME) "You" else oppName.i
 @Composable
 fun CounterScreen(vm: MainViewModel, match: Match) {
     val coin by vm.coin.collectAsState()
+    val roll by vm.roll.collectAsState()
     val game = match.games.lastOrNull()
     val current = MatchRules.current(match)
     val decided = MatchRules.isDecided(match)
@@ -169,7 +170,8 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
         when {
             current != null -> {}
             game != null && game.isOver -> GameOverCard(match, game, decided, onUndo = vm::undo, onNext = { vm.finishMatch() }, onNextGame = { vm.chooseFirst(it) }, battlefieldSlots)
-            else -> FirstChooser(match, onChoose = vm::chooseFirst, battlefieldSlots)
+            roll != null -> {}
+            else -> FirstChooser(match, onChoose = vm::chooseFirst, onRoll = vm::startRoll, battlefieldSlots)
         }
         picking?.let { side ->
             val history by vm.history.collectAsState()
@@ -180,6 +182,95 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                 onPick = { vm.pickPendingBattlefield(side, it); picking = null },
                 onClose = { picking = null },
             )
+        }
+        // High roll: both halves dark, numbers tumble and settle, the winner's half lights up; a tap
+        // fades back to the board and starts the game.
+        var lastRoll by remember { mutableStateOf<MatchRules.HighRoll?>(null) }
+        if (roll != null) lastRoll = roll
+        androidx.compose.animation.AnimatedVisibility(
+            visible = roll != null, enter = androidx.compose.animation.fadeIn(tween(180)), exit = androidx.compose.animation.fadeOut(tween(380)),
+        ) { lastRoll?.let { HighRollOverlay(match, it, onDone = vm::finishRoll) } }
+    }
+}
+
+// High roll timing (ms): the numbers change at STEPS (slowing down), the last one is the result.
+private val ROLL_STEPS = listOf(0, 55, 110, 170, 235, 305, 385, 475, 580, 700, 840, 1000, 1180)
+private const val ROLL_SETTLE = 1180f
+private const val ROLL_END = 9000f
+
+@Composable
+private fun HighRollOverlay(match: Match, roll: MatchRules.HighRoll, onDone: () -> Unit) {
+    val t = remember(roll) { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(roll) { t.animateTo(ROLL_END, tween(ROLL_END.toInt(), easing = androidx.compose.animation.core.LinearEasing)) }
+    val ms = t.value
+    val settled = ms >= ROLL_SETTLE
+    Column(
+        Modifier.fillMaxSize().background(C.Black)
+            .clickable(enabled = settled, indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, onClick = onDone)
+            .semantics { contentDescription = if (settled) "Start game" else "Rolling" },
+    ) {
+        RollHalf(match, Side.OPP, roll, ms, Modifier.weight(1f).rotate(180f))
+        Spacer(Modifier.height(4.dp))
+        RollHalf(match, Side.ME, roll, ms, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun RollHalf(match: Match, side: Side, roll: MatchRules.HighRoll, ms: Float, modifier: Modifier) {
+    val final = roll.of(side)
+    val step = ROLL_STEPS.indexOfLast { it <= ms }
+    // Tumbling numbers: fixed per step (no randomness here, so frames are repeatable).
+    val shown = if (step == ROLL_STEPS.lastIndex) final else ((step * 7 + (if (side == Side.ME) 3 else 11) * (step + 1) + final * 5) % 20) + 1
+    val winner = roll.winner == side
+    fun phase(from: Float, to: Float) = ((ms - from) / (to - from)).coerceIn(0f, 1f)
+    val glow = if (winner) androidx.compose.animation.core.FastOutSlowInEasing.transform(phase(ROLL_SETTLE + 60f, ROLL_SETTLE + 520f)) else 0f
+    val pop = androidx.compose.animation.core.CubicBezierEasing(0.34f, 1.56f, 0.64f, 1f).transform(phase(ROLL_SETTLE, ROLL_SETTLE + 360f))
+    val (c1, c2) = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side)
+    val l1 = androidx.compose.ui.graphics.lerp(c1, Color.White, 0.35f)
+    val l2 = androidx.compose.ui.graphics.lerp(c2, Color.White, 0.35f)
+    Box(modifier.fillMaxWidth().background(Color(0xFF1D1E20)), contentAlignment = Alignment.Center) {
+        if (glow > 0f) {
+            Box(Modifier.matchParentSize().graphicsLayer { alpha = glow }.background(Brush.linearGradient(listOf(l1, l2))))
+            Box(Modifier.matchParentSize().graphicsLayer { alpha = glow }.background(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.55f), Color.Transparent))))
+            Sparkles(roll, ms - ROLL_SETTLE, listOf(Color.White, l1, l2, Color.White), Modifier.matchParentSize().graphicsLayer { alpha = glow })
+        }
+        val ink = if (glow > 0.5f) inkOn(androidx.compose.ui.graphics.lerp(l1, l2, 0.5f)) else Color.White
+        val scale = if (winner) 1f + 0.28f * pop else 1f
+        val alpha = if (winner || !(ms >= ROLL_SETTLE)) 1f else 1f - 0.6f * phase(ROLL_SETTLE, ROLL_SETTLE + 360f)
+        Text(
+            "$shown",
+            style = TextStyle(fontSize = 150.sp, fontWeight = FontWeight.Black, color = ink, letterSpacing = (-4).sp),
+            modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale; this.alpha = alpha }
+                .semantics { contentDescription = if (ms >= ROLL_SETTLE) "${match.nameOf(side)} rolled $final" else "rolling" },
+        )
+    }
+}
+
+private data class Star(val x: Float, val y: Float, val size: Float, val phase: Float, val speed: Float, val color: Int)
+
+/** Little stars that twinkle and drift up over the winner's half. */
+@Composable
+private fun Sparkles(roll: MatchRules.HighRoll, ms: Float, colors: List<Color>, modifier: Modifier) {
+    val stars = remember(roll) {
+        val r = kotlin.random.Random(roll.me * 31 + roll.opp)
+        List(46) { Star(r.nextFloat(), r.nextFloat(), 3f + r.nextFloat() * 8f, r.nextFloat() * 6.28f, 0.02f + r.nextFloat() * 0.05f, r.nextInt(colors.size)) }
+    }
+    androidx.compose.foundation.Canvas(modifier) {
+        val s = ms.coerceAtLeast(0f) / 1000f
+        stars.forEach { (x, y, size, ph, speed, ci) ->
+            val yy = ((y - s * speed) % 1f + 1f) % 1f
+            val twinkle = 0.35f + 0.65f * ((kotlin.math.sin(ph + s * 4f) + 1f) / 2f)
+            val rad = size * density * (0.7f + 0.3f * twinkle)
+            val cx = x * this.size.width; val cy = yy * this.size.height
+            val path = androidx.compose.ui.graphics.Path()
+            for (i in 0 until 10) {
+                val a = -Math.PI / 2 + i * Math.PI / 5
+                val rr = if (i % 2 == 0) rad else rad * 0.42f
+                val px = cx + (rr * kotlin.math.cos(a)).toFloat(); val py = cy + (rr * kotlin.math.sin(a)).toFloat()
+                if (i == 0) path.moveTo(px, py) else path.lineTo(px, py)
+            }
+            path.close()
+            drawPath(path, colors[ci].copy(alpha = twinkle))
         }
     }
 }
@@ -506,7 +597,7 @@ fun BigButton(text: String, color: Color, ink: Color, modifier: Modifier = Modif
 }
 
 @Composable
-private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, battlefieldSlots: @Composable () -> Unit) {
+private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, onRoll: () -> Unit, battlefieldSlots: @Composable () -> Unit) {
     val suggested = MatchRules.suggestedFirst(match)
     Overlay {
         Text(if (match.games.isEmpty()) "WHO GOES FIRST?" else "GAME ${match.games.size + 1} · WHO GOES FIRST?", style = Caps.copy(fontSize = 14.sp), color = C.Ink)
@@ -516,7 +607,7 @@ private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, battlefieldSlo
         Spacer(Modifier.height(10.dp))
         BigButton(match.nameOf(Side.OPP).uppercase() + if (suggested == Side.OPP) " ★" else "", playerColors(match.oppLegend, Side.OPP).first, inkOn(playerColors(match.oppLegend, Side.OPP).first)) { onChoose(Side.OPP) }
         Spacer(Modifier.height(10.dp))
-        BigButton("FLIP A COIN", C.Solid, C.OnSolid) { onChoose(null) }
+        BigButton("ROLL", C.Solid, C.OnSolid, onClick = onRoll)
     }
 }
 

@@ -121,6 +121,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _pendingBattlefields.update { if (name == null) it - side else it + (side to name) }
     }
 
+    /** A high roll on screen; tapping after it settles starts the game with the winner first. */
+    private val _roll = MutableStateFlow<MatchRules.HighRoll?>(null)
+    val roll: StateFlow<MatchRules.HighRoll?> = _roll.asStateFlow()
+
+    fun startRoll() { if (_active.value != null) _roll.value = MatchRules.highRoll(AppGraph.random) }
+
+    fun finishRoll() {
+        val r = _roll.value ?: return
+        _roll.value = null
+        chooseFirst(r.winner)
+    }
+
     /** Starts the next game. [first] null means flip a coin. */
     fun chooseFirst(first: Side?) {
         val m = _active.value ?: return
