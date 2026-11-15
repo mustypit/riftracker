@@ -30,11 +30,13 @@ jobs:
         with:
           name: test-report
           path: app/build/reports/tests/
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
           path: app/screenshots/
+          retention-days: 14
       - name: Build APK
         run: ./gradlew assembleDebug --no-daemon
       - name: Check the APK can update the installed app
@@ -50,3 +52,5 @@ jobs:
         with:
           name: rifttracker-apk
           path: rifttracker-${{ github.run_number }}.apk
+          # Releases keep the APKs worth keeping; the Release workflow picks from recent builds.
+          retention-days: 30

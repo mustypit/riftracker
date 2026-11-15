@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag, e.g. v1.0"
+        description: "Release tag, e.g. v1.1"
         required: true
-        default: "v1.0"
+        default: "v1.1"
       title:
         description: "Release title"
         required: true
-        default: "RiftTracker 1.0"
+        default: "RiftTracker 1.1"
       run_id:
         description: "Build APK run id (empty = latest successful build on main)"
         required: false
@@ -50,7 +50,8 @@ jobs:
           APK=$(ls apk/*.apk | head -1)
           cp "$APK" RiftTracker-${{ inputs.tag }}.apk
           cat > notes.md <<'EOF'
-          Unofficial Riftbound score tracker for Android. Not affiliated with Riot Games.
+          Unofficial Riftbound companion for Android: score counter, match history and stats, card library
+          and deck builder. Not affiliated with Riot Games.
 
           **Install:** download `RiftTracker-*.apk` below on your phone, open it, and allow installing from
           your browser or file manager when Android asks. Play Protect may warn about an unknown developer;

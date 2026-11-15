@@ -1,28 +1,44 @@
 # RiftTracker
 
-An unofficial score tracker for the Riftbound card game. Not affiliated with Riot Games.
+An unofficial Android companion for the Riftbound card game: count points at the table, keep every
+match, browse the cards and build decks. Not affiliated with Riot Games.
 
-- **At the table:** the phone lies between you; tap Conquer, Hold or Ability to score. First to 8,
-  best of 1 or best of 3, with undo, game timer and a check on winning by conquering.
-- **Every match saved** on your phone, with a point-by-point timeline.
-- **Stats:** win rate per legend, against each legend and against each rival, best winning run,
-  going first vs second.
-- Legends are picked from a built-in library (Origins to Radiance).
-- No ads, no account; nothing leaves your phone.
+- **At the table:** the phone lies between you, each half facing its player with the legend's art.
+  Tap Conquer, Hold or Ability to score; first to 8, best of 1 or best of 3. Tap a score to take a
+  point off, undo anything, see how each point was scored on the side track. A 3D d20 roll decides
+  who goes first. Battlefields and XP per game, a timer, and the screen stays on.
+- **Matches and stats:** every match saved with a point-by-point chart; win rate per legend, against
+  each legend, per battlefield and per deck, going first vs second, best run, by evening and month.
+  Log matches played without the app.
+- **Cards:** the whole card library with pictures, Scryfall-style filters (domains, type, energy /
+  power / might, keywords, tags, rules text) and banned cards marked.
+- **Decks:** build decks with the Riftbound rules checked as you go (copies, domains, signatures,
+  runes, battlefields, banlist), a sideboard and a maybeboard, list / grid / stacks views, energy
+  curve and power vs runes. Import and export **deck codes** (the format Piltover Archive, Riftmana
+  and other deck sites use) or plain card lists. Pick a deck when you start a match to track its
+  record.
+- Light and dark themes, your choice of accent colour.
+- No ads, no account, no internet access: everything stays on your phone.
 
 ## Install
 
-Every push builds the app on GitHub Actions. Open the latest run under **Actions**, download the
-`rifttracker-apk` artifact, unzip it and install the APK on your phone.
+Download the APK from the latest [release](https://github.com/mustypit/riftracker/releases) on your
+phone and open it (allow installing from your browser when Android asks). Every new version installs
+over the previous one and keeps your matches and decks.
 
-## Signing
+Newer test builds are on the **Actions** tab: open the latest **Build APK** run on `main` and
+download the `rifttracker-apk` artifact (needs a GitHub account).
 
-To make every build install over the previous one, add a keystore (base64 text) as the
-`SIGNING_KEYSTORE` repository secret (Settings → Secrets and variables → Actions). Until then builds
-use a throwaway key: uninstall the old app before installing a new build (this deletes its match
-history).
+## Credits
+
+- Card data and images: [OpenRift](https://openrift.app), refreshed weekly.
+- Deck codes: [Piltover Archive's RiftboundDeckCodes](https://github.com/Piltover-Archive/RiftboundDeckCodes)
+  format (Apache 2.0), ported to Kotlin.
+- RiftTracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games
+  or anyone officially involved in producing or managing Riot Games properties. Riot Games, Riftbound
+  and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
 
 ## Develop
 
-See [CLAUDE.md](CLAUDE.md) for building and testing (JVM tests with Robolectric screenshots; no
-emulator needed).
+Kotlin, Jetpack Compose and Room. See [CLAUDE.md](CLAUDE.md) for building and testing (JVM tests
+with Robolectric screenshots; no emulator needed) and for how the app is put together.

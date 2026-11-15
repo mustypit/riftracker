@@ -114,7 +114,11 @@ import androidx.compose.ui.text.TextStyle
  * result is handed back on the main thread, so the screen only ever updates there.
  */
 internal object CardArt {
-    private val cache = LruCache<String, ImageBitmap>(48)
+    // Sized by memory (an eighth of the app's heap, in KB), not by count: a deck page or a scrolled
+    // library grid needs far more than a few dozen pictures, and reloading them flickers.
+    private val cache = object : LruCache<String, ImageBitmap>((Runtime.getRuntime().maxMemory() / 1024 / 8).toInt()) {
+        override fun sizeOf(key: String, value: ImageBitmap) = (value.width * value.height * 4 / 1024).coerceAtLeast(1)
+    }
     private val decoder = java.util.concurrent.Executors.newFixedThreadPool(2)
     private val main = android.os.Handler(android.os.Looper.getMainLooper())
     fun cached(file: String): ImageBitmap? = cache.get(file)

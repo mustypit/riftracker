@@ -1,9 +1,10 @@
-# RiftTracker (Android score tracker for the Riftbound card game)
+# RiftTracker (Android companion app for the Riftbound card game)
 
 Personal, sideloaded, unofficial companion app: counts points at the table (1v1, best of 1 or 3),
-saves every match on the phone, and shows stats per legend and per opponent. Kotlin, Jetpack
-Compose, Room. The owner installs APKs built by GitHub Actions; there is no Play Store release.
-Not affiliated with Riot Games.
+saves every match on the phone with stats, and has a card library and a deck builder (deck codes,
+sideboard, banlist). Kotlin, Jetpack Compose, Room. The owner installs APKs built by GitHub Actions
+(and GitHub releases made from them); there is no Play Store release. Not affiliated with Riot Games.
+The README is the public description: keep it in step with the features.
 
 ## Environment (Claude Code cloud sessions)
 
@@ -44,8 +45,8 @@ report as artifacts.
 | `game/DeckCodesTest` | Deck codes: Piltover Archive's golden fixtures (encode and decode, v3–v6), the README deck, our decks round trip, alt-art codes |
 | `game/DiceTest` | The d20 for who goes first: geometry, fair results (chi² over 100,000 rolls, either player first half the time), every throw lands flat with the drawn number up and stays on screen |
 | `data/MigrationTest` | A version-1 database keeps its matches when the decks table is added |
-| `stats/StatsTest` | Win rate (draw = a third), legends/opponents/rivals, best run, going first vs second, evenings and months, periods |
-| `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, empty states; screenshots of each |
+| `stats/StatsTest` | Win rate (draw = a third), legends and opponents, decks, best run, going first vs second, evenings and months, periods |
+| `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, the dice, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, card library and filters, deck builder (views, runes, battlefields, sideboard/maybe, deck codes, banned cards), decks in matches, settings and accent, empty states; screenshots of each, and animation frames for GIFs. `AppDarkTest` reruns it all in dark mode |
 
 Robolectric quirk: at phone sizes, **dialogs containing a text field never go idle**. The app has
 none: setup forms and the legend picker are screens/overlays, not dialogs. Dialogs without text fields
@@ -102,7 +103,10 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   Might tile, rules text with inline symbols, keywords, then set · number · rarity · artist. No
   horizontal strips of cards (owner: too many cards). Images decode on a background pool and are handed
   back on the main thread (`CardArt`; resuming a coroutine after `withContext(IO)` broke Compose tests).
-  Search state and scroll live in `MainViewModel`. Symbols: `ui/RiftSymbols.kt`, generated from
+  Search state and scroll live in `MainViewModel`. Lookups go through indexes built in
+  `Cards.install` (`bySlug`, `battlefield(name)`, `byCode(code)`): never scan `Cards.all` per item in
+  UI code. `CardArt` caches decoded pictures by memory (an eighth of the heap); `CardThumb` is the
+  zoomed artwork square for list rows. Symbols: `ui/RiftSymbols.kt`, generated from
   `design/symbols/*.svg` (domain emblems traced from OpenRift's images, might and the any-domain
   rune from OpenRift's SVGs, exhaust redrawn on a trace of the printed card; energy drawn in code as a
   white disc with a dark rim). Owner wants these as close to the printed symbols as possible.
@@ -165,7 +169,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   rows are read). The running match is a row with `finished = 0`, saved after every press, so it
   survives the app closing. A real schema change still needs a version bump and a migration
   (never destructive: it's the user's history).
-- `ui/`: Compose, look "bold blocks" (`Theme.kt`: black bars, yellow highlights; green `C.Green` #3FAE63 = you and wins,
+- `ui/`: Compose, look "bold blocks" (`Theme.kt`: black bars, the owner's accent colour for highlights; green `C.Green` #3FAE63 = you and wins,
   red `C.Red` #E2483A = opponent and losses: the Calm/Fury card colours, chosen by the owner). The counter uses design **B** (chosen from measured mockups): each half
   shows the legend's art with a dark radial veil, strongest behind the score, white digits, no name
   label, and three round icon-only point buttons (flag = conquer, shield = hold, spark = ability;
@@ -234,9 +238,9 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `AppDarkTest` reruns every UI flow in dark mode (screenshots `dark_*.png`).
 - The counter is full screen: system bars hidden while it's open (swipe to show), art edge to edge.
 - Play tab icon: minimal crossed swords (`RiftIcons.CrossedSwords`); keep icons simple.
-- Next: deck versions. Deferred: battlefield tracking, XP/levels. Not wanted: 4-player boards,
-  card scanner. Next design iteration may take cues from the MTG counter "Lotus" (random colours per
-  game, central menu button, clean panels); ask the owner for a screen recording.
+- Next: deck versions. Deferred: XP/levels. Not wanted: 4-player boards, card scanner, a rules
+  engine. A separate desktop project ("Riftbound Table", play against Claude through the owner's
+  Claude Code login) was handed off to its own session; it reuses `game/` from here.
 - **Minimal UI copy** (owner's request): short one-line headers ("New match", "Settings"), no
   explanatory sentences under settings, one-line empty states, no "(optional)" labels, dialogs with a
   title and buttons only. The ★ on a player button marks who lost the last game, without a caption.
@@ -274,5 +278,9 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - Releases: `.github/workflows/release.yml` (run from Actions, inputs tag/title/run_id) takes a Build
   APK run's artifact as is (no rebuild), checks the signing fingerprint and publishes a GitHub
   release with `RiftTracker-<tag>.apk`. The repo is public, so release downloads need no account.
-- Develop on the branch the session names (or `main` for this repo while it's new); commit and
-  push when done; don't open PRs unless asked.
+- Develop on the branch the session names (or `main` for this repo); commit and push when done;
+  don't open PRs unless asked. Prototypes the owner wants to see first go on a branch (GIFs before
+  pushing to main). Branch deletion is blocked for Claude: tell the owner which branches to delete.
+- `versionName` is bumped by hand for a release (1.1 now); build artifacts are kept 14 days
+  (reports, screenshots) and 30 days (APK), so make releases from a recent build.
+- Readability: import names instead of writing out `androidx.…` / `io.github.mustypit.…` inline.
