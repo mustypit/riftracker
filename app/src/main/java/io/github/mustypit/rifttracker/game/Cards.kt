@@ -86,17 +86,36 @@ object Cards {
     var all: List<Card> = emptyList()
         private set
 
+    // Lookups by slug, battlefield name and card code (every printing), built once per install.
+    private var bySlugIndex: Map<String, Card> = emptyMap()
+    private var battlefieldIndex: Map<String, Card> = emptyMap()
+    private var byCodeIndex: Map<String, Card> = emptyMap()
+
     /** Main sets newest first, then the starter and supplemental ones. */
     private val setOrder = listOf("Radiance", "Vendetta", "Unleashed", "Spiritforged", "Origins", "Proving Grounds")
 
     /** Loads assets/cards/cards.json. Token cards and rules reminders ("other") aren't shown. */
     fun install(json: String) {
-        all = Json { ignoreUnknownKeys = true }.decodeFromString<List<Card>>(json).filter { it.type != "other" }
+        index(Json { ignoreUnknownKeys = true }.decodeFromString<List<Card>>(json).filter { it.type != "other" })
     }
 
-    fun resetForTests() { all = emptyList() }
+    private fun index(cards: List<Card>) {
+        all = cards
+        bySlugIndex = cards.associateBy { it.slug }
+        battlefieldIndex = cards.filter { it.type == "battlefield" }.associateBy { it.name.lowercase() }
+        // The main printing's code wins over another card's reprint code.
+        byCodeIndex = cards.flatMap { c -> c.codes.map { it to c } }.toMap() + cards.mapNotNull { c -> c.code?.let { it to c } }.toMap()
+    }
 
-    fun bySlug(slug: String): Card? = all.firstOrNull { it.slug == slug }
+    fun resetForTests() = index(emptyList())
+
+    fun bySlug(slug: String): Card? = bySlugIndex[slug]
+
+    /** The battlefield card with this name, any case (decks and games store battlefields by name). */
+    fun battlefield(name: String): Card? = battlefieldIndex[name.trim().lowercase()]
+
+    /** The card a card code names (its main printing or any other), without a variant suffix. */
+    fun byCode(code: String): Card? = byCodeIndex[code]
 
     val sets: List<String> get() = all.map { it.set }.distinct().sortedWith(compareBy({ setRank(it) }, { it }))
     private fun setRank(set: String) = setOrder.indexOf(set).let { if (it < 0) 99 else it }

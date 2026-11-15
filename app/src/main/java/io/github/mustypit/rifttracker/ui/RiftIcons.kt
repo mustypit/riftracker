@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.StrokeCap
 
 /** Original point icons (24×24): flag = conquer, shield = hold, spark = ability. Tinted by Icon(). */
 object RiftIcons {
@@ -37,7 +38,7 @@ object RiftIcons {
     val CrossedSwords = icon("crossed_swords") {
         fun line(d: String) = addPath(
             addPathNodes(d), stroke = SolidColor(Color.Black), strokeLineWidth = 2.4f,
-            strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round,
+            strokeLineCap = StrokeCap.Round,
         )
         line("M4.5 4.5L19 19")    // blade + handle, top-left to bottom-right
         line("M19.5 4.5L5 19")    // the other one
@@ -53,13 +54,13 @@ object RiftIcons {
         )
         addPath(
             addPathNodes("M4.5 7v11.5A2.5 2.5 0 0 0 7 21h8"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f,
-            strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round,
+            strokeLineCap = StrokeCap.Round,
         )
     }
 
     /** A stack of three cards seen from the side: the Decks tab. */
     val Deck = icon("deck") {
         addPath(addPathNodes("M6 4.5h12A1.5 1.5 0 0 1 19.5 6v7A1.5 1.5 0 0 1 18 14.5H6A1.5 1.5 0 0 1 4.5 13V6A1.5 1.5 0 0 1 6 4.5z"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f)
-        addPath(addPathNodes("M5 17.5h14M6.5 20.5h11"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f, strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round)
+        addPath(addPathNodes("M5 17.5h14M6.5 20.5h11"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f, strokeLineCap = StrokeCap.Round)
     }
 }

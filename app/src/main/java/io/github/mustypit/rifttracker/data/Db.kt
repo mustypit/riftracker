@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import io.github.mustypit.rifttracker.game.Deck
 
 /**
  * One row per match. The match itself (games, point log) is JSON: new fields get defaults when old
@@ -75,8 +78,8 @@ interface DeckDao {
 }
 
 /** Version 2 adds the decks table; matches are untouched. */
-val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
-    override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `decks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `updatedAt` INTEGER NOT NULL, `json` TEXT NOT NULL)")
     }
 }
@@ -125,12 +128,12 @@ class MatchStore(private val dao: MatchDao) {
 class DeckStore(private val dao: DeckDao) {
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
-    private fun decode(e: DeckEntity) = json.decodeFromString<io.github.mustypit.rifttracker.game.Deck>(e.json).copy(id = e.id, updatedAt = e.updatedAt)
-    private fun encode(d: io.github.mustypit.rifttracker.game.Deck) = DeckEntity(id = d.id, updatedAt = d.updatedAt, json = json.encodeToString(d.copy(id = 0)))
+    private fun decode(e: DeckEntity) = json.decodeFromString<Deck>(e.json).copy(id = e.id, updatedAt = e.updatedAt)
+    private fun encode(d: Deck) = DeckEntity(id = d.id, updatedAt = d.updatedAt, json = json.encodeToString(d.copy(id = 0)))
 
-    val all: Flow<List<io.github.mustypit.rifttracker.game.Deck>> = dao.observeAll().map { list -> list.map(::decode) }
+    val all: Flow<List<Deck>> = dao.observeAll().map { list -> list.map(::decode) }
 
-    suspend fun save(d: io.github.mustypit.rifttracker.game.Deck): io.github.mustypit.rifttracker.game.Deck =
+    suspend fun save(d: Deck): Deck =
         if (d.id == 0L) d.copy(id = dao.insert(encode(d))) else d.also { dao.update(encode(it)) }
 
     suspend fun delete(id: Long) = dao.delete(id)

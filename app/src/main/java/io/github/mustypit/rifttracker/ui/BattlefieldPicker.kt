@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import io.github.mustypit.rifttracker.game.Battlefield
 import io.github.mustypit.rifttracker.game.Battlefields
 import kotlin.math.absoluteValue
+import io.github.mustypit.rifttracker.game.DeckRules
 
 /** A battlefield's art (landscape), or a calm gradient with its name when there's no art. */
 @Composable
@@ -130,7 +131,7 @@ private fun BattlefieldTile(b: Battlefield, selected: Boolean, onClick: () -> Un
     ) {
         Box {
             BattlefieldThumb(b.name, Modifier.fillMaxWidth().aspectRatio(2.2f))
-            if (io.github.mustypit.rifttracker.game.DeckRules.battlefieldCard(b.name)?.banned == true) BannedTag(Modifier.align(Alignment.TopEnd).padding(5.dp))
+            if (DeckRules.battlefieldCard(b.name)?.banned == true) BannedTag(Modifier.align(Alignment.TopEnd).padding(5.dp))
         }
         Text(b.name, color = C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp, start = 2.dp))
     }

@@ -168,10 +168,8 @@ object DeckRules {
         return out
     }
 
-    fun isLegal(deck: Deck) = problems(deck).isEmpty()
-
     /** The battlefield card with this name (decks store battlefields by name). */
-    fun battlefieldCard(name: String): Card? = Cards.all.firstOrNull { it.type == "battlefield" && it.name.equals(name, ignoreCase = true) }
+    fun battlefieldCard(name: String): Card? = Cards.battlefield(name)
 
     /** Banned cards in [deck]: its legend, main deck and sideboard cards, and battlefields (not the maybeboard). */
     fun bannedCards(deck: Deck): List<Card> =

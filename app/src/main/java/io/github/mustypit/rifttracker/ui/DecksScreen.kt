@@ -86,6 +86,21 @@ import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Domain
 import io.github.mustypit.rifttracker.game.Legends
 import kotlin.math.roundToInt
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import io.github.mustypit.rifttracker.game.Match
+import io.github.mustypit.rifttracker.game.Outcome
+import io.github.mustypit.rifttracker.stats.Stats
 
 /** The legend's art (cropped, from assets/legends), by the legend card's champion. */
 @Composable
@@ -135,15 +150,18 @@ fun DecksScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 16.dp)) {
             item { HeaderBlock { Text("Decks", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp) } }
-            items(shown, key = { it.id }) { d -> DeckRow(d, io.github.mustypit.rifttracker.stats.Stats.deckMatches(history, d.id)) { vm.push(Screen.DeckDetail(d.id)) } }
+            items(shown, key = { it.id }) { d ->
+                val ms = remember(history, d.id) { Stats.deckMatches(history, d.id) }
+                DeckRow(d, ms) { vm.push(Screen.DeckDetail(d.id)) }
+            }
             item {
                 Text(
-                    "+ New deck", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = C.Muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    "+ New deck", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = C.Muted, textAlign = TextAlign.Center,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp))
                         .border(1.5.dp, C.Line, RoundedCornerShape(16.dp)).clickable { vm.push(Screen.NewDeck) }.padding(18.dp),
                 )
                 Text(
-                    "Import", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    "Import", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Muted, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().clickable { pasting = true }.padding(16.dp),
                 )
             }
@@ -153,9 +171,9 @@ fun DecksScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun DeckRow(d: Deck, matches: List<io.github.mustypit.rifttracker.game.Match>, onClick: () -> Unit) {
+private fun DeckRow(d: Deck, matches: List<Match>, onClick: () -> Unit) {
     val art = legendArt(d)
-    val problem = DeckRules.problems(d).firstOrNull()
+    val problem = remember(d) { DeckRules.problems(d).firstOrNull() }
     Box(
         Modifier.padding(horizontal = 16.dp, vertical = 5.dp).fillMaxWidth().height(80.dp).clip(RoundedCornerShape(16.dp)).background(C.Card)
             .clickable(onClick = onClick).semantics(mergeDescendants = true) { contentDescription = "Deck ${d.name}" },
@@ -175,11 +193,11 @@ private fun DeckRow(d: Deck, matches: List<io.github.mustypit.rifttracker.game.M
             // Record and form when it's been played; an unfinished/illegal deck also shows its label.
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 if (matches.isNotEmpty()) {
-                    val rec = io.github.mustypit.rifttracker.stats.Stats.record(matches)
-                    Text(rec.line, fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color.White, style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(Color.Black, blurRadius = 8f)))
+                    val rec = Stats.record(matches)
+                    Text(rec.line, fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color.White, style = TextStyle(shadow = Shadow(Color.Black, blurRadius = 8f)))
                     if (problem == null) {
-                        Text(io.github.mustypit.rifttracker.stats.Stats.rateOrHint(rec), fontSize = 11.sp, color = Color.White.copy(alpha = 0.85f))
-                        FormDots(io.github.mustypit.rifttracker.stats.Stats.form(matches))
+                        Text(Stats.rateOrHint(rec), fontSize = 11.sp, color = Color.White.copy(alpha = 0.85f))
+                        FormDots(Stats.form(matches))
                     }
                 }
                 if (problem != null) Text(
@@ -192,7 +210,7 @@ private fun DeckRow(d: Deck, matches: List<io.github.mustypit.rifttracker.game.M
 }
 
 @Composable
-private fun FormDots(form: List<io.github.mustypit.rifttracker.game.Outcome>, modifier: Modifier = Modifier) = Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+private fun FormDots(form: List<Outcome>, modifier: Modifier = Modifier) = Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
     form.reversed().forEach { o -> Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(C.outcome(o))) }
 }
 
@@ -200,15 +218,15 @@ private fun FormDots(form: List<io.github.mustypit.rifttracker.game.Outcome>, mo
 @Composable
 private fun DeckRecord(vm: MainViewModel, deck: Deck) {
     val history by vm.history.collectAsState()
-    val matches = remember(history, deck.id) { io.github.mustypit.rifttracker.stats.Stats.deckMatches(history, deck.id) }
+    val matches = remember(history, deck.id) { Stats.deckMatches(history, deck.id) }
     if (matches.isEmpty()) return
     val legend = matches.first().myLegend
-    val detail = remember(matches) { io.github.mustypit.rifttracker.stats.Stats.legendDetail(matches, legend, latestCount = 3) }
+    val detail = remember(matches) { Stats.legendDetail(matches, legend, latestCount = 3) }
     val rec = detail.record
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.Bottom) {
             Text(rec.line, fontWeight = FontWeight.Black, fontSize = 26.sp, color = C.Ink, modifier = Modifier.semantics { contentDescription = "Deck record ${rec.line}" })
-            Text("  " + listOfNotNull(rec.winRate?.takeIf { rec.total >= io.github.mustypit.rifttracker.stats.Stats.MIN_MATCHES_FOR_RATE }?.let { io.github.mustypit.rifttracker.stats.Stats.percent(it) }, "${rec.total} ${if (rec.total == 1) "match" else "matches"}").joinToString(" · "), color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(bottom = 5.dp))
+            Text("  " + listOfNotNull(rec.winRate?.takeIf { rec.total >= Stats.MIN_MATCHES_FOR_RATE }?.let { Stats.percent(it) }, "${rec.total} ${if (rec.total == 1) "match" else "matches"}").joinToString(" · "), color = C.Muted, fontSize = 12.sp, modifier = Modifier.padding(bottom = 5.dp))
         }
         Row(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             if (rec.wins > 0) Box(Modifier.weight(rec.wins.toFloat()).fillMaxHeight().background(C.Green))
@@ -218,8 +236,8 @@ private fun DeckRecord(vm: MainViewModel, deck: Deck) {
     }
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         listOf(
-            "Going first" to io.github.mustypit.rifttracker.stats.Stats.percent(detail.goingFirst.winRate),
-            "Going second" to io.github.mustypit.rifttracker.stats.Stats.percent(detail.goingSecond.winRate),
+            "Going first" to Stats.percent(detail.goingFirst.winRate),
+            "Going second" to Stats.percent(detail.goingSecond.winRate),
         ).forEach { (label, v) ->
             Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(C.Card).padding(horizontal = 10.dp, vertical = 8.dp)) {
                 Text(label, color = C.Muted, fontSize = 11.sp)
@@ -346,14 +364,14 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                     ToolbarMenu("Sort", sort.label, DeckSort.entries, { it.label }, vm.deckSort::value::set, Modifier.weight(1f))
                 }
                 if (deck.main.size <= 1) EmptyState("Add cards", "Tap + Add cards.", Modifier.fillMaxWidth())
-                androidx.compose.animation.Crossfade(Triple(view, group, sort), animationSpec = tween(220), label = "deck view") { (v, g, so) ->
+                Crossfade(Triple(view, group, sort), animationSpec = tween(220), label = "deck view") { (v, g, so) ->
                     val sections = sections(deck, g, so)
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         when (v) {
                             DeckView.List -> sections.forEach { (name, list) ->
                                 GroupLabel(name, list)
                                 list.forEach { (c, n) ->
-                                    androidx.compose.runtime.key(c.slug) {
+                                    key(c.slug) {
                                         DeckCardRow(deck, c, n, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, c) } }, onRemove = { edit { DeckRules.remove(it, c) } }, onMove = { moving = c.slug to Board.MAIN })
                                     }
                                 }
@@ -374,7 +392,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                             Text(if (b == Board.SIDE) "$n/${DeckRules.SIDEBOARD}" else "$n", style = Caps, color = if (b == Board.SIDE && n > DeckRules.SIDEBOARD) C.Red else C.Muted)
                         }
                         list.forEach { (c, n) ->
-                            androidx.compose.runtime.key(b.name + c.slug) {
+                            key(b.name + c.slug) {
                                 DeckCardRow(deck, c, n, board = b, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, b, c) } }, onRemove = { edit { DeckRules.remove(it, b, c) } }, onMove = { moving = c.slug to b })
                             }
                         }
@@ -390,7 +408,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
         }
         Text(
             "+ Add cards", fontWeight = FontWeight.Black, fontSize = 16.sp, color = C.OnAccent,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).squishWhenPressed(remember { androidx.compose.foundation.interaction.MutableInteractionSource() })
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).squishWhenPressed(remember { MutableInteractionSource() })
                 .shadow(8.dp, RoundedCornerShape(16.dp)).clip(RoundedCornerShape(16.dp)).background(C.Accent)
                 .clickable { vm.push(Screen.DeckAddCards(id)) }.padding(horizontal = 26.dp, vertical = 14.dp),
         )
@@ -429,9 +447,7 @@ private fun MoveSheet(deck: Deck, c: Card, from: Board, onMove: (Board, Boolean)
         ) {
             Box(Modifier.align(Alignment.CenterHorizontally).size(40.dp, 4.dp).clip(RoundedCornerShape(2.dp)).background(C.Line))
             Row(Modifier.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(Modifier.size(44.dp).clip(RoundedCornerShape(8.dp))) {
-                    CardImage(c, Modifier.fillMaxWidth().aspectRatio(744f / 1039f).offset(y = (-5).dp).graphicsScale(2.1f), corner = 0.dp, showBanned = false)
-                }
+                CardThumb(c, 44.dp)
                 Column {
                     Text(c.name, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = C.Ink)
                     Text("${deck.count(from, c.slug)} in ${from.label.lowercase()}", color = C.Muted, fontSize = 13.sp)
@@ -485,11 +501,11 @@ private fun DeckHeader(deck: Deck, onBack: () -> Unit, onRename: () -> Unit, onD
             }
         }
     }
-    if (confirmDelete) androidx.compose.material3.AlertDialog(
+    if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
         title = { Text("Delete this deck?") },
-        confirmButton = { androidx.compose.material3.TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete") } },
-        dismissButton = { androidx.compose.material3.TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete") } },
+        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
     )
 }
 
@@ -590,9 +606,9 @@ private fun CardGrid(deck: Deck, list: List<Pair<Card, Int>>, vm: MainViewModel)
 /** "3×" on a card; pops when the number changes. */
 @Composable
 fun CountBadge(n: Int, modifier: Modifier = Modifier) {
-    val scale = remember { androidx.compose.animation.core.Animatable(1f) }
+    val scale = remember { Animatable(1f) }
     var last by remember { mutableStateOf(n) }
-    androidx.compose.runtime.LaunchedEffect(n) {
+    LaunchedEffect(n) {
         if (n != last) { last = n; scale.snapTo(1.45f); scale.animateTo(1f, spring(dampingRatio = 0.4f, stiffness = 600f)) }
     }
     if (n > 0) Text(
@@ -647,9 +663,7 @@ private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: 
             val p = c.power ?: 0
             if (p > 0) Row { val ds = c.domainList.ifEmpty { listOf<Domain?>(null) }; repeat(p) { i -> RuneSymbol(ds[i % ds.size], 12.dp) } }
         }
-        Box(Modifier.size(34.dp).clip(RoundedCornerShape(7.dp))) {
-            CardImage(c, Modifier.fillMaxWidth().aspectRatio(744f / 1039f).offset(y = (-4).dp).graphicsScale(2.1f), corner = 0.dp, showBanned = false)
-        }
+        CardThumb(c, 34.dp)
         Column(Modifier.weight(1f)) {
             Text(c.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val tag = when { c.slug == deck.champion && board == Board.MAIN -> "Chosen"; DeckRules.isSignature(c) -> "Signature"; !DeckRules.allowed(deck, c) && !maybe -> "Off-domain"; else -> null }
@@ -673,7 +687,6 @@ private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: 
     }
 }
 
-private fun Modifier.graphicsScale(s: Float) = this.graphicsLayer { scaleX = s; scaleY = s; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 0.12f) }
 
 /** 12 runes as one bar: + on a side takes one from the other; the divider can be dragged. Animated. */
 @Composable
@@ -719,10 +732,10 @@ private fun RuneSplit(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
 
 @Composable
 private fun PlusButton(description: String, onClick: () -> Unit) {
-    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-    Text("+", fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Ink, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+    val source = remember { MutableInteractionSource() }
+    Text("+", fontWeight = FontWeight.Black, fontSize = 20.sp, color = C.Ink, textAlign = TextAlign.Center,
         modifier = Modifier.width(44.dp).squishWhenPressed(source).clip(RoundedCornerShape(10.dp)).background(C.Track)
-            .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick).semantics { contentDescription = description }.padding(vertical = 4.dp))
+            .clickable(interactionSource = source, indication = ripple(), onClick = onClick).semantics { contentDescription = description }.padding(vertical = 4.dp))
 }
 
 /** Battlefields with their picture and what they do. */
@@ -744,7 +757,7 @@ private fun FieldSlots(deck: Deck, onPick: (Int) -> Unit) {
         }
     }
     if (deck.battlefields.size < DeckRules.BATTLEFIELDS) {
-        Text("+ Battlefield", fontWeight = FontWeight.ExtraBold, color = C.Muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        Text("+ Battlefield", fontWeight = FontWeight.ExtraBold, color = C.Muted, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp)).clickable { onPick(deck.battlefields.size) }.padding(20.dp))
     }
 }
@@ -784,7 +797,7 @@ private fun DeckStats(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
     val code = remember(deck) { runCatching { DeckCodes.fromDeck(deck) }.getOrNull() }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         listOfNotNull(("Copy deck code" to code).takeIf { code != null }, "Copy as text" to DeckRules.toText(deck)).forEach { (label, value) ->
-            Text(if (copied == label) "Copied" else label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            Text(if (copied == label) "Copied" else label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink, textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp))
                     .clickable { clipboard.setText(AnnotatedString(value!!)); copied = label }.padding(12.dp))
         }
@@ -822,7 +835,7 @@ private fun PasteOverlay(onClose: () -> Unit, onImport: (Deck) -> Unit) {
         }
     }
     Overlay("Import", onClose) {
-        androidx.compose.material3.OutlinedTextField(
+        OutlinedTextField(
             text, { text = it }, label = { Text("Deck code or list") }, minLines = 8, maxLines = 14,
             shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth(),
         )

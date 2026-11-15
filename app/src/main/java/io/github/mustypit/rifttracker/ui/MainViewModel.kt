@@ -25,11 +25,17 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.random.Random
 import kotlin.random.asKotlinRandom
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import io.github.mustypit.rifttracker.data.DeckStore
+import io.github.mustypit.rifttracker.game.Board
+import io.github.mustypit.rifttracker.game.CardQuery
+import io.github.mustypit.rifttracker.game.Deck
+import io.github.mustypit.rifttracker.game.Dice
 
 /** The few things tests swap out. */
 object AppGraph {
     var clock: () -> Long = System::currentTimeMillis
-    /** Dice and coin flips: the system's cryptographic random source (tests swap in a seeded one). */
+    /** The dice: the system's cryptographic random source (tests swap in a seeded one). */
     var random: Random = java.security.SecureRandom().asKotlinRandom()
 }
 
@@ -51,7 +57,7 @@ data class MatchSetup(val format: Format = Format.BO3, val myLegend: String = ""
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val store = MatchStore(AppDb.get(app).matches())
-    private val deckStore = io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(app).decks())
+    private val deckStore = DeckStore(AppDb.get(app).decks())
     private val now get() = AppGraph.clock()
     val settings = SettingsStore(app)
 
@@ -69,16 +75,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val _loaded = MutableStateFlow(false)
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
 
-    /** Shown after a coin flip until the first point. */
-    private val _coin = MutableStateFlow<Side?>(null)
-    val coin: StateFlow<Side?> = _coin.asStateFlow()
-
     val setup = MutableStateFlow(MatchSetup())
 
     // Card library: filters and scroll position survive opening a card and coming back.
-    val cardSearch = MutableStateFlow(io.github.mustypit.rifttracker.game.CardQuery())
+    val cardSearch = MutableStateFlow(CardQuery())
     val cardFiltersOpen = MutableStateFlow(false)
-    val cardsGrid = androidx.compose.foundation.lazy.grid.LazyGridState()
+    val cardsGrid = LazyGridState()
 
     private val saving = Mutex()
 
@@ -124,10 +126,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Dice on screen for who goes first; tapping after they settle starts the game with the winner first. */
-    private val _roll = MutableStateFlow<io.github.mustypit.rifttracker.game.Dice.Roll?>(null)
-    val roll: StateFlow<io.github.mustypit.rifttracker.game.Dice.Roll?> = _roll.asStateFlow()
+    private val _roll = MutableStateFlow<Dice.Roll?>(null)
+    val roll: StateFlow<Dice.Roll?> = _roll.asStateFlow()
 
-    fun startRoll() { if (_active.value != null) _roll.value = io.github.mustypit.rifttracker.game.Dice.roll(AppGraph.random) }
+    fun startRoll() { if (_active.value != null) _roll.value = Dice.roll(AppGraph.random) }
 
     fun finishRoll() {
         val r = _roll.value ?: return
@@ -135,12 +137,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         chooseFirst(r.winner)
     }
 
-    /** Starts the next game. [first] null means flip a coin. */
-    fun chooseFirst(first: Side?) {
+    /** Starts the next game with [first] going first (picked on the card, or the dice's winner). */
+    fun chooseFirst(first: Side) {
         val m = _active.value ?: return
-        val who = first ?: (if (AppGraph.random.nextBoolean()) Side.ME else Side.OPP).also { _coin.value = it }
-        if (first != null) _coin.value = null
-        val started = MatchRules.startGame(m, who, now)
+        val started = MatchRules.startGame(m, first, now)
         val bfs = _pendingBattlefields.value
         _active.value = MatchRules.replaceCurrent(started, started.games.last().copy(battlefields = bfs))
         _pendingBattlefields.value = emptyMap()
@@ -159,7 +159,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val g = MatchRules.current(m) ?: return
         val r = GameRules.add(g, side, kind, now)
         if (r is AddResult.Added) {
-            _coin.value = null
             _lastRemoved.value = null // undo now means "take back this point"
             _active.value = MatchRules.replaceCurrent(m, r.game)
             persist()
@@ -214,6 +213,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         saving.withLock {
             _active.value?.takeIf { it.id != 0L }?.let { store.delete(it.id) }
             _active.value = null
+            _roll.value = null
         }
     }
 
@@ -239,11 +239,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // Decks
 
-    val decks: StateFlow<List<io.github.mustypit.rifttracker.game.Deck>> = deckStore.all.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val decks: StateFlow<List<Deck>> = deckStore.all.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /** Latest edits of open decks, shown at once and saved in the background (like the match). */
-    private val _deckDrafts = MutableStateFlow<Map<Long, io.github.mustypit.rifttracker.game.Deck>>(emptyMap())
-    val deckDrafts: StateFlow<Map<Long, io.github.mustypit.rifttracker.game.Deck>> = _deckDrafts.asStateFlow()
+    private val _deckDrafts = MutableStateFlow<Map<Long, Deck>>(emptyMap())
+    val deckDrafts: StateFlow<Map<Long, Deck>> = _deckDrafts.asStateFlow()
     private val deckSaving = Mutex()
 
     /** The deck screen's View · Group · Sort, kept while the app runs. */
@@ -251,18 +251,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val deckGroup = MutableStateFlow(DeckGroup.Type)
     val deckSort = MutableStateFlow(DeckSort.Energy)
     /** Where taps go when adding cards: main deck, sideboard or maybeboard. */
-    val addBoard = MutableStateFlow(io.github.mustypit.rifttracker.game.Board.MAIN)
+    val addBoard = MutableStateFlow(Board.MAIN)
 
-    fun deck(id: Long): io.github.mustypit.rifttracker.game.Deck? = _deckDrafts.value[id] ?: decks.value.firstOrNull { it.id == id }
+    fun deck(id: Long): Deck? = _deckDrafts.value[id] ?: decks.value.firstOrNull { it.id == id }
 
     /** Creates a deck, saves it and opens it. */
-    fun createDeck(d: io.github.mustypit.rifttracker.game.Deck, replaceTop: Boolean = true) = viewModelScope.launch {
+    fun createDeck(d: Deck, replaceTop: Boolean = true) = viewModelScope.launch {
         val saved = deckSaving.withLock { deckStore.save(d.copy(id = 0, updatedAt = now)) }
         _deckDrafts.update { it + (saved.id to saved) }
         _stack.value = (if (replaceTop) _stack.value.dropLast(1) else _stack.value) + Screen.DeckDetail(saved.id)
     }
 
-    fun editDeck(id: Long, f: (io.github.mustypit.rifttracker.game.Deck) -> io.github.mustypit.rifttracker.game.Deck) {
+    fun editDeck(id: Long, f: (Deck) -> Deck) {
         val cur = deck(id) ?: return
         val next = f(cur).copy(id = id, updatedAt = now)
         if (next == cur) return

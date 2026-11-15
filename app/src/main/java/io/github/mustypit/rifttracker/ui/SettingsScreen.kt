@@ -49,6 +49,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.mustypit.rifttracker.game.Legends
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.text.style.TextAlign
 
 /** The dark veil over legend art, as drawn on the scoring screen. */
 fun Modifier.legendVeil(darkness: Float) = drawBehind {
@@ -103,10 +108,10 @@ fun SettingsScreen(vm: MainViewModel) {
         val version = remember { AppInfo.version(context) }
         Text(
             "RiftTracker $version\nFan app, not affiliated with Riot Games · cards: OpenRift",
-            color = C.Muted, fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            color = C.Muted, fontSize = 12.sp, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 28.dp),
         )
-        androidx.compose.foundation.layout.Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
     }
 }
 
@@ -182,10 +187,10 @@ private fun AccentSample(accent: Color) {
 @Composable
 private fun HueSlider(accent: Color, onPick: (Color) -> Unit) {
     val hues = remember { (0..12).map { Accents.fromHue(it * 30f) } }
-    androidx.compose.foundation.layout.BoxWithConstraints(
+    BoxWithConstraints(
         Modifier.fillMaxWidth().height(36.dp).semantics {
             contentDescription = "Accent hue"
-            progressBarRangeInfo = androidx.compose.ui.semantics.ProgressBarRangeInfo(Accents.hueOf(accent) / 360f, 0f..1f)
+            progressBarRangeInfo = ProgressBarRangeInfo(Accents.hueOf(accent) / 360f, 0f..1f)
             setProgress { v -> onPick(Accents.fromHue(v * 360f)); true }
         },
     ) {
@@ -197,7 +202,7 @@ private fun HueSlider(accent: Color, onPick: (Color) -> Unit) {
                 .pointerInput(w) { detectTapGestures { pick(it.x) } }
                 .pointerInput(w) { detectHorizontalDragGestures { change, _ -> change.consume(); pick(change.position.x) } },
         )
-        val x = with(androidx.compose.ui.platform.LocalDensity.current) { (Accents.hueOf(accent) / 360f * w).toDp() }
+        val x = with(LocalDensity.current) { (Accents.hueOf(accent) / 360f * w).toDp() }
         Box(Modifier.offset(x = x - 15.dp).align(Alignment.CenterStart).size(30.dp).clip(CircleShape).background(Color.White).padding(3.dp).clip(CircleShape).background(accent))
     }
 }

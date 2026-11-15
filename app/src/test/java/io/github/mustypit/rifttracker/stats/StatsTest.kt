@@ -87,20 +87,6 @@ class StatsTest {
     }
 
     @Test
-    fun rivalsNeedANameAndListTheirLegends() {
-        val ms = listOf(
-            m(WIN, name = "Morgan", opp = "Jinx", time = "2026-11-01T20:00"),
-            m(LOSS, name = "morgan", opp = "Garen", time = "2026-11-02T20:00"),
-            m(WIN, name = "", opp = "Zed"),
-            m(WIN, name = "Tyler", opp = "Irelia"),
-        )
-        val rivals = Stats.rivals(ms)
-        assertEquals(listOf("morgan", "Tyler"), rivals.map { it.name }) // most recent spelling
-        assertEquals(Record(1, 1), rivals[0].record)
-        assertEquals(listOf("Garen", "Jinx"), rivals[0].legends)
-    }
-
-    @Test
     fun matchesGroupIntoEveningsAndMonths() {
         val ms = listOf(
             m(WIN, time = "2026-11-06T19:00"),

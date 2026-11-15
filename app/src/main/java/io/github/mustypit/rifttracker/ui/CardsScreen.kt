@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class)
 package io.github.mustypit.rifttracker.ui
 
 import android.graphics.BitmapFactory
@@ -96,6 +96,18 @@ import io.github.mustypit.rifttracker.game.Cards
 import io.github.mustypit.rifttracker.game.Domain
 import io.github.mustypit.rifttracker.game.RulesText
 import java.text.NumberFormat
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 
 /**
  * Whole-card images from assets/cards, decoded on a background thread and kept in a small cache. The
@@ -128,6 +140,18 @@ fun CardImage(card: Card, modifier: Modifier = Modifier, corner: Dp = 7.dp, show
     Box(modifier.aspectRatio(ratio).clip(RoundedCornerShape(corner)).background(C.Track)) {
         bitmap?.let { Image(it, card.name, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
         if (showBanned && card.banned) BannedTag(Modifier.align(Alignment.TopCenter).padding(top = 4.dp))
+    }
+}
+
+/** A small square of a card's artwork (the top of the card, zoomed in), for list rows. */
+@Composable
+fun CardThumb(card: Card, size: Dp, modifier: Modifier = Modifier) {
+    Box(modifier.size(size).clip(RoundedCornerShape(size * 0.2f))) {
+        CardImage(
+            card, Modifier.fillMaxWidth().aspectRatio(744f / 1039f).offset(y = -(size * 0.12f))
+                .graphicsLayer { scaleX = 2.1f; scaleY = 2.1f; transformOrigin = TransformOrigin(0.5f, 0.12f) },
+            corner = 0.dp, showBanned = false,
+        )
     }
 }
 
@@ -216,9 +240,9 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
     val all = remember(q, Cards.all) { Cards.search(q) }
     val results = if (deck == null) all else all.filter { DeckRules.allowed(deck, it) }
     val board by vm.addBoard.collectAsState()
-    val grid = if (deckId == null) vm.cardsGrid else androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+    val grid = if (deckId == null) vm.cardsGrid else rememberLazyGridState()
     fun update(f: (CardQuery) -> CardQuery) { vm.cardSearch.value = f(vm.cardSearch.value) }
-    androidx.activity.compose.BackHandler(enabled = filtersOpen) { vm.cardFiltersOpen.value = false }
+    BackHandler(enabled = filtersOpen) { vm.cardFiltersOpen.value = false }
 
     Box(modifier.fillMaxSize()) {
         LazyVerticalGrid(
@@ -294,9 +318,9 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
                     }
                     // Take a copy back out (of the board taps go to), without leaving the library.
                     val inDeck = deck?.count(board, c.slug) ?: 0
-                    androidx.compose.animation.AnimatedVisibility(
+                    AnimatedVisibility(
                         inDeck > 0, Modifier.align(Alignment.TopStart).offset(x = (-4).dp, y = (-4).dp),
-                        enter = androidx.compose.animation.scaleIn(spring(dampingRatio = 0.5f, stiffness = 600f)), exit = androidx.compose.animation.scaleOut(tween(120)),
+                        enter = scaleIn(spring(dampingRatio = 0.5f, stiffness = 600f)), exit = scaleOut(tween(120)),
                     ) {
                         Box(
                             Modifier.size(26.dp).clip(CircleShape).background(C.Solid)
@@ -398,7 +422,7 @@ private fun <T> DropField(label: @Composable () -> Unit, description: String, it
 /** The filter sheet: stats rows (stat, comparison, value) and a multi-select keyword field. */
 @Composable
 private fun FilterSheet(q: CardQuery, count: Int, update: ((CardQuery) -> CardQuery) -> Unit, onClose: () -> Unit) {
-    androidx.compose.foundation.layout.BoxWithConstraints(
+    BoxWithConstraints(
         // Tapping the dimmed area closes the sheet (a plain tap catcher, so the sheet's own
         // controls keep their separate accessibility nodes).
         Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f)).pointerInput(Unit) { detectTapGestures { onClose() } },
@@ -406,7 +430,7 @@ private fun FilterSheet(q: CardQuery, count: Int, update: ((CardQuery) -> CardQu
         // Drag the handle (or the title row) to make the sheet taller or shorter; far down closes it.
         val maxH = maxHeight - 24.dp
         var height by remember { mutableStateOf(minOf(560.dp, maxH)) }
-        val density = androidx.compose.ui.platform.LocalDensity.current
+        val density = LocalDensity.current
         val drag = Modifier.pointerInput(maxH) {
             detectVerticalDragGestures(onDragEnd = { if (height < 220.dp) onClose() }) { change, dy ->
                 change.consume()
@@ -496,10 +520,10 @@ private fun MultiPicker(
             Text("$k  ×", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.OnSolid,
                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(C.Solid).clickable { onToggle(k) }.padding(horizontal = 8.dp, vertical = 5.dp))
         }
-        androidx.compose.foundation.text.BasicTextField(
+        BasicTextField(
             typed, { setTyped(it); open = true }, singleLine = true,
-            textStyle = androidx.compose.ui.text.TextStyle(color = C.Ink, fontSize = 15.sp),
-            cursorBrush = androidx.compose.ui.graphics.SolidColor(C.Ink),
+            textStyle = TextStyle(color = C.Ink, fontSize = 15.sp),
+            cursorBrush = SolidColor(C.Ink),
             modifier = Modifier.widthIn(min = 120.dp).padding(vertical = 5.dp, horizontal = 4.dp)
                 .onFocusChanged { if (it.isFocused) open = true }.semantics { contentDescription = "Add $what" },
             decorationBox = { inner -> Box { if (typed.isEmpty()) Text("Add $what", color = C.Muted, fontSize = 15.sp); inner() } },

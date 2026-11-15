@@ -26,6 +26,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.github.mustypit.rifttracker.game.Legends
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.isSystemInDarkTheme
+import io.github.mustypit.rifttracker.game.Battlefields
+import io.github.mustypit.rifttracker.game.Cards
 
 class MainActivity : ComponentActivity() {
     private val vm: MainViewModel by viewModels()
@@ -35,12 +39,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Legend and battlefield data from OpenRift, if the app was built with it (scripts/build_legend_assets.py).
         runCatching { assets.open("legends/legends.json").bufferedReader().use { Legends.install(it.readText()) } }
-        runCatching { assets.open("cards/cards.json").bufferedReader().use { io.github.mustypit.rifttracker.game.Cards.install(it.readText()) } }
-        runCatching { assets.open("battlefields/battlefields.json").bufferedReader().use { io.github.mustypit.rifttracker.game.Battlefields.install(it.readText()) } }
+        runCatching { assets.open("cards/cards.json").bufferedReader().use { Cards.install(it.readText()) } }
+        runCatching { assets.open("battlefields/battlefields.json").bufferedReader().use { Battlefields.install(it.readText()) } }
         setContent {
             val mode by vm.settings.theme.collectAsState()
             val dark = when (mode) {
-                ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
@@ -91,7 +95,7 @@ fun AppShell(vm: MainViewModel) {
         },
     ) { padding ->
         // Screens slide in when opened and out when going back; tab switches crossfade.
-        androidx.compose.animation.AnimatedContent(
+        AnimatedContent(
             targetState = Destination(tab, top, stack.size),
             modifier = Modifier.fillMaxSize().padding(padding),
             transitionSpec = { screenTransition(initialState.depth, targetState.depth) },

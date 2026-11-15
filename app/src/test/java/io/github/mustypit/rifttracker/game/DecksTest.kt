@@ -90,7 +90,7 @@ class DecksTest {
         val withBanned = d.copy(main = d.main + (banned.slug to 1))
         assertEquals(listOf(banned), DeckRules.bannedCards(withBanned))
         assertEquals("Banned", DeckRules.problems(withBanned).first())
-        assertTrue(!DeckRules.isLegal(withBanned))
+        assertTrue(!DeckRules.problems(withBanned).isEmpty())
         // A banned battlefield counts too (stored by name, any case).
         val field = Cards.all.first { it.banned && it.type == "battlefield" }
         val withField = d.copy(battlefields = d.battlefields.take(2) + field.name.uppercase())

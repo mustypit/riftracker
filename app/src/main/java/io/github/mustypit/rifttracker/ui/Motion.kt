@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.IntOffset
 
 /** The app's motion, in one place. Durations are short: the app is used mid-game. */
 object Motion {
@@ -63,7 +64,7 @@ fun RollingNumber(value: Int, modifier: Modifier = Modifier, content: @Composabl
 }
 
 private fun rollTransition(up: Boolean): ContentTransform {
-    val spec = tween<androidx.compose.ui.unit.IntOffset>(Motion.ROLL_MS, easing = FastOutSlowInEasing)
+    val spec = tween<IntOffset>(Motion.ROLL_MS, easing = FastOutSlowInEasing)
     val enter = slideInVertically(spec) { h -> if (up) -h else h } + fadeIn(tween(Motion.ROLL_MS / 2))
     val exit = slideOutVertically(spec) { h -> if (up) h else -h } + fadeOut(tween(Motion.ROLL_MS))
     return ContentTransform(enter, exit, sizeTransform = SizeTransform(clip = true))
@@ -71,7 +72,7 @@ private fun rollTransition(up: Boolean): ContentTransform {
 
 /** Screens: deeper slides in from the right, back slides out to the right, tab switches crossfade. */
 fun screenTransition(fromDepth: Int, toDepth: Int): ContentTransform {
-    val slide = tween<androidx.compose.ui.unit.IntOffset>(Motion.SCREEN_MS, easing = FastOutSlowInEasing)
+    val slide = tween<IntOffset>(Motion.SCREEN_MS, easing = FastOutSlowInEasing)
     return when {
         toDepth > fromDepth -> (slideInHorizontally(slide) { it } + fadeIn(tween(Motion.SCREEN_MS / 2))) togetherWith
             (slideOutHorizontally(slide) { -it / 4 } + fadeOut(tween(Motion.SCREEN_MS)))

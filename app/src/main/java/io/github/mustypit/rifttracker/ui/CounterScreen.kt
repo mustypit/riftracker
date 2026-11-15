@@ -91,6 +91,29 @@ import io.github.mustypit.rifttracker.game.PointKind
 import io.github.mustypit.rifttracker.game.Side
 import io.github.mustypit.rifttracker.game.formatDuration
 import kotlinx.coroutines.delay
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 private fun Match.nameOf(side: Side) = if (side == Side.ME) "You" else oppName.ifBlank { oppLegend.ifBlank { "Opponent" } }
 
@@ -100,7 +123,6 @@ private fun Match.nameOf(side: Side) = if (side == Side.ME) "You" else oppName.i
  */
 @Composable
 fun CounterScreen(vm: MainViewModel, match: Match) {
-    val coin by vm.coin.collectAsState()
     val roll by vm.roll.collectAsState()
     val game = match.games.lastOrNull()
     val current = MatchRules.current(match)
@@ -114,12 +136,12 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
         view.keepScreenOn = true
         val window = generateSequence(view.context) { (it as? android.content.ContextWrapper)?.baseContext }
             .filterIsInstance<android.app.Activity>().firstOrNull()?.window
-        val bars = window?.let { androidx.core.view.WindowCompat.getInsetsController(it, view) }
-        bars?.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        bars?.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        val bars = window?.let { WindowCompat.getInsetsController(it, view) }
+        bars?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        bars?.hide(WindowInsetsCompat.Type.systemBars())
         onDispose {
             view.keepScreenOn = false
-            bars?.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            bars?.show(WindowInsetsCompat.Type.systemBars())
         }
     }
 
@@ -128,7 +150,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     Box(Modifier.fillMaxSize().background(C.Black)) {
         Column(Modifier.fillMaxSize()) {
             for (side in listOf(Side.OPP, Side.ME)) {
-                if (side == Side.ME) MiddleBar(vm, match, game, coin)
+                if (side == Side.ME) MiddleBar(vm, match, game)
                 PlayerHalf(
                     match, game, side, enabled = current != null, onPoint = { vm.addPoint(side, it) },
                     modifier = Modifier.weight(1f).let { if (side == Side.OPP) it.rotate(180f) else it },
@@ -159,7 +181,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                                     .semantics(mergeDescendants = true) { contentDescription = "Your battlefield $name" + if (on) " on" else "" },
                             ) {
                                 BattlefieldThumb(name, Modifier.fillMaxWidth().height(42.dp), corner = 0)
-                                Text(name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = C.Ink, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp))
+                                Text(name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp))
                             }
                         }
                         Box(
@@ -193,8 +215,8 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
         // (ties are thrown again). A tap after they settle fades back to the board and starts the game.
         var lastRoll by remember { mutableStateOf<Dice.Roll?>(null) }
         if (roll != null) lastRoll = roll
-        androidx.compose.animation.AnimatedVisibility(
-            visible = roll != null, enter = androidx.compose.animation.fadeIn(tween(180)), exit = androidx.compose.animation.fadeOut(tween(380)),
+        AnimatedVisibility(
+            visible = roll != null, enter = fadeIn(tween(180)), exit = fadeOut(tween(380)),
         ) { lastRoll?.let { DiceOverlay(match, it, onDone = vm::finishRoll) } }
     }
 }
@@ -207,7 +229,7 @@ private const val SPARKLE_TIME = 8000f // ms of twinkling after the dice settle 
 
 @Composable
 private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
-    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
         val w = maxWidth.value
         val halfH = (maxHeight.value - 4f) / 2f
         // One throw per die per round, from the roll's own seed (the numbers were drawn before this).
@@ -219,16 +241,16 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
         }
         val starts = remember(throws) { throws.runningFold(0f) { acc, (a, b) -> acc + maxOf(a.durationMs, b.durationMs) + TIE_PAUSE }.dropLast(1) }
         val end = starts.last() + maxOf(throws.last().first.durationMs, throws.last().second.durationMs)
-        val t = remember(roll) { androidx.compose.animation.core.Animatable(0f) }
-        LaunchedEffect(roll) { t.animateTo(end + SPARKLE_TIME, tween((end + SPARKLE_TIME).toInt(), easing = androidx.compose.animation.core.LinearEasing)) }
+        val t = remember(roll) { Animatable(0f) }
+        LaunchedEffect(roll) { t.animateTo(end + SPARKLE_TIME, tween((end + SPARKLE_TIME).toInt(), easing = LinearEasing)) }
         val ms = t.value
         val settled = ms >= end
         val i = starts.indexOfLast { it <= ms }.coerceAtLeast(0)
         val local = ms - starts[i]
-        val emph = if (settled) androidx.compose.animation.core.FastOutSlowInEasing.transform(((ms - end) / WIN_FADE).coerceIn(0f, 1f)) else 0f
+        val emph = if (settled) FastOutSlowInEasing.transform(((ms - end) / WIN_FADE).coerceIn(0f, 1f)) else 0f
         Column(
             Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f))
-                .clickable(enabled = settled, indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, onClick = onDone)
+                .clickable(enabled = settled, indication = null, interactionSource = remember { MutableInteractionSource() }, onClick = onDone)
                 .semantics { contentDescription = if (settled) "Start game" else "Rolling" },
         ) {
             for (side in listOf(Side.OPP, Side.ME)) {
@@ -238,13 +260,13 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
                 Box(Modifier.weight(1f).fillMaxWidth().let { if (side == Side.OPP) it.rotate(180f) else it }) {
                     // Once rolled: the winner's half lights up in their colours, with stars.
                     if (win) {
-                        val l1 = androidx.compose.ui.graphics.lerp(c1, Color.White, 0.35f)
-                        val l2 = androidx.compose.ui.graphics.lerp(c2, Color.White, 0.35f)
+                        val l1 = lerp(c1, Color.White, 0.35f)
+                        val l2 = lerp(c2, Color.White, 0.35f)
                         Box(Modifier.matchParentSize().graphicsLayer { alpha = emph }.background(Brush.linearGradient(listOf(l1, l2))))
                         Box(Modifier.matchParentSize().graphicsLayer { alpha = emph }.background(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.6f), Color.Transparent))))
                         Sparkles(roll, ms - end, listOf(Color.White, l1, l2, Color.White), Modifier.matchParentSize().graphicsLayer { alpha = emph })
                     }
-                    androidx.compose.foundation.Canvas(
+                    Canvas(
                         Modifier.matchParentSize().semantics { contentDescription = if (settled) "${match.nameOf(side)} rolled ${roll.of(side)}" else "die" },
                     ) {
                         drawD20(track.at(local), DIE_RADIUS, c1, c2, alpha = if (settled && !win) 1f - 0.5f * emph else 1f,
@@ -276,13 +298,13 @@ private val light = V3(-0.35, -0.55, 1.0).unit()
  * A d20 in perspective from a camera above the middle of the half: lit faces nearest last, numbers
  * laid onto the faces that look up, and a shadow on the table that softens as the die rises.
  */
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Frame, radiusDp: Float, c1: Color, c2: Color, alpha: Float, scale: Float) {
+private fun DrawScope.drawD20(f: D20.Frame, radiusDp: Float, c1: Color, c2: Color, alpha: Float, scale: Float) {
     val r = (radiusDp * density * scale).toDouble()
     val camX = size.width / 2.0; val camY = size.height / 2.0
     val camZ = 900.0 * density
-    fun project(p: V3): androidx.compose.ui.geometry.Offset {
+    fun project(p: V3): Offset {
         val k = camZ / (camZ - p.z)
-        return androidx.compose.ui.geometry.Offset((camX + (p.x - camX) * k).toFloat(), (camY + (p.y - camY) * k).toFloat())
+        return Offset((camX + (p.x - camX) * k).toFloat(), (camY + (p.y - camY) * k).toFloat())
     }
     val lift = f.z * density
     val center = V3(f.x * density.toDouble(), f.y * density.toDouble(), r * D20.inradius + lift)
@@ -299,16 +321,16 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawD20(f: D20.Fram
     val edge = Color.White.copy(alpha = 0.35f * alpha)
     for ((i, n, c) in visible) {
         // The legend's two domain colours across the die (each face keeps its own tone as it turns).
-        val base = androidx.compose.ui.graphics.lerp(c1, c2, ((D20.normals[i].x + D20.normals[i].y * 0.5 + 1.5) / 3.0).toFloat().coerceIn(0f, 1f))
+        val base = lerp(c1, c2, ((D20.normals[i].x + D20.normals[i].y * 0.5 + 1.5) / 3.0).toFloat().coerceIn(0f, 1f))
         val pts = D20.faces[i].map { project(verts[it]) }
-        val path = androidx.compose.ui.graphics.Path().apply { moveTo(pts[0].x, pts[0].y); lineTo(pts[1].x, pts[1].y); lineTo(pts[2].x, pts[2].y); close() }
+        val path = Path().apply { moveTo(pts[0].x, pts[0].y); lineTo(pts[1].x, pts[1].y); lineTo(pts[2].x, pts[2].y); close() }
         val diffuse = (n dot light).coerceAtLeast(0.0)
         val half = (light + V3(0.0, 0.0, 1.0)).unit()
         val spec = Math.pow((n dot half).coerceAtLeast(0.0), 40.0)
         val shade = (0.45 + 0.55 * diffuse).toFloat()
-        val fill = androidx.compose.ui.graphics.lerp(androidx.compose.ui.graphics.lerp(Color.Black, base, shade), Color.White, (0.55 * spec).toFloat())
+        val fill = lerp(lerp(Color.Black, base, shade), Color.White, (0.55 * spec).toFloat())
         drawPath(path, fill, alpha = alpha)
-        drawPath(path, edge, style = androidx.compose.ui.graphics.drawscope.Stroke(1.2f * density, join = androidx.compose.ui.graphics.StrokeJoin.Round))
+        drawPath(path, edge, style = Stroke(1.2f * density, join = StrokeJoin.Round))
         // The number, laid on the face (only where it can be read).
         if (n.z > 0.2) {
             val up = (verts[D20.faces[i][0]] - c).unit()
@@ -344,14 +366,14 @@ private fun Sparkles(roll: Dice.Roll, ms: Float, colors: List<Color>, modifier: 
         val r = kotlin.random.Random(roll.seed)
         List(50) { Star(r.nextFloat(), r.nextFloat(), 3f + r.nextFloat() * 8f, r.nextFloat() * 6.28f, 0.02f + r.nextFloat() * 0.05f, r.nextInt(colors.size)) }
     }
-    androidx.compose.foundation.Canvas(modifier) {
+    Canvas(modifier) {
         val s = ms.coerceAtLeast(0f) / 1000f
         stars.forEach { st ->
             val yy = ((st.y - s * st.speed) % 1f + 1f) % 1f
             val twinkle = 0.35f + 0.65f * ((kotlin.math.sin(st.phase + s * 4f) + 1f) / 2f)
             val rad = st.size * density * (0.7f + 0.3f * twinkle)
             val cx = st.x * size.width; val cy = yy * size.height
-            val path = androidx.compose.ui.graphics.Path()
+            val path = Path()
             for (i in 0 until 10) {
                 val a = -Math.PI / 2 + i * Math.PI / 5
                 val rr = if (i % 2 == 0) rad else rad * 0.42f
@@ -429,8 +451,8 @@ private fun PlayerHalf(
                     shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 28f),
                     // Only the digits' own height, so the bigger number keeps clear of the panel handle.
                     lineHeight = SCORE_SIZE * 0.82f,
-                    lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
-                        androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center, androidx.compose.ui.text.style.LineHeightStyle.Trim.Both,
+                    lineHeightStyle = LineHeightStyle(
+                        LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both,
                     ),
                 ),
             )
@@ -528,11 +550,11 @@ private fun RoundStep(text: String, description: String, enabled: Boolean, onCli
 /** Round icon button tinted with the player's colour. */
 @Composable
 private fun PointButton(icon: ImageVector, description: String, color: Color, enabled: Boolean, onClick: () -> Unit) {
-    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val source = remember { MutableInteractionSource() }
     Box(
         Modifier.size(78.dp).squishWhenPressed(source).clip(CircleShape).background(color.copy(alpha = if (enabled) 0.9f else 0.35f))
             .border(1.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
-            .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), enabled = enabled, onClick = onClick)
+            .clickable(interactionSource = source, indication = ripple(), enabled = enabled, onClick = onClick)
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(38.dp)) }
@@ -568,18 +590,18 @@ private fun SideTrack(kinds: List<PointKind>, colors: Pair<Color, Color>, modifi
         }
         // The points: an icon beside the bar at each point's place, oldest at the bottom. A point
         // scored while the track is on screen pops in (icons already there when it opens don't).
-        val shown = remember { androidx.compose.runtime.mutableIntStateOf(kinds.size) }
+        val shown = remember { mutableIntStateOf(kinds.size) }
         kinds.forEachIndexed { i, kind ->
             val icon = when (kind) { PointKind.CONQUER -> RiftIcons.Conquer; PointKind.HOLD -> RiftIcons.Hold; else -> RiftIcons.Ability }
             val y = h * (1f - (i + 0.5f) / n) - 13.dp
-            androidx.compose.runtime.key(i) {
+            key(i) {
                 val isNew = i >= shown.intValue
-                val pop = remember { androidx.compose.animation.core.Animatable(if (isNew) 0f else 1f) }
-                val ring = remember { androidx.compose.animation.core.Animatable(if (isNew) 0f else 1f) }
-                androidx.compose.runtime.LaunchedEffect(Unit) {
+                val pop = remember { Animatable(if (isNew) 0f else 1f) }
+                val ring = remember { Animatable(if (isNew) 0f else 1f) }
+                LaunchedEffect(Unit) {
                     if (pop.value < 1f) {
                         launch { ring.animateTo(1f, tween(POP_RING_MS)) }
-                        pop.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.42f, stiffness = 520f))
+                        pop.animateTo(1f, spring(dampingRatio = 0.42f, stiffness = 520f))
                     }
                 }
                 Box(Modifier.offset(y = y).align(Alignment.TopStart).padding(start = 2.dp).size(26.dp), contentAlignment = Alignment.Center) {
@@ -603,12 +625,12 @@ private fun SideTrack(kinds: List<PointKind>, colors: Pair<Color, Color>, modifi
                 }
             }
         }
-        androidx.compose.runtime.SideEffect { shown.intValue = kinds.size }
+        SideEffect { shown.intValue = kinds.size }
     }
 }
 
 @Composable
-private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?) {
+private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?) {
     var menu by remember { mutableStateOf(false) }
     var confirmAbandon by remember { mutableStateOf(false) }
     // Ticks once a second while a game runs.
@@ -629,7 +651,6 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?, coin: Side?)
             val correction = correctionSide
             val label = when {
                 correctionSide != null -> "−1 ${match.nameOf(correctionSide).uppercase()} · TAP TO UNDO"
-                coin != null -> "COIN: ${if (coin == Side.ME) "YOU GO" else match.nameOf(Side.OPP).uppercase() + " GOES"} FIRST"
                 match.format == Format.BO3 -> "GAME ${match.games.size.coerceAtLeast(1)} · ${MatchRules.scoreLine(match)}"
                 else -> "FIRST TO ${GameRules.VICTORY_SCORE}"
             }
@@ -677,16 +698,16 @@ private fun Overlay(content: @Composable () -> Unit) {
 
 @Composable
 fun BigButton(text: String, color: Color, ink: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val source = remember { MutableInteractionSource() }
     Box(
         modifier.fillMaxWidth().height(52.dp).squishWhenPressed(source, 0.95f).clip(RoundedCornerShape(16.dp)).background(color)
-            .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick),
+            .clickable(interactionSource = source, indication = ripple(), onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Text(text, color = ink, fontWeight = FontWeight.Black, fontSize = 15.sp, letterSpacing = 0.6.sp, textAlign = TextAlign.Center) }
 }
 
 @Composable
-private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, onRoll: () -> Unit, battlefieldSlots: @Composable () -> Unit) {
+private fun FirstChooser(match: Match, onChoose: (Side) -> Unit, onRoll: () -> Unit, battlefieldSlots: @Composable () -> Unit) {
     val suggested = MatchRules.suggestedFirst(match)
     Overlay {
         Text(if (match.games.isEmpty()) "WHO GOES FIRST?" else "GAME ${match.games.size + 1} · WHO GOES FIRST?", style = Caps.copy(fontSize = 14.sp), color = C.Ink)
@@ -701,7 +722,7 @@ private fun FirstChooser(match: Match, onChoose: (Side?) -> Unit, onRoll: () -> 
 }
 
 @Composable
-private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () -> Unit, onNext: () -> Unit, onNextGame: (Side?) -> Unit, battlefieldSlots: @Composable () -> Unit) {
+private fun GameOverCard(match: Match, game: Game, decided: Boolean, onUndo: () -> Unit, onNext: () -> Unit, onNextGame: (Side) -> Unit, battlefieldSlots: @Composable () -> Unit) {
     val n = match.games.size
     val title = when (game.outcome) {
         Outcome.WIN -> "YOU WIN" + if (match.format == Format.BO3) " GAME $n" else ""

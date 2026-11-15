@@ -257,10 +257,7 @@ object DeckCodes {
     private fun base(code: String) = code.trim().replace(Regex("[a-z*]$"), "")
 
     /** The card a code names: its main printing, another printing (reprint/alt art), or null. */
-    fun cardFor(code: String): Card? {
-        val b = base(code)
-        return Cards.all.firstOrNull { it.code == b } ?: Cards.all.firstOrNull { b in it.codes }
-    }
+    fun cardFor(code: String): Card? = Cards.byCode(base(code))
 
     fun runeCard(d: Domain): Card? = Cards.all.firstOrNull { it.type == "rune" && it.domainList == listOf(d) && it.code?.contains('-') == true }
 

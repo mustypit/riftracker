@@ -24,7 +24,6 @@ data class Record(val wins: Int = 0, val losses: Int = 0, val draws: Int = 0) {
 
 data class LegendSummary(val legend: String, val record: Record, val lastPlayed: Long)
 
-data class RivalSummary(val name: String, val record: Record, val legends: List<String>, val lastPlayed: Long)
 
 data class LegendDetail(
     val legend: String,
@@ -80,16 +79,6 @@ object Stats {
     fun byOppLegend(matches: List<Match>): List<LegendSummary> =
         groupByName(matches, { it.oppLegend }) { n, ms -> LegendSummary(n, record(ms), ms.maxOf { it.startedAt }) }
             .sortedWith(compareByDescending<LegendSummary> { it.record.total }.thenByDescending { it.lastPlayed })
-
-    /** People you've played, by name. Matches without a name don't count. */
-    fun rivals(matches: List<Match>): List<RivalSummary> =
-        groupByName(matches, { it.oppName }) { n, ms ->
-            RivalSummary(
-                n, record(ms),
-                ms.sortedByDescending { it.startedAt }.map { it.oppLegend.trim() }.distinctBy(::key),
-                ms.maxOf { it.startedAt },
-            )
-        }.sortedWith(compareByDescending<RivalSummary> { it.record.total }.thenByDescending { it.lastPlayed })
 
     /** Longest streak of match wins, in the order they were played. */
     fun bestRun(matches: List<Match>): Int {

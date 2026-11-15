@@ -96,7 +96,6 @@ object C {
     val Green = Color(0xFF3FAE63)
     val GreenInk = Color(0xFF06210F)
     val Red = Color(0xFFE2483A)
-    val RedInk = Color(0xFF2A0805)
     /** The accent the owner picked (gold by default), and the text colour on it. */
     private var accentColor: Color = Accents.DEFAULT
     val Accent get() = accentColor
@@ -126,7 +125,6 @@ object C {
     }
 
     fun side(s: Side) = if (s == Side.ME) Green else Red
-    fun sideInk(s: Side) = if (s == Side.ME) GreenInk else RedInk
     fun outcome(o: Outcome) = when (o) { Outcome.WIN -> Green; Outcome.LOSS -> Red; Outcome.DRAW -> DrawGrey }
 }
 
