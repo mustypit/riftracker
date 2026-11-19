@@ -1,5 +1,13 @@
 package io.github.mustypit.rifttracker.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.animation.core.tween
@@ -115,29 +123,6 @@ private fun DomainIcons(domains: List<Domain>, size: Dp = 16.dp) = Row(horizonta
 }
 
 /** Main n/40 · Runes n/12 · Fields n/3, each red until right. */
-@Composable
-fun DeckCounts(deck: Deck, modifier: Modifier = Modifier, showSide: Boolean = deck.side.isNotEmpty()) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        listOfNotNull(
-            Triple("Main", deck.mainSize, DeckRules.MAIN_SIZE),
-            Triple("Side", deck.sideSize, DeckRules.SIDEBOARD).takeIf { showSide },
-            Triple("Runes", deck.runeCount, DeckRules.RUNES),
-            Triple("Fields", deck.battlefields.distinctBy { it.lowercase() }.size, DeckRules.BATTLEFIELDS),
-        ).forEach { (label, n, full) ->
-            // The sideboard may hold fewer than 10; the rest must be exact.
-            val ok = if (label == "Side") n <= full else n == full
-            Row(
-                Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(if (ok) C.Track else C.Red.copy(alpha = 0.18f)).padding(vertical = 6.dp)
-                    .semantics(mergeDescendants = true) { contentDescription = "$label $n of $full" },
-                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.Bottom,
-            ) {
-                RollingNumber(n) { Text("$it", fontWeight = FontWeight.Black, fontSize = 14.sp, color = if (ok) C.Ink else C.Red) }
-                Text("/$full $label", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (ok) C.Muted else C.Red, maxLines = 1)
-            }
-        }
-    }
-}
-
 // The list of decks
 
 @Composable
@@ -214,11 +199,9 @@ private fun FormDots(form: List<Outcome>, modifier: Modifier = Modifier) = Row(m
     form.reversed().forEach { o -> Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(C.outcome(o))) }
 }
 
-/** The deck's results: record, going first/second, by opponent legend, latest matches. */
+/** The deck's results (Stats tab): record, going first/second, by opponent legend. */
 @Composable
-private fun DeckRecord(vm: MainViewModel, deck: Deck) {
-    val history by vm.history.collectAsState()
-    val matches = remember(history, deck.id) { Stats.deckMatches(history, deck.id) }
+private fun DeckRecord(matches: List<Match>) {
     if (matches.isEmpty()) return
     val legend = matches.first().myLegend
     val detail = remember(matches) { Stats.legendDetail(matches, legend, latestCount = 3) }
@@ -254,10 +237,6 @@ private fun DeckRecord(vm: MainViewModel, deck: Deck) {
                 Text(a.record.line, fontWeight = FontWeight.Black, color = C.Ink)
             }
         }
-    }
-    Text("LATEST", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 4.dp))
-    Column(Modifier.fullBleed(16.dp)) {
-        detail.latest.forEach { m -> MatchRow(m, onClick = { vm.push(Screen.MatchDetail(m.id)) }, showMyLegend = false) }
     }
 }
 
@@ -329,14 +308,16 @@ fun NewDeckScreen(vm: MainViewModel) {
 
 // A deck
 
-/** How the main deck is shown (Moxfield-style View · Group · Sort). */
-enum class DeckView(val label: String) { List("List"), Grid("Grid"), Stacks("Stacks"), Split("Stacks (split)") }
+/** How the main deck is shown: rows or card pictures (Piltover Archive-style buttons). */
+enum class DeckView { List, Grid }
 enum class DeckGroup(val label: String) { Type("Type"), Cost("Cost"), None("None") }
 enum class DeckSort(val label: String) { Energy("Energy"), Name("Name") }
+private enum class DeckTab(val label: String) { Deck("Deck"), Stats("Stats"), Matches("Matches") }
 
 /**
- * A deck, one scrolling page (owner's layout): counts, runes, the main deck in a chosen view,
- * battlefields with their text, then stats. "+ Add cards" floats at the bottom.
+ * A deck (owner-approved Piltover Archive-style layout): header with domain and legality chips,
+ * tabs Deck · Stats · Matches. The Deck tab: List / Grid (+ Stacked in Grid) and a group-and-sort
+ * menu, then Legend · Main deck · Sideboard · Battlefields · Runes · Maybe · Stats. A round + adds cards.
  */
 @Composable
 fun DeckScreen(vm: MainViewModel, id: Long) {
@@ -346,72 +327,97 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
     val view by vm.deckView.collectAsState()
     val group by vm.deckGroup.collectAsState()
     val sort by vm.deckSort.collectAsState()
+    val stacked by vm.deckStacked.collectAsState()
+    val history by vm.history.collectAsState()
+    val matches = remember(history, id) { Stats.deckMatches(history, id) }
+    var tab by rememberSaveable { mutableStateOf(DeckTab.Deck) }
     var renaming by remember { mutableStateOf(false) }
     var pickingField by remember { mutableStateOf<Int?>(null) }
     var moving by remember { mutableStateOf<Pair<String, Board>?>(null) }
+    // The list row that's open for editing (board + section + slug), if any.
+    var openRow by remember { mutableStateOf<String?>(null) }
     fun edit(f: (Deck) -> Deck) = vm.editDeck(id, f)
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp)) {
             DeckHeader(deck, onBack = { vm.back() }, onRename = { renaming = true }, onDuplicate = { vm.duplicateDeck(id) }, onDelete = { vm.deleteDeck(id) })
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).animateContentSize(spring(stiffness = 500f)), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                DeckRecord(vm, deck)
-                DeckCounts(deck)
-                // Toolbar: View · Group · Sort, each a dropdown.
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ToolbarMenu("View", view.label, DeckView.entries, { it.label }, vm.deckView::value::set, Modifier.weight(1.25f))
-                    ToolbarMenu("Group", group.label, DeckGroup.entries, { it.label }, vm.deckGroup::value::set, Modifier.weight(1f))
-                    ToolbarMenu("Sort", sort.label, DeckSort.entries, { it.label }, vm.deckSort::value::set, Modifier.weight(1f))
-                }
-                if (deck.main.size <= 1) EmptyState("Add cards", "Tap + Add cards.", Modifier.fillMaxWidth())
-                Crossfade(Triple(view, group, sort), animationSpec = tween(220), label = "deck view") { (v, g, so) ->
-                    val sections = sections(deck, g, so)
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        when (v) {
-                            DeckView.List -> sections.forEach { (name, list) ->
-                                GroupLabel(name, list)
-                                list.forEach { (c, n) ->
-                                    key(c.slug) {
-                                        DeckCardRow(deck, c, n, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, c) } }, onRemove = { edit { DeckRules.remove(it, c) } }, onMove = { moving = c.slug to Board.MAIN })
-                                    }
+            DeckTabs(tab, total = 1 + deck.mainSize + deck.runeCount + deck.battlefields.size + deck.sideSize, matchCount = matches.size) { tab = it }
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).animateContentSize(spring(stiffness = 500f)), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                when (tab) {
+                    DeckTab.Deck -> {
+                        DeckToolbar(view, stacked, group, sort, vm.deckView::value::set, vm.deckStacked::value::set, vm.deckGroup::value::set, vm.deckSort::value::set)
+                        if (deck.main.size <= 1) EmptyState("Add cards", "Tap +.", Modifier.fillMaxWidth())
+                        val open = { c: Card -> vm.push(Screen.CardDetail(c.slug)) }
+                        @Composable fun cards(list: List<Pair<Card, Int>>, board: Board, section: String) {
+                            val chosen = section == CHAMPION
+                            if (view == DeckView.Grid) CardGrid(list, stacked, chosen, open)
+                            else list.forEach { (c, n) ->
+                                val k = "${board.name}/$section/${c.slug}"
+                                key(k) {
+                                    CardRow(
+                                        deck, c, n, board, chosen, expanded = openRow == k, onToggle = { openRow = if (openRow == k) null else k },
+                                        onOpen = { open(c) }, onAdd = { edit { DeckRules.add(it, board, c) } }, onRemove = { edit { DeckRules.remove(it, board, c) } },
+                                        onMove = { moving = c.slug to board },
+                                    )
                                 }
                             }
-                            DeckView.Grid -> sections.forEach { (name, list) -> GroupLabel(name, list); CardGrid(deck, list, vm) }
-                            DeckView.Stacks -> StackColumns(sections, vm, everyCopy = false)
-                            DeckView.Split -> StackColumns(sections, vm, everyCopy = true)
                         }
-                    }
-                }
-                // Sideboard and maybeboard: lists under the main deck (owner's pick: one page).
-                listOf(Board.SIDE, Board.MAYBE).forEach { b ->
-                    val list = DeckRules.entries(deck, b)
-                    if (list.isNotEmpty()) {
-                        Row(Modifier.padding(top = 8.dp)) {
-                            Text(if (b == Board.SIDE) "SIDEBOARD" else "MAYBE", style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
-                            val n = list.sumOf { it.second }
-                            Text(if (b == Board.SIDE) "$n/${DeckRules.SIDEBOARD}" else "$n", style = Caps, color = if (b == Board.SIDE && n > DeckRules.SIDEBOARD) C.Red else C.Muted)
+                        DeckRules.legendOf(deck)?.let { legend ->
+                            SectionHead("LEGEND")
+                            if (view == DeckView.Grid) CardGrid(listOf(legend to 1), stacked = true, chosen = false, onOpen = open)
+                            else LegendRow(legend) { open(legend) }
                         }
-                        list.forEach { (c, n) ->
-                            key(b.name + c.slug) {
-                                DeckCardRow(deck, c, n, board = b, onOpen = { vm.push(Screen.CardDetail(c.slug)) }, onAdd = { edit { DeckRules.add(it, b, c) } }, onRemove = { edit { DeckRules.remove(it, b, c) } }, onMove = { moving = c.slug to b })
+                        SectionHead("MAIN DECK", deck.mainSize, DeckRules.MAIN_SIZE, description = "Main ${deck.mainSize} of ${DeckRules.MAIN_SIZE}")
+                        Crossfade(Triple(view, stacked, group to sort), animationSpec = tween(220), label = "deck view") { (_, _, gs) ->
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                sections(deck, gs.first, gs.second).forEach { (name, list) ->
+                                    SubHead(name, list.sumOf { it.second })
+                                    cards(list, Board.MAIN, name)
+                                }
                             }
                         }
+                        val side = DeckRules.entries(deck, Board.SIDE)
+                        if (side.isNotEmpty()) {
+                            SectionHead("SIDEBOARD", deck.sideSize, DeckRules.SIDEBOARD, exact = false, description = "Side ${deck.sideSize} of ${DeckRules.SIDEBOARD}")
+                            cards(side, Board.SIDE, "side")
+                        }
+                        val fields = deck.battlefields.distinctBy { it.lowercase() }.size
+                        SectionHead("BATTLEFIELDS", fields, DeckRules.BATTLEFIELDS, description = "Fields $fields of ${DeckRules.BATTLEFIELDS}")
+                        FieldSlots(deck) { pickingField = it }
+                        SectionHead("RUNES", deck.runeCount, DeckRules.RUNES, description = "Runes ${deck.runeCount} of ${DeckRules.RUNES}")
+                        RuneSplit(deck, ::edit)
+                        val maybe = DeckRules.entries(deck, Board.MAYBE)
+                        if (maybe.isNotEmpty()) {
+                            SectionHead("MAYBE", deck.maybeSize)
+                            maybe.forEach { (c, n) ->
+                                val k = "MAYBE/${c.slug}"
+                                key(k) {
+                                    CardRow(deck, c, n, Board.MAYBE, chosen = false, expanded = openRow == k, onToggle = { openRow = if (openRow == k) null else k },
+                                        onOpen = { open(c) }, onAdd = { edit { DeckRules.add(it, Board.MAYBE, c) } }, onRemove = { edit { DeckRules.remove(it, Board.MAYBE, c) } },
+                                        onMove = { moving = c.slug to Board.MAYBE })
+                                }
+                            }
+                        }
+                        SectionHead("STATS")
+                        DeckStats(deck, ::edit)
+                    }
+                    DeckTab.Stats -> if (matches.isEmpty()) EmptyState("No matches yet", "Pick this deck when you start a match.", Modifier.fillMaxWidth()) else DeckRecord(matches)
+                    DeckTab.Matches -> if (matches.isEmpty()) EmptyState("No matches yet", "Pick this deck when you start a match.", Modifier.fillMaxWidth()) else {
+                        Column(Modifier.fullBleed(16.dp)) {
+                            matches.forEach { m -> MatchRow(m, onClick = { vm.push(Screen.MatchDetail(m.id)) }, showMyLegend = false) }
+                        }
                     }
                 }
-                Text("RUNES", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 8.dp))
-                RuneSplit(deck, ::edit)
-                Text("BATTLEFIELDS", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 8.dp))
-                FieldSlots(deck) { pickingField = it }
-                Text("STATS", style = Caps, color = C.Muted, modifier = Modifier.padding(top = 8.dp))
-                DeckStats(deck, ::edit)
             }
         }
-        Text(
-            "+ Add cards", fontWeight = FontWeight.Black, fontSize = 16.sp, color = C.OnAccent,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).squishWhenPressed(remember { MutableInteractionSource() })
-                .shadow(8.dp, RoundedCornerShape(16.dp)).clip(RoundedCornerShape(16.dp)).background(C.Accent)
-                .clickable { vm.push(Screen.DeckAddCards(id)) }.padding(horizontal = 26.dp, vertical = 14.dp),
-        )
+        // Add cards: a round button in the corner.
+        val source = remember { MutableInteractionSource() }
+        Box(
+            Modifier.align(Alignment.BottomEnd).padding(20.dp).size(58.dp).squishWhenPressed(source).shadow(8.dp, CircleShape).clip(CircleShape).background(C.Accent)
+                .clickable(interactionSource = source, indication = ripple()) { vm.push(Screen.DeckAddCards(id)) }
+                .semantics { contentDescription = "Add cards" },
+            contentAlignment = Alignment.Center,
+        ) { Icon(Icons.Default.Add, null, tint = C.OnAccent, modifier = Modifier.size(30.dp)) }
         pickingField?.let { i ->
             BattlefieldPicker(
                 "Battlefield ${i + 1}", deck.battlefields, deck.battlefields.getOrNull(i),
@@ -435,6 +441,244 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
         }
     }
 }
+
+/** Deck · Stats · Matches, with counts; the open tab is underlined in the accent. */
+@Composable
+private fun DeckTabs(tab: DeckTab, total: Int, matchCount: Int, onTab: (DeckTab) -> Unit) {
+    Column {
+        Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+            DeckTab.entries.forEach { t ->
+                val on = t == tab
+                Column(Modifier.clickable { onTab(t) }.semantics(mergeDescendants = true) { contentDescription = "${t.label} tab" + if (on) ", on" else "" }) {
+                    Row(Modifier.padding(top = 12.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(t.label, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = if (on) C.Ink else C.Muted)
+                        val n = when (t) { DeckTab.Deck -> total; DeckTab.Matches -> matchCount; else -> 0 }
+                        if (n > 0) Text(
+                            "$n", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = C.Ink,
+                            modifier = Modifier.padding(start = 6.dp).clip(RoundedCornerShape(6.dp)).background(C.Track).padding(horizontal = 6.dp, vertical = 1.dp),
+                        )
+                    }
+                    Box(Modifier.height(2.5.dp).width(if (on) 36.dp else 0.dp).background(C.Accent))
+                }
+            }
+        }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(C.Line))
+    }
+}
+
+/** List / Grid (one frame), Stacked (Grid only), and the group-and-sort menu. */
+@Composable
+private fun DeckToolbar(
+    view: DeckView, stacked: Boolean, group: DeckGroup, sort: DeckSort,
+    onView: (DeckView) -> Unit, onStacked: (Boolean) -> Unit, onGroup: (DeckGroup) -> Unit, onSort: (DeckSort) -> Unit,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.clip(RoundedCornerShape(12.dp)).background(C.Card).border(1.dp, C.Line, RoundedCornerShape(12.dp)).padding(3.dp)) {
+            ViewButton(RiftIcons.ViewList, "List view", view == DeckView.List) { onView(DeckView.List) }
+            ViewButton(RiftIcons.ViewGrid, "Grid view", view == DeckView.Grid) { onView(DeckView.Grid) }
+        }
+        AnimatedVisibility(view == DeckView.Grid, enter = fadeIn() + scaleIn(initialScale = 0.8f), exit = fadeOut() + scaleOut(targetScale = 0.8f)) {
+            Box(Modifier.clip(RoundedCornerShape(12.dp)).background(C.Card).border(1.dp, C.Line, RoundedCornerShape(12.dp)).padding(3.dp)) {
+                ViewButton(RiftIcons.ViewStacked, "Stacked", stacked) { onStacked(!stacked) }
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        GroupSortMenu(group, sort, onGroup, onSort)
+    }
+}
+
+@Composable
+private fun ViewButton(icon: ImageVector, label: String, on: Boolean, onClick: () -> Unit) {
+    val bg by animateColorAsState(if (on) C.Track else Color.Transparent, tween(180), label = "view button")
+    Box(
+        Modifier.size(width = 42.dp, height = 36.dp).clip(RoundedCornerShape(9.dp)).background(bg).clickable(onClick = onClick)
+            .semantics { contentDescription = label + if (on) ", on" else "" },
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, null, tint = if (on) C.Ink else C.Muted, modifier = Modifier.size(20.dp)) }
+}
+
+/** "⇅ Type +1 ▾": group (Type · Cost · None) and sort (Energy · Name) in one menu. */
+@Composable
+private fun GroupSortMenu(group: DeckGroup, sort: DeckSort, onGroup: (DeckGroup) -> Unit, onSort: (DeckSort) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        Row(
+            Modifier.clip(RoundedCornerShape(12.dp)).background(C.Card).border(1.dp, if (open) C.Ink else C.Line, RoundedCornerShape(12.dp))
+                .clickable { open = true }.semantics(mergeDescendants = true) { contentDescription = "Group and sort" }
+                .padding(horizontal = 11.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("⇅ ", color = C.Muted, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(if (group == DeckGroup.None) sort.label else group.label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink)
+            if (group != DeckGroup.None) Text(
+                "+1", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = C.Muted,
+                modifier = Modifier.padding(start = 6.dp).clip(RoundedCornerShape(6.dp)).background(C.Track).padding(horizontal = 5.dp, vertical = 1.dp),
+            )
+            Text("  ▾", color = C.Muted, fontSize = 12.sp)
+        }
+        DropdownMenu(open, { open = false }) {
+            Text("GROUP", style = Caps.copy(fontSize = 10.sp), color = C.Muted, modifier = Modifier.padding(start = 16.dp, top = 6.dp, bottom = 2.dp))
+            DeckGroup.entries.forEach { g ->
+                DropdownMenuItem(text = { Text(g.label + if (g == group) "  ✓" else "", fontWeight = if (g == group) FontWeight.ExtraBold else FontWeight.Normal) }, onClick = { open = false; onGroup(g) })
+            }
+            Text("SORT", style = Caps.copy(fontSize = 10.sp), color = C.Muted, modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 2.dp))
+            DeckSort.entries.forEach { s ->
+                DropdownMenuItem(text = { Text(s.label + if (s == sort) "  ✓" else "", fontWeight = if (s == sort) FontWeight.ExtraBold else FontWeight.Normal) }, onClick = { open = false; onSort(s) })
+            }
+        }
+    }
+}
+
+/** "MAIN DECK 40/40": the count green when complete (or within the limit), red when not. */
+@Composable
+private fun SectionHead(title: String, n: Int? = null, full: Int? = null, exact: Boolean = true, description: String? = null) {
+    Row(
+        Modifier.padding(top = 12.dp).then(if (description != null) Modifier.semantics(mergeDescendants = true) { contentDescription = description } else Modifier),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, fontWeight = FontWeight.Black, fontSize = 15.sp, letterSpacing = 0.8.sp, color = C.Ink)
+        if (n != null) {
+            val ok = full == null || (if (exact) n == full else n <= full)
+            val color = when { full == null -> C.Muted; !ok -> C.Red; exact -> C.Green; else -> C.Muted }
+            RollingNumber(n, Modifier.padding(start = 8.dp)) { Text("$it", fontWeight = FontWeight.Black, fontSize = 15.sp, color = color) }
+            if (full != null) Text("/$full", fontWeight = FontWeight.Black, fontSize = 15.sp, color = color)
+        }
+    }
+}
+
+@Composable
+private fun SubHead(name: String, n: Int) =
+    Text("${name.uppercase()} · $n", style = Caps.copy(fontSize = 10.sp), color = C.Muted, modifier = Modifier.padding(top = 4.dp))
+
+private const val CHAMPION = "Champion"
+private val typeOrder = listOf(CHAMPION, "Units", "Spells", "Gear", "Other")
+
+/**
+ * The main deck cut into sections by [group], each sorted by [sort]. The chosen champion is one copy
+ * in its own section first; its other copies are ordinary cards in the deck.
+ */
+private fun sections(deck: Deck, group: DeckGroup, sort: DeckSort): List<Pair<String, List<Pair<Card, Int>>>> {
+    val order = when (sort) {
+        DeckSort.Energy -> compareBy<Pair<Card, Int>>({ it.first.energy ?: 99 }, { it.first.name })
+        DeckSort.Name -> compareBy { it.first.name }
+    }
+    val champion = deck.champion?.let(Cards::bySlug)?.takeIf { deck.count(it.slug) > 0 }
+    val entries = DeckRules.entries(deck).mapNotNull { (c, n) -> if (c == champion) (if (n > 1) c to n - 1 else null) else c to n }.sortedWith(order)
+    val rest = when (group) {
+        DeckGroup.None -> listOf("Main deck" to entries)
+        DeckGroup.Cost -> entries.groupBy { it.first.energy?.coerceAtMost(7) ?: -1 }.toSortedMap()
+            .map { (k, v) -> (if (k < 0) "No cost" else if (k == 7) "7+ energy" else "$k energy") to v }
+        DeckGroup.Type -> entries.groupBy {
+            when (it.first.type) { "unit" -> "Units"; "spell" -> "Spells"; "gear" -> "Gear"; else -> "Other" }
+        }.toList().sortedBy { typeOrder.indexOf(it.first) }
+    }
+    return (listOfNotNull(champion?.let { CHAMPION to listOf(it to 1) }) + rest).filter { it.second.isNotEmpty() }
+}
+
+/** Card pictures, three across. Every copy is its own card unless [stacked] (then one with its count). */
+@Composable
+private fun CardGrid(list: List<Pair<Card, Int>>, stacked: Boolean, chosen: Boolean, onOpen: (Card) -> Unit) {
+    val tiles = if (stacked) list else list.flatMap { (c, n) -> List(n) { c to 1 } }
+    tiles.chunked(3).forEach { rowCards ->
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            rowCards.forEach { (c, n) ->
+                Box(Modifier.weight(1f)) {
+                    CardImage(
+                        c, Modifier.fillMaxWidth()
+                            .then(if (chosen) Modifier.border(2.5.dp, C.Accent, RoundedCornerShape(8.dp)).padding(3.dp) else Modifier)
+                            .shadow(2.dp, RoundedCornerShape(7.dp)).clickable { onOpen(c) }.semantics { contentDescription = "Deck card ${c.name}" },
+                    )
+                    if (stacked) CopyBadge(n, Modifier.align(Alignment.BottomEnd).padding(5.dp), large = true)
+                }
+            }
+            repeat(3 - rowCards.size) { Spacer(Modifier.weight(1f)) }
+        }
+    }
+}
+
+@Composable
+private fun LegendRow(legend: Card, onOpen: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.Card).border(1.dp, C.Line, RoundedCornerShape(12.dp))
+            .clickable(onClick = onOpen).padding(start = 36.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        CardThumb(legend, 32.dp)
+        Text(DeckRules.championTag(legend)?.let { "$it, ${legend.name}" } ?: legend.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+/**
+ * A card row: ×count (nothing for one copy), artwork, name, tag, cost. Tapping it opens −/+, Move
+ * and the card page underneath; the row stays clean otherwise.
+ */
+@Composable
+private fun CardRow(
+    deck: Deck, c: Card, n: Int, board: Board, chosen: Boolean, expanded: Boolean,
+    onToggle: () -> Unit, onOpen: () -> Unit, onAdd: () -> Unit, onRemove: () -> Unit, onMove: () -> Unit,
+) {
+    val maybe = board == Board.MAYBE
+    val where = if (board == Board.MAIN) "" else " ${board.label.lowercase()}"
+    val shape = RoundedCornerShape(12.dp)
+    Column(
+        Modifier.fillMaxWidth().clip(shape)
+            .then(if (maybe) Modifier else Modifier.background(if (expanded) C.Track else C.Card))
+            .border(if (chosen) 1.5.dp else 1.dp, if (chosen) C.Accent else C.Line, shape)
+            .graphicsLayer { alpha = if (maybe) 0.7f else 1f },
+    ) {
+        Row(
+            Modifier.fillMaxWidth().clickable(onClick = onToggle).semantics(mergeDescendants = true) { contentDescription = "${c.name}$where $n" }
+                .padding(start = 8.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(9.dp),
+        ) {
+            Box(Modifier.width(22.dp)) {
+                if (n > 1) RollingNumber(n) { Text("×$it", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.Muted) }
+            }
+            CardThumb(c, 32.dp)
+            Text(c.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            val tag = when {
+                c.banned -> null
+                chosen -> "CHOSEN"
+                DeckRules.isSignature(c) -> "SIGNATURE"
+                !maybe && !DeckRules.allowed(deck, c) -> "OFF-DOMAIN"
+                else -> null
+            }
+            if (c.banned) BannedTag()
+            else if (tag != null) Text(
+                tag, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 0.3.sp,
+                color = when (tag) { "CHOSEN" -> C.OnAccent; "OFF-DOMAIN" -> C.Red; else -> C.Ink },
+                modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(when (tag) { "CHOSEN" -> C.Accent; "OFF-DOMAIN" -> C.Red.copy(alpha = 0.18f); else -> C.Line })
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+            )
+            val p = c.power ?: 0
+            if (p > 0) Row { val ds = c.domainList.ifEmpty { listOf<Domain?>(null) }; repeat(p) { i -> RuneSymbol(ds[i % ds.size], 13.dp) } }
+            c.energy?.let { EnergySymbol(it, 22.dp) }
+        }
+        AnimatedVisibility(expanded) {
+            Row(
+                Modifier.padding(start = 39.dp, end = 10.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                val canAdd = DeckRules.canAdd(deck, board, c)
+                Row(Modifier.clip(RoundedCornerShape(10.dp)).background(C.Card), verticalAlignment = Alignment.CenterVertically) {
+                    Text("−", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 16.sp, modifier = Modifier.clickable(onClick = onRemove).semantics { contentDescription = "Remove ${c.name}$where" }.padding(horizontal = 12.dp, vertical = 5.dp))
+                    RollingNumber(n) { Text("$it", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 15.sp) }
+                    Text("+", color = if (canAdd) C.Ink else C.Line, fontWeight = FontWeight.Black, fontSize = 16.sp,
+                        modifier = Modifier.clickable(enabled = canAdd, onClick = onAdd).semantics { contentDescription = "Add ${c.name}$where" }.padding(horizontal = 12.dp, vertical = 5.dp))
+                }
+                RowChip("⇄ Move", "Move ${c.name}$where", onMove)
+                RowChip("Card", "Open ${c.name}", onOpen)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RowChip(text: String, description: String, onClick: () -> Unit) = Text(
+    text, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = C.Ink,
+    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(C.Card).clickable(onClick = onClick)
+        .semantics { contentDescription = description }.padding(horizontal = 11.dp, vertical = 6.dp),
+)
 
 /** ⇄ on a row: one copy or all of them to another board. */
 @Composable
@@ -495,9 +739,14 @@ private fun DeckHeader(deck: Deck, onBack: () -> Unit, onRename: () -> Unit, onD
         }
         Column(Modifier.align(Alignment.BottomStart).padding(16.dp)) {
             Text(deck.name, color = Color.White, fontWeight = FontWeight.Black, fontSize = 26.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                DomainIcons(legend?.domainList.orEmpty(), 16.dp)
-                Text(legend?.name.orEmpty(), color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+            // Domain chips, then "✓ Legal" or what's wrong, like Piltover Archive.
+            val problem = remember(deck) { DeckRules.problems(deck).firstOrNull() }
+            Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                legend?.domainList.orEmpty().forEach { d ->
+                    HeaderChip(d.name.lowercase().replaceFirstChar { it.uppercase() }, Color.White, Color.White.copy(alpha = 0.3f)) { RuneSymbol(d, 14.dp) }
+                }
+                if (problem == null) HeaderChip("✓ Legal", Color(0xFF4ADE80), Color(0xFF4ADE80).copy(alpha = 0.5f))
+                else HeaderChip(problem, Color(0xFFFF8A80), Color(0xFFFF8A80).copy(alpha = 0.5f))
             }
         }
     }
@@ -507,6 +756,18 @@ private fun DeckHeader(deck: Deck, onBack: () -> Unit, onRename: () -> Unit, onD
         confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete") } },
         dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
     )
+}
+
+@Composable
+private fun HeaderChip(text: String, ink: Color, border: Color, icon: (@Composable () -> Unit)? = null) {
+    Row(
+        Modifier.clip(RoundedCornerShape(14.dp)).background(Color.Black.copy(alpha = 0.4f)).border(1.dp, border, RoundedCornerShape(14.dp))
+            .padding(horizontal = 9.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        icon?.invoke()
+        Text(text, color = ink, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+    }
 }
 
 @Composable
@@ -531,74 +792,6 @@ private fun EnergyCurve(deck: Deck, height: Dp = 64.dp, showAverage: Boolean = f
                     Text(if (i == 7) "7+" else "$i", color = C.Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
             }
-        }
-    }
-}
-
-private val typeOrder = listOf("Champion", "Units", "Spells", "Gear", "Other")
-
-/** The main deck cut into sections by [group], each sorted by [sort]. */
-private fun sections(deck: Deck, group: DeckGroup, sort: DeckSort): List<Pair<String, List<Pair<Card, Int>>>> {
-    val order = when (sort) {
-        DeckSort.Energy -> compareBy<Pair<Card, Int>>({ it.first.energy ?: 99 }, { it.first.name })
-        DeckSort.Name -> compareBy { it.first.name }
-    }
-    val entries = DeckRules.entries(deck).sortedWith(order)
-    return when (group) {
-        DeckGroup.None -> listOf("Main deck" to entries)
-        DeckGroup.Cost -> entries.groupBy { it.first.energy?.coerceAtMost(7) ?: -1 }.toSortedMap()
-            .map { (k, v) -> (if (k < 0) "No cost" else if (k == 7) "7+ energy" else "$k energy") to v }
-        DeckGroup.Type -> entries.groupBy {
-            when {
-                it.first.slug == deck.champion -> "Champion"
-                it.first.type == "unit" -> "Units"; it.first.type == "spell" -> "Spells"; it.first.type == "gear" -> "Gear"
-                else -> "Other"
-            }
-        }.toList().sortedBy { typeOrder.indexOf(it.first) }
-    }.filter { it.second.isNotEmpty() }
-}
-
-/** "Label ▾ value" dropdown, as on Moxfield's deck toolbar. */
-@Composable
-private fun <T> ToolbarMenu(label: String, value: String, options: List<T>, name: (T) -> String, onPick: (T) -> Unit, modifier: Modifier = Modifier) {
-    var open by remember { mutableStateOf(false) }
-    Box(modifier) {
-        Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.Card)
-                .border(if (open) 2.dp else 1.5.dp, if (open) C.Ink else C.Line, RoundedCornerShape(12.dp))
-                .clickable { open = true }.semantics(mergeDescendants = true) { contentDescription = label }
-                .padding(horizontal = 10.dp, vertical = 6.dp),
-        ) {
-            Text(label.uppercase(), style = Caps.copy(fontSize = 10.sp), color = C.Muted)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                Text("▾", color = C.Muted, fontSize = 12.sp)
-            }
-        }
-        DropdownMenu(open, { open = false }) {
-            options.forEach { o -> DropdownMenuItem(text = { Text(name(o), fontWeight = if (name(o) == value) FontWeight.ExtraBold else FontWeight.Normal) }, onClick = { open = false; onPick(o) }) }
-        }
-    }
-}
-
-@Composable
-private fun GroupLabel(name: String, list: List<Pair<Card, Int>>) = Row(Modifier.padding(top = 4.dp)) {
-    Text(name.uppercase(), style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
-    Text("${list.sumOf { it.second }}", style = Caps, color = C.Muted)
-}
-
-/** Card pictures, three across, each with its copy count. */
-@Composable
-private fun CardGrid(deck: Deck, list: List<Pair<Card, Int>>, vm: MainViewModel) {
-    list.chunked(3).forEach { rowCards ->
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            rowCards.forEach { (c, n) ->
-                Box(Modifier.weight(1f)) {
-                    CardImage(c, Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(7.dp)).clickable { vm.push(Screen.CardDetail(c.slug)) }.semantics { contentDescription = "Deck card ${c.name}" })
-                    CopyBadge(n, Modifier.align(Alignment.BottomEnd).padding(5.dp), large = true)
-                }
-            }
-            repeat(3 - rowCards.size) { Spacer(Modifier.weight(1f)) }
         }
     }
 }
@@ -628,74 +821,6 @@ fun CountBadge(n: Int, modifier: Modifier = Modifier) {
             .background(C.Accent).padding(horizontal = 7.dp, vertical = 2.dp).semantics { contentDescription = "$n in deck" },
     )
 }
-
-/**
- * Moxfield's visual stacks: a column per section, each card's top strip showing under the next, the
- * last card whole. [everyCopy] (split) shows each copy; otherwise one card with its count.
- */
-@Composable
-private fun StackColumns(sections: List<Pair<String, List<Pair<Card, Int>>>>, vm: MainViewModel, everyCopy: Boolean) {
-    sections.chunked(3).forEach { chunk ->
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            chunk.forEach { (name, list) ->
-                Column(Modifier.weight(1f)) {
-                    Text("$name (${list.sumOf { it.second }})", fontWeight = FontWeight.ExtraBold, fontSize = 12.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(bottom = 6.dp))
-                    val cards = if (everyCopy) list.flatMap { (c, n) -> List(n) { c to 1 } } else list
-                    Box(Modifier.fillMaxWidth()) {
-                        cards.forEachIndexed { i, (c, n) ->
-                            Box(Modifier.padding(top = (19 * i).dp).fillMaxWidth()) {
-                                CardImage(c, Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(5.dp)).clickable { vm.push(Screen.CardDetail(c.slug)) }, corner = 5.dp)
-                                // On the strip that shows, right of centre: clear of the cost (left) and might (right).
-                                if (!everyCopy) CopyBadge(n, Modifier.align(BiasAlignment(0.3f, -1f)).padding(top = 2.dp))
-                            }
-                        }
-                    }
-                }
-            }
-            repeat(3 - chunk.size) { Spacer(Modifier.weight(1f)) }
-        }
-    }
-}
-
-@Composable
-private fun DeckCardRow(deck: Deck, c: Card, n: Int, onOpen: () -> Unit, onAdd: () -> Unit, onRemove: () -> Unit, board: Board = Board.MAIN, onMove: (() -> Unit)? = null) {
-    val maybe = board == Board.MAYBE
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-            .then(if (maybe) Modifier.border(1.5.dp, C.Line, RoundedCornerShape(12.dp)) else Modifier.background(C.Card))
-            .graphicsLayer { alpha = if (maybe) 0.7f else 1f }
-            .clickable(onClick = onOpen).padding(start = 8.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Column(Modifier.width(30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            c.energy?.let { EnergySymbol(it, 22.dp) }
-            val p = c.power ?: 0
-            if (p > 0) Row { val ds = c.domainList.ifEmpty { listOf<Domain?>(null) }; repeat(p) { i -> RuneSymbol(ds[i % ds.size], 12.dp) } }
-        }
-        CardThumb(c, 34.dp)
-        Column(Modifier.weight(1f)) {
-            Text(c.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val tag = when { c.slug == deck.champion && board == Board.MAIN -> "Chosen"; DeckRules.isSignature(c) -> "Signature"; !DeckRules.allowed(deck, c) && !maybe -> "Off-domain"; else -> null }
-            if (c.banned) BannedTag(Modifier.padding(top = 2.dp))
-            else if (tag != null) Text(
-                tag, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp,
-                color = when (tag) { "Chosen" -> C.OnAccent; "Off-domain" -> C.Red; else -> C.Ink },
-                modifier = Modifier.padding(top = 2.dp).clip(RoundedCornerShape(6.dp)).background(when (tag) { "Chosen" -> C.Accent; "Off-domain" -> C.Red.copy(alpha = 0.18f); else -> C.Line }).padding(horizontal = 6.dp, vertical = 1.dp),
-            )
-        }
-        val where = if (board == Board.MAIN) "" else " ${board.label.lowercase()}"
-        if (onMove != null) Text("⇄", color = C.Muted, fontWeight = FontWeight.Black, fontSize = 17.sp,
-            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onMove).semantics { contentDescription = "Move ${c.name}$where" }.padding(horizontal = 6.dp, vertical = 4.dp))
-        val canAdd = DeckRules.canAdd(deck, board, c)
-        Row(Modifier.clip(RoundedCornerShape(10.dp)).background(C.Track), verticalAlignment = Alignment.CenterVertically) {
-            Text("−", color = C.Muted, fontWeight = FontWeight.Black, fontSize = 16.sp, modifier = Modifier.clickable(onClick = onRemove).semantics { contentDescription = "Remove ${c.name}$where" }.padding(horizontal = 10.dp, vertical = 4.dp))
-            RollingNumber(n, Modifier.semantics(mergeDescendants = true) { contentDescription = "${c.name}$where $n" }) { Text("$it", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 15.sp) }
-            Text("+", color = if (canAdd) C.Muted else C.Line, fontWeight = FontWeight.Black, fontSize = 16.sp,
-                modifier = Modifier.clickable(enabled = canAdd, onClick = onAdd).semantics { contentDescription = "Add ${c.name}$where" }.padding(horizontal = 10.dp, vertical = 4.dp))
-        }
-    }
-}
-
 
 /** 12 runes as one bar: + on a side takes one from the other; the divider can be dragged. Animated. */
 @Composable

@@ -121,11 +121,18 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   cards split evenly) and "Match" (runes in that ratio); no power "curve" (no Riftbound tool has one).
   Text export/import (`toText`/`fromText`). Stored in Room table `decks` (JSON per row, DB version 2,
   `MIGRATION_1_2` only creates the table; `MigrationTest` opens a v1 file with a match). UI:
-  `ui/DecksScreen.kt` (list, new deck: legend then champion, rename/paste overlays). The deck screen is
-  **one scrolling page** (owner): counts; a Moxfield-style toolbar of three dropdowns **View** (List ·
-  Grid · Stacks · Stacks (split) = every copy) · **Group** (Type · Cost · None) · **Sort** (Energy ·
-  Name), kept in `MainViewModel` while the app runs; copy counts in Grid and Stacks are `CopyBadge` (owner's pick "C", like Piltover Archive: white "×3" on 72% black, Grid bottom-right, Stacks on the visible strip right of centre so it clears cost and might; nothing for a single copy); the main deck; then runes (bar, + on each side,
-  slides and rolls), battlefields showing their rules text, then stats (curve with average, power vs runes + Match, copy as text). Adding cards:
+  `ui/DecksScreen.kt` (list, new deck: legend then champion, rename/paste overlays). The deck screen
+  (owner-approved, Piltover Archive-style): header with domain chips and "✓ Legal" (or the first problem);
+  tabs **Deck · Stats · Matches** (Stats = the deck's record, Matches = its games). Deck tab: **List / Grid**
+  buttons in one frame plus **Stacked** (Grid only; `MainViewModel.deckStacked`) with icons redrawn on
+  Piltover's construction (`RiftIcons.ViewList/ViewGrid/ViewStacked`), and one **group-and-sort** menu
+  ("⇅ Type +1": Type · Cost · None, Energy · Name). Order: **Legend · Main deck · Sideboard ·
+  Battlefields · Runes · Maybe · Stats**; section heads show counts (green when complete, red when not).
+  The **chosen champion is one copy** in its own Champion section; its other copies are ordinary cards.
+  Grid shows every copy unless Stacked (one card + `CopyBadge` ×n). Battlefields and runes keep their
+  own look in both views. List rows: ×n (none for 1), artwork, name, tag, cost; tap a row to open −/+,
+  ⇄ Move, Card. A round + (accent) opens add cards. No Stacks views or card-size stepper (owner).
+  Adding cards:
   `CardsScreen(deckId=…)` (library limited to allowed cards, tap adds, "n×" badge pops, a "−" on cards
   in the deck takes one out, counts dock). Motion: counts and copy numbers roll, curve bars grow,
   views crossfade, + buttons squish. `AppTest.deckAnimationFrames` records `anim/deck*` frames. `MainViewModel.editDeck` keeps drafts and saves after each

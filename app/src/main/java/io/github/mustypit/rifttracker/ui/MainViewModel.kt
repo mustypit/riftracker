@@ -250,6 +250,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val deckView = MutableStateFlow(DeckView.List)
     val deckGroup = MutableStateFlow(DeckGroup.Type)
     val deckSort = MutableStateFlow(DeckSort.Energy)
+    /** Grid: one card per name with its count (Piltover's "stack duplicates"), else every copy. */
+    val deckStacked = MutableStateFlow(false)
     /** Where taps go when adding cards: main deck, sideboard or maybeboard. */
     val addBoard = MutableStateFlow(Board.MAIN)
 
