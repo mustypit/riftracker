@@ -124,7 +124,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   `ui/DecksScreen.kt` (list, new deck: legend then champion, rename/paste overlays). The deck screen is
   **one scrolling page** (owner): counts; a Moxfield-style toolbar of three dropdowns **View** (List ·
   Grid · Stacks · Stacks (split) = every copy) · **Group** (Type · Cost · None) · **Sort** (Energy ·
-  Name), kept in `MainViewModel` while the app runs; the main deck; then runes (bar, + on each side,
+  Name), kept in `MainViewModel` while the app runs; copy counts in Grid and Stacks are `CopyBadge` (owner's pick "C", like Piltover Archive: white "×3" on 72% black, Grid bottom-right, Stacks on the visible strip right of centre so it clears cost and might; nothing for a single copy); the main deck; then runes (bar, + on each side,
   slides and rolls), battlefields showing their rules text, then stats (curve with average, power vs runes + Match, copy as text). Adding cards:
   `CardsScreen(deckId=…)` (library limited to allowed cards, tap adds, "n×" badge pops, a "−" on cards
   in the deck takes one out, counts dock). Motion: counts and copy numbers roll, curve bars grow,

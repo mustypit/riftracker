@@ -595,12 +595,23 @@ private fun CardGrid(deck: Deck, list: List<Pair<Card, Int>>, vm: MainViewModel)
             rowCards.forEach { (c, n) ->
                 Box(Modifier.weight(1f)) {
                     CardImage(c, Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(7.dp)).clickable { vm.push(Screen.CardDetail(c.slug)) }.semantics { contentDescription = "Deck card ${c.name}" })
-                    CountBadge(n, Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp))
+                    CopyBadge(n, Modifier.align(Alignment.BottomEnd).padding(5.dp), large = true)
                 }
             }
             repeat(3 - rowCards.size) { Spacer(Modifier.weight(1f)) }
         }
     }
+}
+
+/** "×3" on a card in the deck's grid and stacks: white on translucent black, nothing for a single copy. */
+@Composable
+private fun CopyBadge(n: Int, modifier: Modifier = Modifier, large: Boolean = false) {
+    if (n > 1) Text(
+        "×$n", color = Color.White, fontWeight = FontWeight.Black, fontSize = if (large) 11.sp else 9.sp, lineHeight = if (large) 13.sp else 11.sp,
+        modifier = modifier.clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.72f))
+            .padding(horizontal = if (large) 7.dp else 5.dp, vertical = if (large) 2.dp else 1.dp)
+            .semantics { contentDescription = "$n copies" },
+    )
 }
 
 /** "3×" on a card; pops when the number changes. */
@@ -634,10 +645,8 @@ private fun StackColumns(sections: List<Pair<String, List<Pair<Card, Int>>>>, vm
                         cards.forEachIndexed { i, (c, n) ->
                             Box(Modifier.padding(top = (19 * i).dp).fillMaxWidth()) {
                                 CardImage(c, Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(5.dp)).clickable { vm.push(Screen.CardDetail(c.slug)) }, corner = 5.dp)
-                                if (!everyCopy) Text(
-                                    "$n", color = C.Ink, fontWeight = FontWeight.Black, fontSize = 11.sp,
-                                    modifier = Modifier.offset(x = (-4).dp, y = 1.dp).clip(RoundedCornerShape(5.dp)).background(C.Track).padding(horizontal = 5.dp, vertical = 1.dp),
-                                )
+                                // On the strip that shows, right of centre: clear of the cost (left) and might (right).
+                                if (!everyCopy) CopyBadge(n, Modifier.align(BiasAlignment(0.3f, -1f)).padding(top = 2.dp))
                             }
                         }
                     }
