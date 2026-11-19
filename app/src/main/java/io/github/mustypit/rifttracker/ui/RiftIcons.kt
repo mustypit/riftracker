@@ -63,4 +63,24 @@ object RiftIcons {
         addPath(addPathNodes("M6 4.5h12A1.5 1.5 0 0 1 19.5 6v7A1.5 1.5 0 0 1 18 14.5H6A1.5 1.5 0 0 1 4.5 13V6A1.5 1.5 0 0 1 6 4.5z"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f)
         addPath(addPathNodes("M5 17.5h14M6.5 20.5h11"), fill = null, stroke = SolidColor(Color.Black), strokeLineWidth = 2.2f, strokeLineCap = StrokeCap.Round)
     }
+
+    // Deck view buttons, drawn on the same construction as Piltover Archive's (24 grid, 1.6 stroke,
+    // round ends): a list in a rounded square, a #, and three cascading cards for "stacked".
+    private fun ImageVector.Builder.line(d: String) = addPath(
+        addPathNodes(d), stroke = SolidColor(Color.Black), strokeLineWidth = 1.6f,
+        strokeLineCap = StrokeCap.Round, strokeLineJoin = androidx.compose.ui.graphics.StrokeJoin.Round,
+    )
+
+    val ViewList = icon("view_list") {
+        line("M8.25 2.75h7.5a5.5 5.5 0 0 1 5.5 5.5v7.5a5.5 5.5 0 0 1-5.5 5.5h-7.5a5.5 5.5 0 0 1-5.5-5.5v-7.5a5.5 5.5 0 0 1 5.5-5.5z")
+        line("M7.5 8.25h9M7.5 12h9M7.5 15.75h9")
+    }
+
+    val ViewGrid = icon("view_grid") { line("M8 3.5v17M16 3.5v17M3.5 8h17M3.5 16h17") }
+
+    val ViewStacked = icon("view_stacked") {
+        line("M5.35 11.25h4.8a2.6 2.6 0 0 1 2.6 2.6v4.8a2.6 2.6 0 0 1-2.6 2.6h-4.8a2.6 2.6 0 0 1-2.6-2.6v-4.8a2.6 2.6 0 0 1 2.6-2.6z")
+        line("M7 11.25V9.85a2.6 2.6 0 0 1 2.6-2.6h4.55a2.6 2.6 0 0 1 2.6 2.6v4.55a2.6 2.6 0 0 1-2.6 2.6H12.75")
+        line("M11.25 7.25V5.85a2.6 2.6 0 0 1 2.6-2.6h4.55a2.6 2.6 0 0 1 2.6 2.6v4.55a2.6 2.6 0 0 1-2.6 2.6H16.75")
+    }
 }

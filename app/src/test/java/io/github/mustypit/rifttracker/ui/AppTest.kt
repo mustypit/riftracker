@@ -493,6 +493,18 @@ open class AppTest {
         rule.waitUntilAtLeastOneExists(hasContentDescription("You score 0"), 5_000)
     }
 
+    /** The round + on the deck page. */
+    private fun addCards() { rule.onNode(hasContentDescription("Add cards")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle() }
+
+    /** The deck page's List / Grid / Stacked buttons ("List view", "Grid view", "Stacked"). */
+    private fun deckView(button: String) { rule.onNode(hasContentDescription(button, substring = true)).performClick(); rule.waitForIdle() }
+
+    /** Picks a group or sort option from the deck page's menu. */
+    private fun groupSort(option: String) {
+        rule.onNode(hasContentDescription("Group and sort")).performClick(); rule.waitForIdle()
+        rule.onAllNodes(hasText(option, substring = true)).onLast().performClick(); rule.waitForIdle()
+    }
+
     /** Card images load off the main thread; give them a moment before a screenshot. */
     private fun settleImages() { repeat(3) { Thread.sleep(250); rule.mainClock.advanceTimeBy(50); rule.waitForIdle() } }
 
@@ -640,7 +652,7 @@ open class AppTest {
         rule.waitFor("Kai'Sa deck")
         rule.onNode(hasContentDescription("Main 1 of 40")).assertExists()
         // Add cards from the library: only Fury/Mind cards are offered; tapping adds a copy.
-        click("+ Add cards")
+        addCards()
         rule.waitFor("Search cards")
         val legend = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Daughter of the Void" }
         val champion = io.github.mustypit.rifttracker.game.Cards.all.first { it.name == "Kai'Sa, Survivor" }
@@ -670,13 +682,12 @@ open class AppTest {
         settleImages()
         shot("25_deck_main")
         // Views of the main deck.
-        pick("View", "Grid"); settleImages(); shot("25b_deck_grid")
-        pick("View", "Stacks"); settleImages(); shot("25d_deck_stacks")
-        pick("View", "Stacks (split)"); settleImages(); shot("25c_deck_split")
-        pick("Group", "Cost"); settleImages(); shot("25e_deck_split_by_cost")
-        pick("View", "List"); pick("Group", "Type")
+        deckView("Grid view"); settleImages(); shot("25b_deck_grid")
+        deckView("Stacked"); settleImages(); shot("25d_deck_grid_stacked")
+        groupSort("Cost"); settleImages(); shot("25e_deck_stacked_by_cost")
+        deckView("Stacked"); deckView("List view"); groupSort("Type")
         // Runes (on the same page): + on Fury takes one from Mind; always 12.
-        rule.onNode(hasContentDescription("More fury runes")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("More fury runes")).performScrollTo().performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("fury runes 7")).assertExists()
         rule.onNode(hasContentDescription("mind runes 5")).assertExists()
         shot("26_deck_runes")
@@ -738,7 +749,7 @@ open class AppTest {
             rule.mainClock.advanceTimeBy(20)
         }
         // 1. Adding cards: badge pops, counts roll.
-        click("+ Add cards"); rule.waitFor("Search cards"); settleImages()
+        addCards(); rule.waitFor("Search cards"); settleImages()
         rule.mainClock.autoAdvance = false
         frame = 0; frames("deckadd", 4, true)
         // The first cards of the grid, as shown (no scrolling while recording).
@@ -756,16 +767,19 @@ open class AppTest {
         }
         click("Done"); settleImages()
         // 2. Runes: + on each side, then the divider, bar slides and numbers roll.
+        rule.onNode(hasContentDescription("More fury runes")).performScrollTo(); rule.waitForIdle()
         rule.mainClock.autoAdvance = false
         frame = 0; frames("deckrunes", 4)
         repeat(3) { rule.onNode(hasContentDescription("More fury runes")).performClick(); frames("deckrunes", 12) }
         rule.onNode(hasContentDescription("More mind runes")).performClick(); frames("deckrunes", 14)
         repeat(2) { rule.onNode(hasContentDescription("More mind runes")).performClick(); frames("deckrunes", 12) }
-        // 3. Views crossfade.
+        // 3. Views crossfade (scroll up to the buttons first, with the clock running).
+        rule.mainClock.autoAdvance = true
+        rule.onNode(hasContentDescription("List view", substring = true)).performScrollTo(); rule.waitForIdle()
+        rule.mainClock.autoAdvance = false
         frame = 0; frames("deckviews", 3, true)
-        listOf("Grid", "Stacks", "Stacks (split)", "List").forEach { v ->
-            rule.onNode(hasContentDescription("View")).performClick(); frames("deckviews", 8, true)
-            rule.onAllNodes(hasText(v)).onLast().performClick(); frames("deckviews", 16, true)
+        listOf("Grid view", "Stacked", "Stacked", "List view").forEach { v ->
+            rule.onNode(hasContentDescription(v, substring = true)).performClick(); frames("deckviews", 16, true)
         }
         rule.mainClock.autoAdvance = true
     }
@@ -795,8 +809,8 @@ open class AppTest {
         rule.onAllNodes(hasContentDescription("Banned")).fetchSemanticsNodes().let { assert(it.isNotEmpty()) }
         settleImages()
         shot("41_deck_banned_list")
-        pick("View", "Grid"); settleImages(); shot("42_deck_banned_grid")
-        pick("View", "List")
+        deckView("Grid view"); settleImages(); shot("42_deck_banned_grid")
+        deckView("List view")
         // The library and the card page label it too.
         rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
         click("Cards")
@@ -847,6 +861,7 @@ open class AppTest {
         settleImages()
         shot("33_decks_record")
         rule.onNode(hasContentDescription("Deck Kai'Sa Tempo")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Stats tab")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Deck record 1–0")).assertExists()
         settleImages()
         shot("34_deck_record")
@@ -857,7 +872,11 @@ open class AppTest {
         rule.onNode(hasContentDescription("Deck Kai'Sa Tempo")).assertExists()
         shot("35_match_deck_chip")
         rule.onNode(hasContentDescription("Deck Kai'Sa Tempo")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Stats tab")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Deck record 1–0")).assertExists()
+        rule.onNode(hasContentDescription("Matches tab", substring = true)).performClick(); rule.waitForIdle()
+        rule.onNode(hasText("vs Mordekaiser")).assertExists()
+        shot("36_deck_matches_tab")
     }
 
     /** Importing a deck code from a deck site, its sideboard and maybeboard. */
@@ -876,6 +895,10 @@ open class AppTest {
         rule.onNode(hasText("SIDEBOARD")).performScrollTo(); rule.waitForIdle()
         settleImages()
         shot("45_deck_sideboard")
+        // Tap a row to open its controls, then ⇄ Move.
+        rule.onNode(hasContentDescription("Thermo Beam side 2")).performScrollTo().performClick(); rule.waitForIdle()
+        settleImages()
+        shot("45b_deck_row_open")
         rule.onNode(hasContentDescription("Move Thermo Beam side")).performScrollTo().performClick(); rule.waitForIdle()
         settleImages()
         shot("46_move_sheet")
@@ -885,7 +908,7 @@ open class AppTest {
         rule.onNode(hasText("MAYBE")).performScrollTo(); rule.waitForIdle()
         shot("47_deck_maybe")
         // Adding cards: the dock picks the board.
-        tap("+ Add cards")
+        addCards()
         rule.onNode(hasContentDescription("Add to side", substring = true)).performClick(); rule.waitForIdle()
         type("Search cards", "Mega-Mech")
         rule.onNode(hasContentDescription("Card Mega-Mech")).performClick(); rule.waitForIdle()
