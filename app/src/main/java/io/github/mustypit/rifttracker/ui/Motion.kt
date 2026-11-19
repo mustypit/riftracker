@@ -12,6 +12,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
@@ -70,15 +72,35 @@ private fun rollTransition(up: Boolean): ContentTransform {
     return ContentTransform(enter, exit, sizeTransform = SizeTransform(clip = true))
 }
 
+/** PROTOTYPE switch: which tab-switch (1..3) and screen (1..3) concept is shown. */
+object Proto { var tab = 1; var screen = 1 }
+
 /** Screens: deeper slides in from the right, back slides out to the right, tab switches crossfade. */
 fun screenTransition(fromDepth: Int, toDepth: Int): ContentTransform {
-    val slide = tween<IntOffset>(Motion.SCREEN_MS, easing = FastOutSlowInEasing)
+    val ease = FastOutSlowInEasing
+    val deeper = toDepth > fromDepth
     return when {
-        toDepth > fromDepth -> (slideInHorizontally(slide) { it } + fadeIn(tween(Motion.SCREEN_MS / 2))) togetherWith
-            (slideOutHorizontally(slide) { -it / 4 } + fadeOut(tween(Motion.SCREEN_MS)))
-        toDepth < fromDepth -> (slideInHorizontally(slide) { -it / 4 } + fadeIn(tween(Motion.SCREEN_MS))) togetherWith
-            (slideOutHorizontally(slide) { it } + fadeOut(tween(Motion.SCREEN_MS / 2)))
-        else -> fadeIn(tween(200)) togetherWith fadeOut(tween(150))
+        toDepth == fromDepth -> fadeIn(tween(200)) togetherWith fadeOut(tween(150))
+        // 1. Card over: the new screen slides in on top from the right; the old one eases back and dims.
+        Proto.screen == 1 -> {
+            val slide = tween<IntOffset>(320, easing = ease)
+            if (deeper) slideInHorizontally(slide) { it } togetherWith (slideOutHorizontally(slide) { -it / 5 } + fadeOut(tween(320), targetAlpha = 0.5f))
+            else (slideInHorizontally(slide) { -it / 5 } + fadeIn(tween(320), initialAlpha = 0.5f)) togetherWith slideOutHorizontally(slide) { it }
+        }
+        // 2. Rise: the new screen grows into place from slightly smaller while the old fades.
+        Proto.screen == 2 -> {
+            if (deeper) (fadeIn(tween(220, delayMillis = 50)) + scaleIn(tween(300, easing = ease), initialScale = 0.92f)) togetherWith
+                (fadeOut(tween(150)) + scaleOut(tween(300, easing = ease), targetScale = 1.04f))
+            else (fadeIn(tween(220, delayMillis = 50)) + scaleIn(tween(300, easing = ease), initialScale = 1.04f)) togetherWith
+                (fadeOut(tween(150)) + scaleOut(tween(300, easing = ease), targetScale = 0.92f))
+        }
+        // 3. Shared axis: both move a short way sideways and crossfade.
+        else -> {
+            val slide = tween<IntOffset>(300, easing = ease)
+            val d = if (deeper) 1 else -1
+            (slideInHorizontally(slide) { d * it / 7 } + fadeIn(tween(200, delayMillis = 90))) togetherWith
+                (slideOutHorizontally(slide) { -d * it / 7 } + fadeOut(tween(90)))
+        }
     }.apply { targetContentZIndex = toDepth.toFloat() }
 }
 

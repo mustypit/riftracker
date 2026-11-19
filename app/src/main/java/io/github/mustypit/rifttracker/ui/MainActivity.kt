@@ -8,7 +8,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -18,12 +17,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import io.github.mustypit.rifttracker.game.Legends
 import androidx.compose.animation.AnimatedContent
@@ -71,38 +76,35 @@ fun AppShell(vm: MainViewModel) {
         Box(Modifier.fillMaxSize().background(C.Black)) { CounterScreen(vm, active!!) }
         return
     }
-    Scaffold(
-        containerColor = C.Paper,
-        // Screens handle the status bar themselves (header blocks draw behind it).
-        contentWindowInsets = WindowInsets(0),
-        bottomBar = {
-            if (top == null) NavigationBar(containerColor = C.Card) {
-                Tab.entries.forEach { t ->
-                    NavigationBarItem(
-                        selected = t == tab,
-                        onClick = { vm.selectTab(t) },
-                        icon = {
-                            Icon(
-                                when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Decks -> RiftIcons.Deck; Tab.Legends -> Icons.Default.BarChart },
-                                null,
-                            )
-                        },
-                        label = { Text(t.label, maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = C.Accent, selectedIconColor = C.OnAccent, selectedTextColor = C.Ink, unselectedIconColor = C.Muted, unselectedTextColor = C.Muted),
-                    )
-                }
+    // The tab bar sits underneath the screens, so opening a screen never resizes the one behind it.
+    var barHeight by remember { mutableStateOf(0) }
+    Box(Modifier.fillMaxSize().background(C.Paper)) {
+        NavigationBar(containerColor = C.Card, modifier = Modifier.align(Alignment.BottomCenter).onSizeChanged { barHeight = it.height }) {
+            Tab.entries.forEach { t ->
+                NavigationBarItem(
+                    selected = t == tab,
+                    onClick = { vm.selectTab(t) },
+                    icon = {
+                        Icon(
+                            when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Decks -> RiftIcons.Deck; Tab.Legends -> Icons.Default.BarChart },
+                            null,
+                        )
+                    },
+                    label = { Text(t.label, maxLines = 1, softWrap = false) },
+                    colors = NavigationBarItemDefaults.colors(indicatorColor = C.Accent, selectedIconColor = C.OnAccent, selectedTextColor = C.Ink, unselectedIconColor = C.Muted, unselectedTextColor = C.Muted),
+                )
             }
-        },
-    ) { padding ->
-        // Screens slide in when opened and out when going back; tab switches crossfade.
+        }
         AnimatedContent(
             targetState = Destination(tab, top, stack.size),
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.fillMaxSize(),
             transitionSpec = { screenTransition(initialState.depth, targetState.depth) },
             contentKey = { it.tab to it.screen },
             label = "screens",
         ) { d ->
-            Box(Modifier.fillMaxSize().background(C.Paper)) {
+            // A tab's main screen stops above the bar; a screen pushed on top covers it.
+            val pad = if (d.screen == null) with(LocalDensity.current) { barHeight.toDp() } else 0.dp
+            Box(Modifier.fillMaxSize().padding(bottom = pad).background(C.Paper)) {
                 when (val s = d.screen) {
                     is Screen.MatchDetail -> MatchDetailScreen(vm, s.id)
                     is Screen.LegendDetail -> LegendDetailScreen(vm, s.legend)

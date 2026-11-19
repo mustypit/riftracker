@@ -52,6 +52,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -342,9 +355,16 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp)) {
             DeckHeader(deck, onBack = { vm.back() }, onRename = { renaming = true }, onDuplicate = { vm.duplicateDeck(id) }, onDelete = { vm.deleteDeck(id) })
-            DeckTabs(tab, total = 1 + deck.mainSize + deck.runeCount + deck.battlefields.size + deck.sideSize, matchCount = matches.size) { tab = it }
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).animateContentSize(spring(stiffness = 500f)), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                when (tab) {
+            val pager = rememberPagerState(initialPage = tab.ordinal) { DeckTab.entries.size }
+            if (Proto.tab == 3) {
+                LaunchedEffect(tab) { if (pager.targetPage != tab.ordinal) pager.animateScrollToPage(tab.ordinal, animationSpec = tween(340, easing = FastOutSlowInEasing)) }
+                LaunchedEffect(pager.settledPage) { tab = DeckTab.entries[pager.settledPage] }
+            }
+            DeckTabs(tab, total = 1 + deck.mainSize + deck.runeCount + deck.battlefields.size + deck.sideSize, matchCount = matches.size,
+                pagerPosition = if (Proto.tab == 3) ({ pager.currentPage + pager.currentPageOffsetFraction }) else null) { tab = it }
+            DeckTabBody(tab, pager) { t ->
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                when (t) {
                     DeckTab.Deck -> {
                         DeckToolbar(view, stacked, group, sort, vm.deckView::value::set, vm.deckStacked::value::set, vm.deckGroup::value::set, vm.deckSort::value::set)
                         if (deck.main.size <= 1) EmptyState("Add cards", "Tap +.", Modifier.fillMaxWidth())
@@ -410,6 +430,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                     }
                 }
             }
+            }
         }
         // Add cards: a round button in the corner.
         val source = remember { MutableInteractionSource() }
@@ -443,28 +464,97 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
     }
 }
 
-/** Deck · Stats · Matches, with counts; the open tab is underlined in the accent. */
+/**
+ * Deck · Stats · Matches, with counts. An accent marker moves between them: (1) an underline that
+ * glides, (2) a filled pill that stretches toward the new tab, (3) an underline that follows the
+ * swipe ([pagerPosition], the pager's page as a fraction).
+ */
 @Composable
-private fun DeckTabs(tab: DeckTab, total: Int, matchCount: Int, onTab: (DeckTab) -> Unit) {
+private fun DeckTabs(tab: DeckTab, total: Int, matchCount: Int, pagerPosition: (() -> Float)? = null, onTab: (DeckTab) -> Unit) {
+    val density = LocalDensity.current
+    // Each tab's label: left edge and width in px, relative to the row.
+    val spans = remember { mutableStateMapOf<Int, Pair<Float, Float>>() }
+    val pill = Proto.tab == 2
+    val i = tab.ordinal.toFloat()
+    // For the pill, the edge in front moves first and the trailing edge catches up.
+    val forward = remember { mutableStateOf(true) }
+    var last by remember { mutableStateOf(tab.ordinal) }
+    if (last != tab.ordinal) { forward.value = tab.ordinal > last; last = tab.ordinal }
+    val fast = spring<Float>(dampingRatio = 0.75f, stiffness = 900f)
+    val slow = spring<Float>(dampingRatio = 0.8f, stiffness = 260f)
+    val glide = spring<Float>(dampingRatio = 0.85f, stiffness = 420f)
+    val leftPos by animateFloatAsState(i, if (pill) (if (forward.value) slow else fast) else glide, label = "tab left")
+    val rightPos by animateFloatAsState(i, if (pill) (if (forward.value) fast else slow) else glide, label = "tab right")
+    fun edge(pos: Float, right: Boolean): Float {
+        val lo = pos.toInt().coerceIn(0, DeckTab.entries.size - 1); val hi = (lo + 1).coerceAtMost(DeckTab.entries.size - 1)
+        val f = pos - lo
+        fun at(k: Int) = spans[k]?.let { if (right) it.first + it.second else it.first } ?: 0f
+        return at(lo) + (at(hi) - at(lo)) * f
+    }
     Column {
-        Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-            DeckTab.entries.forEach { t ->
-                val on = t == tab
-                Column(Modifier.clickable { onTab(t) }.semantics(mergeDescendants = true) { contentDescription = "${t.label} tab" + if (on) ", on" else "" }) {
-                    Row(Modifier.padding(top = 12.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(t.label, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = if (on) C.Ink else C.Muted)
+        Box(Modifier.padding(horizontal = 16.dp)) {
+            if (spans.size == DeckTab.entries.size) {
+                val l = pagerPosition?.invoke()?.let { edge(it, false) } ?: edge(leftPos, false)
+                val r = pagerPosition?.invoke()?.let { edge(it, true) } ?: edge(rightPos, true)
+                val padX = if (pill) with(density) { 12.dp.toPx() } else 0f
+                if (pill) Box(
+                    Modifier.offset { IntOffset((l - padX).roundToInt(), with(density) { 7.dp.roundToPx() }) }
+                        .size(with(density) { (r - l + 2 * padX).toDp() }, 34.dp).clip(RoundedCornerShape(17.dp)).background(C.Accent),
+                )
+                else Box(
+                    Modifier.align(Alignment.BottomStart).offset { IntOffset(l.roundToInt(), 0) }
+                        .size(with(density) { (r - l).toDp() }, 3.dp).clip(RoundedCornerShape(1.5.dp)).background(C.Accent),
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(if (pill) 28.dp else 22.dp), modifier = Modifier.padding(start = if (pill) 12.dp else 0.dp)) {
+                DeckTab.entries.forEach { t ->
+                    val on = t == tab
+                    val ink by animateColorAsState(if (on) (if (pill) C.OnAccent else C.Ink) else C.Muted, tween(200), label = "tab ink")
+                    Row(
+                        Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onTab(t) }
+                            .semantics(mergeDescendants = true) { contentDescription = "${t.label} tab" + if (on) ", on" else "" }
+                            .padding(top = 12.dp, bottom = 12.dp)
+                            .onGloballyPositioned { spans[t.ordinal] = it.positionInParent().x to it.size.width.toFloat() },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(t.label, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = ink)
                         val n = when (t) { DeckTab.Deck -> total; DeckTab.Matches -> matchCount; else -> 0 }
                         if (n > 0) Text(
-                            "$n", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = C.Ink,
-                            modifier = Modifier.padding(start = 6.dp).clip(RoundedCornerShape(6.dp)).background(C.Track).padding(horizontal = 6.dp, vertical = 1.dp),
+                            "$n", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (on && pill) C.OnAccent else C.Ink,
+                            modifier = Modifier.padding(start = 6.dp).clip(RoundedCornerShape(6.dp))
+                                .background(if (on && pill) Color.Black.copy(alpha = 0.12f) else C.Track).padding(horizontal = 6.dp, vertical = 1.dp),
                         )
                     }
-                    Box(Modifier.height(2.5.dp).width(if (on) 36.dp else 0.dp).background(C.Accent))
                 }
             }
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(C.Line))
     }
+}
+
+/** The open tab's content, moving in from the side of the tab it comes from. */
+@Composable
+private fun DeckTabBody(tab: DeckTab, pager: PagerState, content: @Composable (DeckTab) -> Unit) {
+    if (Proto.tab == 3) {
+        HorizontalPager(pager, verticalAlignment = Alignment.Top, key = { it }) { page -> content(DeckTab.entries[page]) }
+        return
+    }
+    AnimatedContent(
+        tab, contentAlignment = Alignment.TopStart, label = "deck tab",
+        transitionSpec = {
+            val d = if (targetState.ordinal > initialState.ordinal) 1 else -1
+            val ease = FastOutSlowInEasing
+            if (Proto.tab == 1) {
+                // The whole view slides across, the next one following right behind.
+                val slide = tween<IntOffset>(340, easing = ease)
+                (slideInHorizontally(slide) { d * it } togetherWith slideOutHorizontally(slide) { -d * it }) using SizeTransform(clip = false)
+            } else {
+                // A short move and a crossfade.
+                (slideInHorizontally(tween(300, easing = ease)) { d * it / 6 } + fadeIn(tween(200, delayMillis = 70))) togetherWith
+                    (slideOutHorizontally(tween(300, easing = ease)) { -d * it / 6 } + fadeOut(tween(110))) using SizeTransform(clip = false)
+            }
+        },
+    ) { content(it) }
 }
 
 /** List / Grid (one frame), Stacked (Grid only), and the group-and-sort menu. */
