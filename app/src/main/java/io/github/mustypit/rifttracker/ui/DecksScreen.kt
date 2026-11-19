@@ -371,7 +371,11 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                         val open = { c: Card -> vm.push(Screen.CardDetail(c.slug)) }
                         @Composable fun cards(list: List<Pair<Card, Int>>, board: Board, section: String) {
                             val chosen = section == CHAMPION
-                            if (view == DeckView.Grid) CardGrid(list, stacked, chosen, open)
+                            // Maybe cards are faded, in every view.
+                            if (view == DeckView.Grid) Column(
+                                Modifier.graphicsLayer { alpha = if (board == Board.MAYBE) 0.7f else 1f },
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) { CardGrid(list, stacked, chosen, open) }
                             else list.forEach { (c, n) ->
                                 val k = "${board.name}/$section/${c.slug}"
                                 key(k) {
@@ -410,14 +414,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                         val maybe = DeckRules.entries(deck, Board.MAYBE)
                         if (maybe.isNotEmpty()) {
                             SectionHead("MAYBE", deck.maybeSize)
-                            maybe.forEach { (c, n) ->
-                                val k = "MAYBE/${c.slug}"
-                                key(k) {
-                                    CardRow(deck, c, n, Board.MAYBE, chosen = false, expanded = openRow == k, onToggle = { openRow = if (openRow == k) null else k },
-                                        onOpen = { open(c) }, onAdd = { edit { DeckRules.add(it, Board.MAYBE, c) } }, onRemove = { edit { DeckRules.remove(it, Board.MAYBE, c) } },
-                                        onMove = { moving = c.slug to Board.MAYBE })
-                                }
-                            }
+                            cards(maybe, Board.MAYBE, "maybe")
                         }
                         SectionHead("STATS")
                         DeckStats(deck, ::edit)

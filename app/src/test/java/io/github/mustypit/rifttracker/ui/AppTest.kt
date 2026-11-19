@@ -961,6 +961,12 @@ open class AppTest {
         rule.onNode(hasContentDescription("Side 7 of 10")).assertExists()
         rule.onNode(hasText("MAYBE")).performScrollTo(); rule.waitForIdle()
         shot("47_deck_maybe")
+        // The maybeboard follows the view like every other section.
+        rule.onNode(hasContentDescription("Grid view", substring = true)).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Thermo Beam maybe 1")).assertDoesNotExist()
+        rule.onAllNodes(hasContentDescription("Deck card Thermo Beam")).onLast().performScrollTo(); settleImages()
+        shot("47b_deck_maybe_grid")
+        rule.onNode(hasContentDescription("List view", substring = true)).performScrollTo().performClick(); rule.waitForIdle()
         // Adding cards: the dock picks the board.
         addCards()
         rule.onNode(hasContentDescription("Add to side", substring = true)).performClick(); rule.waitForIdle()
