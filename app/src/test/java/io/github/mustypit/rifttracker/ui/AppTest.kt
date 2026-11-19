@@ -790,54 +790,6 @@ open class AppTest {
         rule.mainClock.autoAdvance = true
     }
 
-    /** Prototype frames (screenshots/anim/proto_*): entering a deck, its tabs, settings, log a match. */
-    @Test
-    fun protoFrames() {
-        if (prefix.isNotEmpty()) return
-        launch()
-        click("Decks"); click("+ New deck")
-        type("Search legends", "Kai")
-        rule.onNode(hasContentDescription("Legend Daughter of the Void")).performClick(); rule.waitForIdle()
-        rule.onNode(hasContentDescription("Champion Kai'Sa, Survivor")).performClick(); rule.waitForIdle()
-        click("START BUILDING"); rule.waitFor("Kai'Sa deck")
-        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle(); settleImages()
-        var frame = 0
-        fun frames(name: String, count: Int) = repeat(count) {
-            if (it % 4 == 0) Thread.sleep(60)
-            rule.onRoot().captureRoboImage("screenshots/anim/${name}_%03d.png".format(frame++))
-            rule.mainClock.advanceTimeBy(16)
-        }
-        for (k in 1..3) {
-            Proto.tab = k; Proto.screen = k
-            rule.mainClock.autoAdvance = false
-            frame = 0; frames("proto${k}_enter", 4)
-            rule.onAllNodes(hasText("Kai'Sa deck"))[0].performClick(); frames("proto${k}_enter", 26)
-            frames("proto${k}_enter", 6)
-            rule.onNode(hasContentDescription("Back")).performClick(); frames("proto${k}_enter", 26)
-            rule.mainClock.autoAdvance = true; settleImages()
-            rule.onAllNodes(hasText("Kai'Sa deck"))[0].performClick(); rule.waitForIdle(); settleImages()
-            rule.mainClock.autoAdvance = false
-            frame = 0; frames("proto${k}_tabs", 6)
-            rule.onNode(hasContentDescription("Stats tab", substring = true)).performClick(); frames("proto${k}_tabs", 30)
-            rule.onNode(hasContentDescription("Matches tab", substring = true)).performClick(); frames("proto${k}_tabs", 30)
-            rule.onNode(hasContentDescription("Deck tab", substring = true)).performClick(); frames("proto${k}_tabs", 34)
-            if (k == 3) {
-                rule.onRoot().performTouchInput { swipeLeft(startX = width * 0.85f, endX = width * 0.15f, durationMillis = 400) }
-                frames("proto${k}_tabs", 40)
-            }
-            rule.mainClock.autoAdvance = true
-            rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
-            click("Play"); rule.waitForIdle()
-            rule.mainClock.autoAdvance = false
-            frame = 0; frames("proto${k}_settings", 4)
-            rule.onNode(hasContentDescription("Settings")).performClick(); frames("proto${k}_settings", 26)
-            frames("proto${k}_settings", 6)
-            rule.onNode(hasContentDescription("Back")).performClick(); frames("proto${k}_settings", 26)
-            rule.mainClock.autoAdvance = true
-            click("Decks"); rule.waitForIdle(); settleImages()
-        }
-    }
-
     @Test
     fun bannedCards() {
         // A saved deck holding a banned card and a banned battlefield.
@@ -959,7 +911,7 @@ open class AppTest {
         rule.onNode(hasContentDescription("Move one to maybe")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Thermo Beam maybe 1")).assertExists()
         rule.onNode(hasContentDescription("Side 7 of 10")).assertExists()
-        rule.onNode(hasText("MAYBE")).performScrollTo(); rule.waitForIdle()
+        rule.onNode(hasText("MAYBEBOARD")).performScrollTo(); rule.waitForIdle()
         shot("47_deck_maybe")
         // The maybeboard follows the view like every other section.
         rule.onNode(hasContentDescription("Grid view", substring = true)).performScrollTo().performClick(); rule.waitForIdle()
