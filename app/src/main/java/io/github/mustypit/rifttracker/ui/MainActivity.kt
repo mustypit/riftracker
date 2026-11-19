@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -86,7 +86,7 @@ fun AppShell(vm: MainViewModel) {
                     onClick = { vm.selectTab(t) },
                     icon = {
                         Icon(
-                            when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Decks -> RiftIcons.Deck; Tab.Legends -> Icons.Default.BarChart },
+                            when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Decks -> RiftIcons.Deck; Tab.Settings -> Icons.Default.Settings },
                             null,
                         )
                     },
@@ -109,7 +109,7 @@ fun AppShell(vm: MainViewModel) {
                     is Screen.MatchDetail -> MatchDetailScreen(vm, s.id)
                     is Screen.LegendDetail -> LegendDetailScreen(vm, s.legend)
                     Screen.LogMatch -> LogMatchScreen(vm)
-                    Screen.Settings -> SettingsScreen(vm)
+                    Screen.Settings -> SettingsScreen(vm, onBack = { vm.back() })
                     is Screen.CardDetail -> CardDetailScreen(vm, s.slug)
                     Screen.NewDeck -> NewDeckScreen(vm)
                     is Screen.DeckDetail -> DeckScreen(vm, s.id)
@@ -119,7 +119,7 @@ fun AppShell(vm: MainViewModel) {
                         Tab.Matches -> MatchesScreen(vm)
                         Tab.Cards -> CardsScreen(vm)
                         Tab.Decks -> DecksScreen(vm)
-                        Tab.Legends -> LegendsScreen(vm)
+                        Tab.Settings -> SettingsScreen(vm)
                     }
                 }
             }

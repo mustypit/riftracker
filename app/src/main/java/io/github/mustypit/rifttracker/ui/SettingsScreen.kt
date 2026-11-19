@@ -67,7 +67,7 @@ fun Modifier.legendVeil(darkness: Float) = drawBehind {
 }
 
 @Composable
-fun SettingsScreen(vm: MainViewModel) {
+fun SettingsScreen(vm: MainViewModel, onBack: (() -> Unit)? = null) {
     val darkness by vm.settings.darkness.collectAsState()
     val context = LocalContext.current
     // Preview art: the last legend you played, else the first legend that has art.
@@ -78,7 +78,7 @@ fun SettingsScreen(vm: MainViewModel) {
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        HeaderBlock(onBack = { vm.back() }) {
+        HeaderBlock(onBack = onBack) {
             Text("Settings", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
         }
         SectionLabel("Theme")

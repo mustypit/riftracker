@@ -88,6 +88,7 @@ fun MatchesScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
     val matches = remember(all, period) { Stats.inPeriod(all, period, AppGraph.clock()) }
     val record = Stats.record(matches)
     val months = remember(matches) { Stats.group(matches, Zone.id) }
+    var tab by rememberSaveable { mutableStateOf(MatchesTab.History) }
 
     LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 16.dp)) {
         item {
@@ -104,23 +105,50 @@ fun MatchesScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                 )
             }
         }
+        item {
+            Segmented(MatchesTab.entries, tab, { it.label }, { tab = it }, Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp))
+        }
         item { PeriodChips(vm) }
-        if (matches.isEmpty()) item { EmptyState("No matches yet", "Finished matches show up here.", Modifier.fillMaxWidth()) }
-        months.forEach { month ->
-            item(key = "m${month.month}") {
-                Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(month.month.format(monthFmt).uppercase(), style = Caps, color = C.Ink, modifier = Modifier.weight(1f))
-                    Text(month.record.line, style = Caps, color = C.Muted)
-                }
-            }
-            month.sessions.forEach { s ->
-                item(key = "s${s.matches.first().id}") {
-                    Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(s.day.format(dayFmt), fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, modifier = Modifier.weight(1f))
-                        Text("${s.matches.size} · ${s.record.line}", color = C.Muted, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+        when (tab) {
+            MatchesTab.History -> {
+                if (matches.isEmpty()) item { EmptyState("No matches yet", "Finished matches show up here.", Modifier.fillMaxWidth()) }
+                months.forEach { month ->
+                    item(key = "m${month.month}") {
+                        Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(month.month.format(monthFmt).uppercase(), style = Caps, color = C.Ink, modifier = Modifier.weight(1f))
+                            Text(month.record.line, style = Caps, color = C.Muted)
+                        }
+                    }
+                    month.sessions.forEach { s ->
+                        item(key = "s${s.matches.first().id}") {
+                            Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text(s.day.format(dayFmt), fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, modifier = Modifier.weight(1f))
+                                Text("${s.matches.size} · ${s.record.line}", color = C.Muted, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+                        }
+                        items(s.matches, key = { it.id }) { m -> MatchRow(m, onClick = { vm.push(Screen.MatchDetail(m.id)) }) }
                     }
                 }
-                items(s.matches, key = { it.id }) { m -> MatchRow(m, onClick = { vm.push(Screen.MatchDetail(m.id)) }) }
+            }
+            MatchesTab.Legends -> {
+                val mine = Stats.byMyLegend(matches)
+                if (mine.isEmpty()) item { EmptyState("No legends yet", "Play a match to see stats.", Modifier.fillMaxWidth()) }
+                items(mine, key = { "l" + it.legend }) { s -> StatRow(s.legend, s.record, avatar = s.legend, onClick = { vm.push(Screen.LegendDetail(s.legend)) }) }
+            }
+            MatchesTab.Against -> {
+                val opp = Stats.byOppLegend(matches)
+                if (opp.isEmpty()) item { EmptyState("Nothing yet", "Play a match to see stats.", Modifier.fillMaxWidth()) }
+                items(opp, key = { "o" + it.legend }) { s -> StatRow("vs ${s.legend}", s.record, avatar = s.legend) }
+            }
+            MatchesTab.Fields -> {
+                // Counted per game: each game of a best-of-3 can use a different battlefield.
+                val mine = Stats.byBattlefield(matches, Side.ME)
+                val theirs = Stats.byBattlefield(matches, Side.OPP)
+                if (mine.isEmpty() && theirs.isEmpty()) item { EmptyState("No battlefields yet", "Pick them before each game.", Modifier.fillMaxWidth()) }
+                if (mine.isNotEmpty()) item { SectionLabel("Yours") }
+                items(mine, key = { "bm" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
+                if (theirs.isNotEmpty()) item { SectionLabel("Against") }
+                items(theirs, key = { "bo" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
             }
         }
     }
@@ -319,55 +347,10 @@ private fun BreakdownRow(who: String, counts: Map<PointKind, Int>, color: Color)
     }
 }
 
-// ---------------------------------------------------------------- Legends
+// ---------------------------------------------------------------- Stats (in the Matches tab)
 
-enum class LegendTab(val label: String) { Legends("Yours"), Opponents("Against"), Battlefields("Fields") }
-
-@Composable
-fun LegendsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
-    val all by vm.history.collectAsState()
-    val period by vm.period.collectAsState()
-    val matches = remember(all, period) { Stats.inPeriod(all, period, AppGraph.clock()) }
-    var tab by rememberSaveable { mutableStateOf(LegendTab.Legends) }
-    val mine = remember(matches) { Stats.byMyLegend(matches) }
-
-    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 16.dp)) {
-        item {
-            HeaderBlock {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text("${mine.size}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 56.sp)
-                    Text(if (mine.size == 1) " legend played" else " legends played", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.padding(bottom = 12.dp))
-                }
-                mine.firstOrNull()?.let { Text("Most played: ${it.legend} (${it.record.total})", color = Color.White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold) }
-            }
-        }
-        item {
-            Segmented(LegendTab.entries, tab, { it.label }, { tab = it }, Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp))
-        }
-        item { PeriodChips(vm) }
-        when (tab) {
-            LegendTab.Legends -> {
-                if (mine.isEmpty()) item { EmptyState("No legends yet", "Play a match to see stats.", Modifier.fillMaxWidth()) }
-                items(mine, key = { "l" + it.legend }) { s -> StatRow(s.legend, s.record, avatar = s.legend, onClick = { vm.push(Screen.LegendDetail(s.legend)) }) }
-            }
-            LegendTab.Opponents -> {
-                val opp = Stats.byOppLegend(matches)
-                if (opp.isEmpty()) item { EmptyState("Nothing yet", "Play a match to see stats.", Modifier.fillMaxWidth()) }
-                items(opp, key = { "o" + it.legend }) { s -> StatRow("vs ${s.legend}", s.record, avatar = s.legend) }
-            }
-            LegendTab.Battlefields -> {
-                // Counted per game: each game of a best-of-3 can use a different battlefield.
-                val mine = Stats.byBattlefield(matches, Side.ME)
-                val theirs = Stats.byBattlefield(matches, Side.OPP)
-                if (mine.isEmpty() && theirs.isEmpty()) item { EmptyState("No battlefields yet", "Pick them before each game.", Modifier.fillMaxWidth()) }
-                if (mine.isNotEmpty()) item { SectionLabel("Yours") }
-                items(mine, key = { "bm" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
-                if (theirs.isNotEmpty()) item { SectionLabel("Against") }
-                items(theirs, key = { "bo" + it.legend }) { s -> BattlefieldStatRow(s.legend, s.record) }
-            }
-        }
-    }
-}
+/** The Matches tab: the history, then win rates per legend you played, per opponent, per battlefield. */
+enum class MatchesTab(val label: String) { History("History"), Legends("Legends"), Against("Against"), Fields("Fields") }
 
 /** A battlefield's art strip with its name, game record and win rate. */
 @Composable

@@ -147,7 +147,7 @@ open class AppTest {
     @Test
     fun playABestOfThreeFromSetupToSavedMatch() {
         launch()
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         shot("01_new_match")
         rule.onNode(hasContentDescription("Your legend")).performClick(); rule.waitForIdle()
         rule.waitFor("RADIANCE")
@@ -208,7 +208,7 @@ open class AppTest {
         click("SAVE MATCH")
 
         // Straight back to New match, still filled in for a rematch; no review screen.
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         rule.onNode(hasText("Riven")).assertExists()
         rule.onNode(hasText("Mordekaiser")).assertExists()
         shot("09_back_to_new_match")
@@ -303,7 +303,7 @@ open class AppTest {
         rule.onNode(hasContentDescription("Match options")).performClick(); rule.waitForIdle()
         click("Abandon match")
         click("Abandon")
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         assertTrue(saved().isEmpty())
         assertNull(runBlocking(Dispatchers.IO) { store.activeNow() })
     }
@@ -331,8 +331,9 @@ open class AppTest {
         rule.waitFor("NOVEMBER 2026")
         shot("11_matches")
 
+        // The legend stats live in the Matches tab now.
         click("Legends")
-        rule.waitFor("legends played", substring = true)
+        rule.waitFor("Ahri")
         shot("12_legends")
         click("Against")
         rule.waitFor("vs Jinx")
@@ -341,7 +342,7 @@ open class AppTest {
         rule.waitFor("YOURS")
         shot("14b_battlefields")
 
-        click("Yours")
+        click("Legends")
         click("Ahri")
         rule.waitFor("best run")
         shot("15_legend_detail")
@@ -361,7 +362,7 @@ open class AppTest {
         rule.onAllNodes(hasText("Won"))[2].scrollIfNeeded().performClick(); rule.waitForIdle()
         shot("16_log_match")
         click("SAVE")
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         val m = saved().single()
         assertTrue(m.logged)
         assertEquals(listOf(Outcome.WIN, Outcome.LOSS, Outcome.WIN), m.games.map { it.outcome })
@@ -371,7 +372,7 @@ open class AppTest {
     @Test
     fun backgroundDarknessSetting() {
         launch()
-        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        click("Settings")
         rule.waitFor("SCORE BACKGROUND")
         shot("19_settings")
         rule.onNode(hasContentDescription("Background darkness"))
@@ -382,7 +383,7 @@ open class AppTest {
         // Kept after the app restarts.
         scenario?.close()
         launch()
-        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        click("Settings")
         rule.waitFor("90%")
         // Lightest allowed is the veil that passed the readability check.
         assertEquals(0.66f to 0.24f, Veil.alphas(0f))
@@ -392,7 +393,7 @@ open class AppTest {
     @Test
     fun themeSetting() {
         launch()
-        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        click("Settings")
         rule.waitFor("THEME")
         val other = if (this is AppDarkTest) "Light" else "Dark"
         click(other)
@@ -413,7 +414,7 @@ open class AppTest {
     fun pointPopAnimationFrames() {
         if (prefix.isNotEmpty()) return // once is enough
         launch()
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         pickLegend("Your legend", "Riven")
         pickLegend("Their legend", "Mordekaiser")
         click("START")
@@ -451,7 +452,7 @@ open class AppTest {
         if (prefix.isNotEmpty()) return
         seedHistory()
         launch()
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         rule.mainClock.autoAdvance = false
         var frame = 0
         fun frames(count: Int) = repeat(count) {
@@ -615,7 +616,7 @@ open class AppTest {
     @Test
     fun accentColour() {
         launch()
-        rule.onNode(hasContentDescription("Settings")).performClick(); rule.waitForIdle()
+        click("Settings")
         rule.waitFor("ACCENT")
         // A preset, then a custom hue behind "+".
         rule.onNode(hasContentDescription("Accent Lavender")).performScrollTo().performClick(); rule.waitForIdle()
@@ -632,7 +633,7 @@ open class AppTest {
         // Kept after a restart, and used across the app (the tab bar's pill).
         scenario?.close()
         launch()
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         assertEquals(Accents.fromHue(200f).toArgb(), C.Accent.toArgb())
         shot("19f_new_match_accent")
     }
@@ -840,7 +841,7 @@ open class AppTest {
                 .save(io.github.mustypit.rifttracker.game.DeckRules.newDeck(legend, champion, "Kai'Sa Tempo").copy(battlefields = fields, updatedAt = clock.get()))
         }
         launch()
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         click("Best of 1")
         rule.onNode(hasContentDescription("Your deck")).performClick(); rule.waitForIdle()
         rule.waitFor("Just a legend")
@@ -856,7 +857,7 @@ open class AppTest {
         click("YOU")
         press("You", "CONQUER", 8)
         click("SAVE MATCH")
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         val m = saved().single()
         assertEquals("Kai'Sa Tempo", m.deck?.name)
         assertEquals(fields[1], m.games.single().battlefieldOf(io.github.mustypit.rifttracker.game.Side.ME))
@@ -941,7 +942,7 @@ open class AppTest {
         // No sideboarding during a match: the phone stays on the table, nothing to reveal.
         rule.onNode(hasContentDescription("Back")).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
         click("Play")
-        rule.waitFor("New match")
+        rule.waitFor("Log a past match")
         rule.onNode(hasContentDescription("Your deck")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Pick deck Imported deck")).performClick(); rule.waitForIdle()
         pickLegend("Their legend", "Mordekaiser")

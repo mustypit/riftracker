@@ -39,7 +39,7 @@ object AppGraph {
     var random: Random = java.security.SecureRandom().asKotlinRandom()
 }
 
-enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Cards("Cards"), Decks("Decks"), Legends("Legends") }
+enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Cards("Cards"), Decks("Decks"), Settings("Settings") }
 
 sealed interface Screen {
     data class MatchDetail(val id: Long) : Screen

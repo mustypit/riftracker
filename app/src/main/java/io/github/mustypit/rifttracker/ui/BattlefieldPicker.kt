@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import io.github.mustypit.rifttracker.game.Cards
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -104,7 +106,7 @@ fun BattlefieldPicker(title: String, recentNames: List<String?>, selected: Strin
             RiftTextField("Search battlefields", query, { query = it }, Modifier.padding(start = 8.dp, top = 6.dp))
         }
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(160.dp),
+            columns = GridCells.Adaptive(340.dp),
             contentPadding = PaddingValues(16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -123,16 +125,34 @@ fun BattlefieldPicker(title: String, recentNames: List<String?>, selected: Strin
 }
 
 @Composable
-private fun BattlefieldTile(b: Battlefield, selected: Boolean, onClick: () -> Unit) {
+private fun BattlefieldTile(b: Battlefield, selected: Boolean, onClick: () -> Unit) =
+    BattlefieldCard(b.name, selected, onClick)
+
+/**
+ * A battlefield as it reads in a deck: its art as a band with the name on it, then what it does.
+ * The same card in the deck's battlefields and in the picker. [selected] outlines it in the accent.
+ */
+@Composable
+fun BattlefieldCard(name: String, selected: Boolean = false, onClick: () -> Unit) {
+    val card = remember(name, Cards.all) { DeckRules.battlefieldCard(name) }
+    val shape = RoundedCornerShape(14.dp)
     Column(
-        Modifier.clip(RoundedCornerShape(14.dp)).background(C.Card)
-            .border(2.dp, if (selected) C.Ink else Color.Transparent, RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick).padding(6.dp).semantics { contentDescription = "Battlefield ${b.name}" },
+        Modifier.fillMaxWidth().clip(shape).background(C.Card)
+            .then(if (selected) Modifier.border(2.5.dp, C.Accent, shape) else Modifier)
+            .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = "Battlefield $name" + if (selected) ", chosen" else "" },
     ) {
-        Box {
-            BattlefieldThumb(b.name, Modifier.fillMaxWidth().aspectRatio(2.2f))
-            if (DeckRules.battlefieldCard(b.name)?.banned == true) BannedTag(Modifier.align(Alignment.TopEnd).padding(5.dp))
+        Box(Modifier.fillMaxWidth().height(64.dp)) {
+            BattlefieldThumb(name, Modifier.matchParentSize(), corner = 0)
+            Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to Color.Black.copy(alpha = 0.65f), 1f to Color.Transparent)))
+            Text(name, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.BottomStart).padding(12.dp))
+            Row(Modifier.align(Alignment.TopEnd).padding(8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (card?.banned == true) BannedTag()
+                if (selected) Text("✓", color = C.OnAccent, fontWeight = FontWeight.Black, fontSize = 13.sp,
+                    modifier = Modifier.clip(RoundedCornerShape(50)).background(C.Accent).padding(horizontal = 7.dp, vertical = 1.dp))
+            }
         }
-        Text(b.name, color = C.Ink, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp, start = 2.dp))
+        if (card != null && card.text.isNotBlank()) RulesTextView(card.text, Modifier.padding(12.dp), fontSize = 14.sp)
     }
 }

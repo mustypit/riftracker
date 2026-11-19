@@ -164,7 +164,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   "Copy deck code" next to "Copy as text"; the Decks tab's "Import" box takes a code or a list
   (`DeckCodeFormat.looksLikeCode`).
 - **Decks in matches**: `Match.deck` is a snapshot of the deck when the match started (JSON field,
-  old rows null; later edits don't rewrite history). New match / Log a match: with saved decks, the
+  old rows null; later edits don't rewrite history). Play / Log a match: with saved decks, the
   "Your deck" slot opens a deck picker (recent first, "Just a legend" for the old flow) and sets the
   legend (`legendNameOf`); without decks the old legend slot shows. Who goes first offers the deck's
   battlefields as one-tap tiles ("…" for any other). Decks tab rows show record, rate and last five;
@@ -208,9 +208,13 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   100,000 rolls) and that every throw ends flat with the drawn number up; `AppTest.highRollFrames`
   records `anim/roll_*`. Rejected: tumbling digits with a glow (owner didn't like it), flat 2D d6.
 - No rules nagging: the owner removed the "winning point by conquering?" check (players know the
-  rules). After a match, SAVE MATCH returns to New match (prefilled for a rematch); no review
+  rules). After a match, SAVE MATCH returns to Play (prefilled for a rematch); no review
   screen pops up: matches are reviewed from the Matches tab.
-- **Settings** (gear on New match, or the counter's menu): "Background darkness" slider for the veil
+- **Tabs**: Play · Matches · Cards · Decks · Settings. Matches holds the history and the stats
+  (History · Legends · Against · Fields), all filtered by the same period chips. A screen opened on
+  top slides in over the one behind (which eases back and dims), over the tab bar; going back reverses
+  it (`screenTransition`). Tabs inside a screen slide across with a gliding accent underline (`tabSlide`).
+- **Settings** (the last tab, or the counter's menu): "Background darkness" slider for the veil
   over legend art (`Veil.alphas`, `SettingsStore`, SharedPreferences). 0 = the veil that passed the
   readability check; it can only go darker. Default 0.35. "Light or dark": Phone (default) / Light /
   Dark (`ThemeMode`, applied in `MainActivity`). About shows only the version and the disclaimer
@@ -224,7 +228,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (`GameRules.chart/breakdown/longestRun`).
 - **Battlefields**: each game stores the battlefield each player brought (`Game.battlefields`), picked
   (optional) on the "who goes first" card or later from the match review; stats per battlefield
-  (counted per game) in Legends → Fields. Library from OpenRift via the same importer
+  (counted per game) in Matches → Fields. Library from OpenRift via the same importer
   (`assets/battlefields/<id>.jpg` + `battlefields.json`, art = the band between the upside-down text
   and the name on the landscape card); no built-in list. Points are not tagged to battlefields.
 - **Accent** (Settings → Accent, owner's pick "1", like X's display settings): a slice of the real app

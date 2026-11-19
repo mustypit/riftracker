@@ -922,21 +922,7 @@ private fun PlusButton(description: String, onClick: () -> Unit) {
 /** Battlefields with their picture and what they do. */
 @Composable
 private fun FieldSlots(deck: Deck, onPick: (Int) -> Unit) {
-    deck.battlefields.forEachIndexed { i, name ->
-        val card = remember(name, Cards.all) { DeckRules.battlefieldCard(name) }
-        Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.Card).clickable { onPick(i) }
-                .semantics(mergeDescendants = true) { contentDescription = "Battlefield $name" },
-        ) {
-            Box(Modifier.fillMaxWidth().height(64.dp)) {
-                BattlefieldThumb(name, Modifier.matchParentSize(), corner = 0)
-                Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to Color.Black.copy(alpha = 0.65f), 1f to Color.Transparent)))
-                Text(name, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, modifier = Modifier.align(Alignment.BottomStart).padding(12.dp))
-                if (card?.banned == true) BannedTag(Modifier.align(Alignment.TopEnd).padding(8.dp))
-            }
-            if (card != null && card.text.isNotBlank()) RulesTextView(card.text, Modifier.padding(12.dp), fontSize = 14.sp)
-        }
-    }
+    deck.battlefields.forEachIndexed { i, name -> BattlefieldCard(name) { onPick(i) } }
     if (deck.battlefields.size < DeckRules.BATTLEFIELDS) {
         Text("+ Battlefield", fontWeight = FontWeight.ExtraBold, color = C.Muted, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp)).clickable { onPick(deck.battlefields.size) }.padding(20.dp))

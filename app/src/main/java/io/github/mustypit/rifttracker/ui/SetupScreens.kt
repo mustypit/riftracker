@@ -166,10 +166,7 @@ fun NewMatchScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
         HeaderBlock {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("New match", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
-                }
-                IconButton(onClick = { vm.push(Screen.Settings) }) {
-                    Icon(Icons.Default.Settings, "Settings", tint = Color.White)
+                    Text("Play", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
                 }
             }
         }
