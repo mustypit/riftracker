@@ -685,6 +685,11 @@ open class AppTest {
         deckView("Grid view"); settleImages(); shot("25b_deck_grid")
         deckView("Stacked"); settleImages(); shot("25d_deck_grid_stacked")
         groupSort("Cost"); settleImages(); shot("25e_deck_stacked_by_cost")
+        rule.onAllNodes(hasContentDescription("3 copies")).onFirst().performScrollTo(); settleImages(); shot("25f_deck_stacked_counts")
+        rule.onNode(hasContentDescription("Group and sort")).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Cost, on")).assertExists()
+        shot("25g_group_sort_menu")
+        rule.onNode(hasContentDescription("Cost, on")).performClick(); rule.waitForIdle()
         deckView("Stacked"); deckView("List view"); groupSort("Type")
         // Runes (on the same page): + on Fury takes one from Mind; always 12.
         rule.onNode(hasContentDescription("More fury runes")).performScrollTo().performClick(); rule.waitForIdle()

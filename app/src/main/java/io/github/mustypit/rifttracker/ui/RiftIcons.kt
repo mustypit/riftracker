@@ -83,4 +83,7 @@ object RiftIcons {
         line("M7 11.25V9.85a2.6 2.6 0 0 1 2.6-2.6h4.55a2.6 2.6 0 0 1 2.6 2.6v4.55a2.6 2.6 0 0 1-2.6 2.6H12.75")
         line("M11.25 7.25V5.85a2.6 2.6 0 0 1 2.6-2.6h4.55a2.6 2.6 0 0 1 2.6 2.6v4.55a2.6 2.6 0 0 1-2.6 2.6H16.75")
     }
+
+    /** Three lines, shortest last: group and sort. */
+    val Sort = icon("sort") { line("M4 7h16M4 12h11M4 17h6") }
 }

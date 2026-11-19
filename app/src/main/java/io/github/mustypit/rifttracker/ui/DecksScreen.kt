@@ -52,6 +52,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -497,37 +498,42 @@ private fun ViewButton(icon: ImageVector, label: String, on: Boolean, onClick: (
     ) { Icon(icon, null, tint = if (on) C.Ink else C.Muted, modifier = Modifier.size(20.dp)) }
 }
 
-/** "⇅ Type +1 ▾": group (Type · Cost · None) and sort (Energy · Name) in one menu. */
+/** A button the size of the view buttons ("≡ Type"); it opens group and sort as two rows of chips. */
 @Composable
 private fun GroupSortMenu(group: DeckGroup, sort: DeckSort, onGroup: (DeckGroup) -> Unit, onSort: (DeckSort) -> Unit) {
     var open by remember { mutableStateOf(false) }
+    val frame = RoundedCornerShape(12.dp)
     Box {
         Row(
-            Modifier.clip(RoundedCornerShape(12.dp)).background(C.Card).border(1.dp, if (open) C.Ink else C.Line, RoundedCornerShape(12.dp))
+            Modifier.clip(frame).background(C.Card).border(1.dp, if (open) C.Ink else C.Line, frame)
                 .clickable { open = true }.semantics(mergeDescendants = true) { contentDescription = "Group and sort" }
-                .padding(horizontal = 11.dp, vertical = 9.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(3.dp).height(36.dp).padding(start = 9.dp, end = 12.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text("⇅ ", color = C.Muted, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Icon(RiftIcons.Sort, null, tint = C.Muted, modifier = Modifier.size(20.dp))
             Text(if (group == DeckGroup.None) sort.label else group.label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink)
-            if (group != DeckGroup.None) Text(
-                "+1", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = C.Muted,
-                modifier = Modifier.padding(start = 6.dp).clip(RoundedCornerShape(6.dp)).background(C.Track).padding(horizontal = 5.dp, vertical = 1.dp),
-            )
-            Text("  ▾", color = C.Muted, fontSize = 12.sp)
         }
-        DropdownMenu(open, { open = false }) {
-            Text("GROUP", style = Caps.copy(fontSize = 10.sp), color = C.Muted, modifier = Modifier.padding(start = 16.dp, top = 6.dp, bottom = 2.dp))
-            DeckGroup.entries.forEach { g ->
-                DropdownMenuItem(text = { Text(g.label + if (g == group) "  ✓" else "", fontWeight = if (g == group) FontWeight.ExtraBold else FontWeight.Normal) }, onClick = { open = false; onGroup(g) })
-            }
-            Text("SORT", style = Caps.copy(fontSize = 10.sp), color = C.Muted, modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 2.dp))
-            DeckSort.entries.forEach { s ->
-                DropdownMenuItem(text = { Text(s.label + if (s == sort) "  ✓" else "", fontWeight = if (s == sort) FontWeight.ExtraBold else FontWeight.Normal) }, onClick = { open = false; onSort(s) })
+        DropdownMenu(open, { open = false }, shape = RoundedCornerShape(16.dp), containerColor = C.Card) {
+            Column(Modifier.padding(horizontal = 14.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("GROUP", style = Caps.copy(fontSize = 10.sp), color = C.Muted)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    DeckGroup.entries.forEach { g -> MenuChip(g.label, g == group) { open = false; onGroup(g) } }
+                }
+                Text("SORT", style = Caps.copy(fontSize = 10.sp), color = C.Muted, modifier = Modifier.padding(top = 4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    DeckSort.entries.forEach { o -> MenuChip(o.label, o == sort) { open = false; onSort(o) } }
+                }
             }
         }
     }
 }
+
+@Composable
+private fun MenuChip(label: String, on: Boolean, onClick: () -> Unit) = Text(
+    label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = if (on) C.OnAccent else C.Ink,
+    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (on) C.Accent else C.Track).clickable(onClick = onClick)
+        .semantics { contentDescription = label + if (on) ", on" else "" }.padding(horizontal = 14.dp, vertical = 8.dp),
+)
 
 /** "MAIN DECK 40/40": the count green when complete (or within the limit), red when not. */
 @Composable
@@ -588,7 +594,7 @@ private fun CardGrid(list: List<Pair<Card, Int>>, stacked: Boolean, chosen: Bool
                             .then(if (chosen) Modifier.border(2.5.dp, C.Accent, RoundedCornerShape(8.dp)).padding(3.dp) else Modifier)
                             .shadow(2.dp, RoundedCornerShape(7.dp)).clickable { onOpen(c) }.semantics { contentDescription = "Deck card ${c.name}" },
                     )
-                    if (stacked) CopyBadge(n, Modifier.align(Alignment.BottomEnd).padding(5.dp), large = true)
+                    if (stacked) CopyBadge(n, Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp), large = true)
                 }
             }
             repeat(3 - rowCards.size) { Spacer(Modifier.weight(1f)) }
@@ -600,16 +606,16 @@ private fun CardGrid(list: List<Pair<Card, Int>>, stacked: Boolean, chosen: Bool
 private fun LegendRow(legend: Card, onOpen: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.Card).border(1.dp, C.Line, RoundedCornerShape(12.dp))
-            .clickable(onClick = onOpen).padding(start = 36.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
+            .clickable(onClick = onOpen).padding(start = 46.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        CardThumb(legend, 32.dp)
+        CardArtThumb(legend)
         Text(DeckRules.championTag(legend)?.let { "$it, ${legend.name}" } ?: legend.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
 /**
- * A card row: ×count (nothing for one copy), artwork, name, tag, cost. Tapping it opens −/+, Move
+ * A card row: cost, artwork, name, tag, ×count (nothing for one copy). Tapping it opens −/+, Move
  * and the card page underneath; the row stays clean otherwise.
  */
 @Composable
@@ -631,10 +637,13 @@ private fun CardRow(
                 .padding(start = 8.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(9.dp),
         ) {
-            Box(Modifier.width(22.dp)) {
-                if (n > 1) RollingNumber(n) { Text("×$it", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.Muted) }
+            // Cost on the left: the energy, with the power under it.
+            Column(Modifier.width(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                c.energy?.let { EnergySymbol(it, 24.dp) }
+                val p = c.power ?: 0
+                if (p > 0) Row { val ds = c.domainList.ifEmpty { listOf<Domain?>(null) }; repeat(p) { i -> RuneSymbol(ds[i % ds.size], 11.dp) } }
             }
-            CardThumb(c, 32.dp)
+            CardArtThumb(c)
             Text(c.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             val tag = when {
                 c.banned -> null
@@ -650,13 +659,16 @@ private fun CardRow(
                 modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(when (tag) { "CHOSEN" -> C.Accent; "OFF-DOMAIN" -> C.Red.copy(alpha = 0.18f); else -> C.Line })
                     .padding(horizontal = 6.dp, vertical = 2.dp),
             )
-            val p = c.power ?: 0
-            if (p > 0) Row { val ds = c.domainList.ifEmpty { listOf<Domain?>(null) }; repeat(p) { i -> RuneSymbol(ds[i % ds.size], 13.dp) } }
-            c.energy?.let { EnergySymbol(it, 22.dp) }
+            // The count on the right, as a solid pill; nothing for one copy.
+            Box(Modifier.widthIn(min = 30.dp), contentAlignment = Alignment.CenterEnd) {
+                if (n > 1) RollingNumber(n, Modifier.clip(RoundedCornerShape(8.dp)).background(if (expanded) C.Card else C.Track).padding(horizontal = 7.dp, vertical = 3.dp)) {
+                    Text("×$it", fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.Ink)
+                }
+            }
         }
         AnimatedVisibility(expanded) {
             Row(
-                Modifier.padding(start = 39.dp, end = 10.dp, bottom = 8.dp),
+                Modifier.padding(start = 45.dp, end = 10.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 val canAdd = DeckRules.canAdd(deck, board, c)
@@ -781,15 +793,19 @@ private fun EnergyCurve(deck: Deck, height: Dp = 64.dp, showAverage: Boolean = f
             val avg by animateFloatAsState(DeckRules.averageEnergy(deck).toFloat(), tween(400), label = "avg")
             Text("%.1f".format(java.util.Locale.ENGLISH, avg), fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.Ink)
         }
-        Row(Modifier.fillMaxWidth().height(height).padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
+        Row(Modifier.fillMaxWidth().height(height).padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
             curve.forEachIndexed { i, n ->
-                // Bars grow and shrink as cards come and go.
+                // Bars grow and shrink as cards come and go; the count sits on top of each.
                 val f by animateFloatAsState(n.toFloat() / max, spring(dampingRatio = 0.7f, stiffness = 300f), label = "bar")
                 Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
-                        if (f > 0.005f) Box(Modifier.fillMaxWidth().fillMaxHeight(f.coerceIn(0f, 1f)).clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)).background(C.Accent))
+                    Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
+                        if (n > 0) Text("$n", color = C.Ink, fontSize = 12.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(bottom = 3.dp))
+                        Box(Modifier.fillMaxWidth().weight(1f, fill = false)) {
+                            if (f > 0.005f) Box(Modifier.fillMaxWidth().fillMaxHeight(f.coerceIn(0f, 1f)).align(Alignment.BottomCenter).clip(RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp)).background(C.Accent))
+                        }
                     }
-                    Text(if (i == 7) "7+" else "$i", color = C.Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Box(Modifier.fillMaxWidth().height(1.dp).background(C.Line))
+                    Text(if (i == 7) "7+" else "$i", color = C.Muted, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
                 }
             }
         }
@@ -898,7 +914,7 @@ private fun FieldSlots(deck: Deck, onPick: (Int) -> Unit) {
 
 @Composable
 private fun DeckStats(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
-    EnergyCurve(deck, 52.dp, showAverage = true)
+    EnergyCurve(deck, 140.dp, showAverage = true)
     val ds = DeckRules.domains(deck)
     if (ds.size == 2) {
         val p = DeckRules.powerByDomain(deck)

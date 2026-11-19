@@ -10,6 +10,8 @@ import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Board
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -154,6 +156,23 @@ fun CardThumb(card: Card, size: Dp, modifier: Modifier = Modifier) {
         CardImage(
             card, Modifier.fillMaxWidth().aspectRatio(744f / 1039f).offset(y = -(size * 0.12f))
                 .graphicsLayer { scaleX = 2.1f; scaleY = 2.1f; transformOrigin = TransformOrigin(0.5f, 0.12f) },
+            corner = 0.dp, showBanned = false,
+        )
+    }
+}
+
+/**
+ * A landscape window onto a card's artwork: the middle of the picture, below the cost badges and
+ * above the name, so the frame and text are cropped away. For deck list rows.
+ */
+@Composable
+fun CardArtThumb(card: Card, width: Dp = 56.dp, height: Dp = 38.dp, modifier: Modifier = Modifier) {
+    val cardW = width / 0.78f
+    val cardH = cardW * (1039f / 744f)
+    Box(modifier.size(width, height).clip(RoundedCornerShape(7.dp)).background(C.Track)) {
+        CardImage(
+            card, Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).requiredSize(cardW, cardH)
+                .offset(x = -cardW * 0.11f, y = -cardH * 0.135f),
             corner = 0.dp, showBanned = false,
         )
     }
