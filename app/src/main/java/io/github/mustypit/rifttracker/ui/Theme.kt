@@ -4,6 +4,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -158,5 +160,8 @@ val Caps = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letter
 @Composable
 fun RiftTheme(dark: Boolean = isSystemInDarkTheme(), accent: Color = Accents.DEFAULT, content: @Composable () -> Unit) {
     C.use(dark, accent)
-    MaterialTheme(colorScheme = scheme(C.palette, dark), typography = type, content = content)
+    MaterialTheme(colorScheme = scheme(C.palette, dark), typography = type) {
+        // Text and icons without their own colour use the theme's ink (no Scaffold/Surface sets it).
+        CompositionLocalProvider(LocalContentColor provides C.Ink, content = content)
+    }
 }
