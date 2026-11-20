@@ -7,17 +7,18 @@ match, browse the cards and build decks. Not affiliated with Riot Games.
   Tap Conquer, Hold or Ability to score; first to 8, best of 1 or best of 3. Tap a score to take a
   point off, undo anything, see how each point was scored on the side track. A 3D d20 roll decides
   who goes first. Battlefields and XP per game, a timer, and the screen stays on.
-- **Matches and stats:** every match saved with a point-by-point chart; win rate per legend, against
-  each legend, per battlefield and per deck, going first vs second, best run, by evening and month.
-  Log matches played without the app.
+- **Matches and stats:** every match saved with a point-by-point chart. The Matches tab has your
+  history plus win rates per legend you played, against each opposing legend and per battlefield,
+  for all time or the last 30 or 7 days. Log matches played without the app.
 - **Cards:** the whole card library with pictures, Scryfall-style filters (domains, type, energy /
   power / might, keywords, tags, rules text) and banned cards marked.
 - **Decks:** build decks with the Riftbound rules checked as you go (copies, domains, signatures,
-  runes, battlefields, banlist), a sideboard and a maybeboard, list / grid / stacks views, energy
-  curve and power vs runes. Import and export **deck codes** (the format Piltover Archive, Riftmana
-  and other deck sites use) or plain card lists. Pick a deck when you start a match to track its
-  record.
-- Light and dark themes, your choice of accent colour.
+  runes, battlefields, banlist), with a sideboard and a maybeboard. View a deck as a list, a grid of
+  every card, or stacked with counts; group by type or cost and sort by energy or name. Energy curve,
+  power vs runes, and each battlefield with what it does. Import and export **deck codes** (the format
+  Piltover Archive, Riftmana and other deck sites use) or plain card lists. Pick a deck when you start
+  a match to track its record and games.
+- Light and dark themes, your choice of accent colour, smooth sliding screens.
 - No ads, no account, no internet access: everything stays on your phone.
 
 ## Install

@@ -126,11 +126,12 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   tabs **Deck · Stats · Matches** (Stats = the deck's record, Matches = its games). Deck tab: **List / Grid**
   buttons in one frame plus **Stacked** (Grid only; `MainViewModel.deckStacked`) with icons redrawn on
   Piltover's construction (`RiftIcons.ViewList/ViewGrid/ViewStacked`), and one **group-and-sort** menu
-  ("⇅ Type +1": Type · Cost · None, Energy · Name). Order: **Legend · Main deck · Sideboard ·
-  Battlefields · Runes · Maybe · Stats**; section heads show counts (green when complete, red when not).
+  (a compact "≡ Type" button opening chip rows: Type · Cost · None, Energy · Name). Order: **Legend ·
+  Main deck · Sideboard · Battlefields · Runes · Maybeboard · Stats** (the maybeboard follows the view, faded); section heads show counts (green when complete, red when not).
   The **chosen champion is one copy** in its own Champion section; its other copies are ordinary cards.
   Grid shows every copy unless Stacked (one card + `CopyBadge` ×n). Battlefields and runes keep their
-  own look in both views. List rows: ×n (none for 1), artwork, name, tag, cost; tap a row to open −/+,
+  own look in both views. List rows: cost (energy, power under it), a landscape art window (`CardArtThumb`), name, tag, ×n pill
+  (none for 1); stacked counts sit bottom-centre; the energy curve is tall with counts on the bars; tap a row to open −/+,
   ⇄ Move, Card. A round + (accent) opens add cards. No Stacks views or card-size stepper (owner).
   Adding cards:
   `CardsScreen(deckId=…)` (library limited to allowed cards, tap adds, "n×" badge pops, a "−" on cards
@@ -138,7 +139,8 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   views crossfade, + buttons squish. `AppTest.deckAnimationFrames` records `anim/deck*` frames. `MainViewModel.editDeck` keeps drafts and saves after each
   change. **Banlist**: `Card.banned` comes from OpenRift's `bans` (importer, refreshed weekly). Banned
   cards carry a red "BANNED" tag (`BannedTag`: on card pictures via `CardImage(showBanned)`, deck rows,
-  the card page, battlefield slots and the battlefield picker); `DeckRules.bannedCards` checks legend, main
+  the card page, battlefield cards and the battlefield picker). Battlefields everywhere use `BattlefieldCard`
+  (art band with the name, then rules text); `DeckRules.bannedCards` checks legend, main
   and battlefields (by name) and `problems()` puts "Banned" first, so the deck reads as illegal.
   **Sideboard and maybeboard** (owner: "build it with all the rules"; layout A, one page): `Deck.side` /
   `Deck.maybe` (JSON fields, no migration), `Board` MAIN/SIDE/MAYBE. Side: up to `SIDEBOARD` = 10 (July 2026
