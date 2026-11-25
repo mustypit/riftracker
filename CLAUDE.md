@@ -187,7 +187,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   colours, filling smoothly, with each point's icon floating beside it) shows how each point was
   scored (`GameRules.scoredKinds`); **tapping a filled cell removes that point** (`GameRules.removePoint`,
   undo via the pill or the Undo button: `restorePoint`), and **tapping a score takes a point off**, after which the middle
-  pill reads "−1 … · TAP TO UNDO" for 4 s (`GameRules.recentCorrection`). Without art: dark background washed with the two
+  capsule reads "−1 … · TAP TO UNDO" for 4 s (`GameRules.recentCorrection`). Without art: dark background washed with the two
   domain colours; without domains: the seat colour. Text on coloured buttons picks dark/white by
   luminance. Raw art behind the score failed the readability check (32% of pixels under 3:1); keep
   the veil. `MainViewModel` holds navigation (tab + screen stack), the running match and actions.
@@ -222,8 +222,13 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   readability check; it can only go darker. Default 0.35. "Light or dark": Phone (default) / Light /
   Dark (`ThemeMode`, applied in `MainActivity`). About shows only the version and the disclaimer
   (the owner didn't want signing-key details shown to users).
-- **Extras panel** (Lotus-style): a handle at each half's inner edge, by the middle bar; drag from
-  the centre towards your edge (or tap) to open, back to close. Holds XP for now (`Game.xp`); a
+- **Middle capsule** (owner's pick "C", replaced the black middle bar and its "GAME n" pill): the halves
+  meet in the middle and a floating capsule sits over the seam: undo, two tiers that each face their
+  player (tinted in their legend's first domain colour; game dots in a best of 3, filled per game won;
+  the game time), and the match menu. After a tap on a score, both tiers read "−1 … · TAP TO UNDO".
+  The dice roll under it. Point buttons carry their label underneath (CONQUER · HOLD · ABILITY).
+- **Extras panel** (Lotus-style): a handle at each half's inner edge, at that player's left (the capsule
+  holds the middle); drag it towards your edge (or tap) to open, back to close. Holds XP for now (`Game.xp`); a
   badge shows XP while closed. Buttons keep `OUTER_EDGE_MARGIN` free at each half's outer edge for
   the home bar / camera notch.
 - **Match review score chart** (`ScoreChart`): lanes per player, running score on a line coloured by
@@ -263,7 +268,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   (claude.ai/artifact/YcBpvMzscdAD2BFuJx8e8A; saved to its `layouts/latest` doc, read with
   ArtifactData; dp centres inside a 360x378 half, y from the middle bar): score 189 sp centred 36%
   down the half (`SCORE_SIZE`, `SCORE_CENTRE`), side track `top 22 / bottom OUTER_EDGE_MARGIN+120 /
-  end 17`, XP badge `start 36 / top 20`, buttons and handle unchanged. For layout changes, ask the
+  end 17`, XP badge `start 16 / top 38` (moved from 36/20 to clear the capsule), buttons unchanged. For layout changes, ask the
   owner to edit and save there, then read the doc.
 - **Motion** (`Motion.kt`, all short): the score rolls like a wheel (`RollingNumber`: up = old
   number down and out, new from the top; down = the reverse); a scored point's icon pops onto the
