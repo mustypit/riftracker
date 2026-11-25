@@ -14,6 +14,8 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
@@ -181,8 +183,8 @@ open class AppTest {
         rule.onNode(hasText("TAP TO UNDO", substring = true)).assertExists()
         shot("05_counter_game")
         // The hidden panel: open it from the handle, add 2 XP, close it; the XP shows as a badge.
-        // Drag from the centre (the handle by the middle bar) towards your edge to open it.
-        rule.onNode(hasContentDescription("Show You extras")).performTouchInput { swipeDown(startY = top, endY = top + 400f) }; rule.waitForIdle()
+        // Drag from the handle (at your left, by the middle) towards your edge to open it.
+        rule.onNode(hasContentDescription("Show You extras")).performTouchInput { swipe(Offset(80f, top), Offset(80f, top + 400f)) }; rule.waitForIdle()
         rule.onNode(hasContentDescription("You XP plus")).performClick()
         rule.onNode(hasContentDescription("You XP plus")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("You XP 2")).assertExists()
@@ -297,7 +299,7 @@ open class AppTest {
         launch()
         rule.waitUntilAtLeastOneExists(hasContentDescription("You score 3"), 10_000)
         rule.onNode(hasContentDescription("Zed score 2")).assertExists()
-        rule.onNode(hasText("FIRST TO 8")).assertExists()
+        rule.onAllNodes(hasContentDescription("Game time")).assertCountEquals(1)
 
         // Abandon it: nothing saved.
         rule.onNode(hasContentDescription("Match options")).performClick(); rule.waitForIdle()
@@ -789,6 +791,33 @@ open class AppTest {
             rule.onNode(hasContentDescription(v, substring = true)).performClick(); frames("deckviews", 16, true)
         }
         rule.mainClock.autoAdvance = true
+    }
+
+    /** The middle capsule with different legends (screenshots capsule_*): colours, dots, both sides. */
+    @Test
+    fun capsuleWithLegends() {
+        launch()
+        rule.waitFor("Log a past match")
+        val pairs = listOf("Ahri" to "Jinx", "Kai'Sa" to "Garen", "Lux" to "Darius", "Ezreal" to "Leona")
+        pairs.forEachIndexed { i, (mine, theirs) ->
+            pickLegend("Your legend", mine)
+            pickLegend("Their legend", theirs)
+            click("START")
+            rule.waitFor("WHO GOES FIRST?")
+            click("YOU")
+            if (i % 2 == 1) {
+                // Win game 1 so the dots show 1–0.
+                press("You", "HOLD", 8)
+                rule.waitFor("YOU WIN GAME 1")
+                rule.onNode(hasText(theirs.uppercase(), substring = true)).performClick(); rule.waitForIdle()
+            }
+            press("You", "CONQUER", 2); press(theirs, "HOLD", 3); press("You", "ABILITY")
+            if (i % 2 == 1) rule.onNode(hasContentDescription("You games 1")).assertExists()
+            shot("capsule_${i + 1}")
+            rule.onNode(hasContentDescription("Match options")).performClick(); rule.waitForIdle()
+            click("Abandon match"); click("Abandon")
+            rule.waitFor("Log a past match")
+        }
     }
 
     @Test

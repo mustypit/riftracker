@@ -71,6 +71,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -150,7 +153,6 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     Box(Modifier.fillMaxSize().background(C.Black)) {
         Column(Modifier.fillMaxSize()) {
             for (side in listOf(Side.OPP, Side.ME)) {
-                if (side == Side.ME) Spacer(Modifier.height(MIDDLE_BAR_HEIGHT))
                 PlayerHalf(
                     match, game, side, enabled = current != null, onPoint = { vm.addPoint(side, it) },
                     modifier = Modifier.weight(1f).let { if (side == Side.OPP) it.rotate(180f) else it },
@@ -170,7 +172,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
         AnimatedVisibility(
             visible = roll != null, enter = fadeIn(tween(180)), exit = fadeOut(tween(380)),
         ) { lastRoll?.let { DiceOverlay(match, it, onDone = vm::finishRoll) } }
-        Box(Modifier.align(Alignment.Center).fillMaxWidth()) { MiddleBar(vm, match, game) }
+        Box(Modifier.align(Alignment.Center)) { MiddleCapsule(vm, match, game) }
         // Battlefields for the next game, picked on the card before it starts (optional).
         val pending by vm.pendingBattlefields.collectAsState()
         var picking by remember { mutableStateOf<Side?>(null) }
@@ -223,8 +225,8 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     }
 }
 
-/** Height of the bar between the two halves. */
-private val MIDDLE_BAR_HEIGHT = 52.dp
+/** The halves meet in the middle; the capsule floats over the seam. */
+private val MIDDLE_BAR_HEIGHT = 0.dp
 
 // Dice for who goes first: a d20 each, thrown together; after a tie, a pause and the next throw.
 private const val DIE_RADIUS = 48f // dp, circumradius
@@ -468,7 +470,7 @@ private fun PlayerHalf(
         if (xp > 0 && !panelOpen) {
             Text(
                 "XP $xp", style = Caps, color = Color.White,
-                modifier = Modifier.align(Alignment.TopStart).padding(start = 36.dp, top = 20.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.5f))
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 16.dp, top = 38.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.5f))
                     .padding(horizontal = 10.dp, vertical = 5.dp).semantics { contentDescription = "${match.nameOf(side)} XP $xp" },
             )
         }
@@ -506,7 +508,7 @@ private fun PullDownPanel(open: Boolean, onOpenChange: (Boolean) -> Unit, color:
         AnimatedVisibility(open, enter = expandVertically(expandFrom = Alignment.Top), exit = shrinkVertically(shrinkTowards = Alignment.Top)) {
             Column(
                 Modifier.fillMaxWidth().then(drag).background(Color(0xF2141414))
-                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 6.dp),
+                    .padding(start = 20.dp, end = 20.dp, top = 40.dp, bottom = 6.dp),
             ) { content() }
         }
         // The handle: a wide strip so it's easy to grab, with a pill showing where to pull.
@@ -514,10 +516,11 @@ private fun PullDownPanel(open: Boolean, onOpenChange: (Boolean) -> Unit, color:
             Modifier.fillMaxWidth().height(34.dp).then(drag)
                 .clickable(onClickLabel = if (open) "close" else "open") { onOpenChange(!open) }
                 .semantics { contentDescription = if (open) "Hide $name extras" else "Show $name extras" },
-            contentAlignment = Alignment.Center,
+            // At the half's left, clear of the capsule in the middle.
+            contentAlignment = Alignment.CenterStart,
         ) {
             Box(
-                Modifier.size(width = 64.dp, height = 6.dp).clip(RoundedCornerShape(3.dp))
+                Modifier.padding(start = 16.dp).size(width = 40.dp, height = 6.dp).clip(RoundedCornerShape(3.dp))
                     .background(if (open) color else Color.White.copy(alpha = 0.65f)),
             )
         }
@@ -629,8 +632,13 @@ private fun SideTrack(kinds: List<PointKind>, colors: Pair<Color, Color>, modifi
     }
 }
 
+/**
+ * The capsule over the seam (owner's pick "C"): undo, two tiers that each face their player (game
+ * dots in a best of 3, and the game time) tinted in their legend's colour, and the match menu.
+ * After a tap on a score took a point off, both tiers offer to undo it for a few seconds.
+ */
 @Composable
-private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?) {
+private fun MiddleCapsule(vm: MainViewModel, match: Match, game: Game?) {
     var menu by remember { mutableStateOf(false) }
     var confirmAbandon by remember { mutableStateOf(false) }
     // Ticks once a second while a game runs.
@@ -640,34 +648,32 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?) {
         now = AppGraph.clock()
         while (running) { delay(1000); now = AppGraph.clock() }
     }
-    Row(Modifier.fillMaxWidth().height(MIDDLE_BAR_HEIGHT).background(C.Black).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = vm::undo, enabled = game != null) { Icon(Icons.AutoMirrored.Filled.Undo, "Undo", tint = Color.White) }
-        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-            // After a tap on a score took a point off, the pill offers to undo it for a few seconds.
-            val tick = maxOf(now, AppGraph.clock())
-            val removed by vm.lastRemoved.collectAsState()
-            val removedSide = removed?.takeIf { tick - it.second.at < 4000 }?.first
-            val correctionSide = GameRules.recentCorrection(game, tick)?.side ?: removedSide
-            val correction = correctionSide
-            val label = when {
-                correctionSide != null -> "−1 ${match.nameOf(correctionSide).uppercase()} · TAP TO UNDO"
-                match.format == Format.BO3 -> "GAME ${match.games.size.coerceAtLeast(1)} · ${MatchRules.scoreLine(match)}"
-                else -> "FIRST TO ${GameRules.VICTORY_SCORE}"
+    val tick = maxOf(now, AppGraph.clock())
+    val removed by vm.lastRemoved.collectAsState()
+    val removedSide = removed?.takeIf { tick - it.second.at < 4000 }?.first
+    val correction = GameRules.recentCorrection(game, tick)?.side ?: removedSide
+    val time = formatDuration(game?.durationMs(tick) ?: 0)
+    val shape = RoundedCornerShape(29.dp)
+    Row(
+        Modifier.height(58.dp).shadow(14.dp, shape).clip(shape).background(Color.Black.copy(alpha = 0.86f))
+            .border(1.dp, Color.White.copy(alpha = 0.12f), shape).padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        CapsuleButton(Icons.AutoMirrored.Filled.Undo, "Undo", enabled = game != null, onClick = vm::undo)
+        Column(
+            Modifier.clip(RoundedCornerShape(14.dp)).clickable(enabled = correction != null) { vm.undo() },
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            for (side in listOf(Side.OPP, Side.ME)) {
+                val color = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side).first
+                CapsuleTier(
+                    match, side, color, time, correction,
+                    Modifier.let { if (side == Side.OPP) it.rotate(180f).clearAndSetSemantics { } else it },
+                )
             }
-            Text(
-                label, style = Caps, color = if (correction != null) C.Black else C.OnAccent,
-                modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (correction != null) Color.White else C.Accent)
-                    .clickable(enabled = correction != null) { vm.undo() }
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
-            )
         }
-        Text(
-            formatDuration(game?.durationMs(maxOf(now, AppGraph.clock())) ?: 0), // also refreshed by any redraw
-            color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp,
-            modifier = Modifier.semantics { contentDescription = "Game time" },
-        )
         Box {
-            IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Match options", tint = Color.White) }
+            CapsuleButton(Icons.Default.MoreVert, "Match options", enabled = true) { menu = true }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 DropdownMenuItem(text = { Text("Draw game") }, enabled = running, onClick = { menu = false; vm.drawGame() })
                 DropdownMenuItem(text = { Text("Abandon match") }, onClick = { menu = false; confirmAbandon = true })
@@ -683,6 +689,46 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?) {
             dismissButton = { TextButton(onClick = { confirmAbandon = false }) { Text("Cancel") } },
         )
     }
+}
+
+/** One player's tier of the capsule: their game dots (best of 3) and the time, or the undo offer. */
+@Composable
+private fun CapsuleTier(match: Match, side: Side, color: Color, time: String, correction: Side?, modifier: Modifier) {
+    val undo = correction != null
+    Row(
+        modifier.height(25.dp).widthIn(min = 112.dp)
+            .background(if (undo) Color.White else Color.Transparent)
+            .background(Brush.horizontalGradient(listOf(Color.Transparent, color.copy(alpha = if (undo) 0f else 0.32f), Color.Transparent)))
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+    ) {
+        if (undo) {
+            Text("−1 ${match.nameOf(correction!!).uppercase()} · TAP TO UNDO", style = Caps.copy(fontSize = 10.sp), color = C.Black, maxLines = 1)
+        } else {
+            if (match.format == Format.BO3) {
+                val won = if (side == Side.ME) MatchRules.wins(match) else MatchRules.losses(match)
+                Row(
+                    Modifier.semantics { contentDescription = "${match.nameOf(side)} games $won" },
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    repeat(2) { i ->
+                        Box(Modifier.size(9.dp).clip(CircleShape).background(if (i < won) color else Color.Transparent).border(2.dp, color, CircleShape))
+                    }
+                }
+            }
+            Text(time, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp,
+                modifier = Modifier.semantics { contentDescription = "Game time" })
+        }
+    }
+}
+
+@Composable
+private fun CapsuleButton(icon: ImageVector, description: String, enabled: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier.size(40.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)).clickable(enabled = enabled, onClick = onClick)
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, null, tint = Color.White.copy(alpha = if (enabled) 1f else 0.4f), modifier = Modifier.size(22.dp)) }
 }
 
 /** White card over the table, between games. */
