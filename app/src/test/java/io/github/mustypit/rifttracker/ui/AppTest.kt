@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.click
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.swipeLeft
@@ -287,7 +288,8 @@ open class AppTest {
         click("START"); click("ROLL")
         rule.onNode(hasContentDescription("rolled", substring = true)).assertExists()
         screenShot("10_high_roll")
-        rule.onNode(hasContentDescription("Start game")).performClick(); rule.waitForIdle()
+        // Tap your half (the capsule sits in the very middle).
+        rule.onNode(hasContentDescription("Start game")).performTouchInput { click(Offset(centerX, height * 0.75f)) }; rule.waitForIdle()
         rule.waitUntilAtLeastOneExists(hasContentDescription("You score 0"), 5_000)
         press("You", "HOLD", 3)
         press("Zed", "CONQUER", 2)
@@ -491,7 +493,7 @@ open class AppTest {
         rule.onNode(hasText("ROLL")).performClick()
         frames(110)                    // 4.4 s: thrown in, bouncing, tumbling, settling, the winner lights up
         frames(12, 100)                // stars keep twinkling
-        rule.onNode(hasContentDescription("Start game")).performClick()
+        rule.onNode(hasContentDescription("Start game")).performTouchInput { click(Offset(centerX, height * 0.75f)) }
         frames(14)                     // fade back to the board
         rule.mainClock.autoAdvance = true
         rule.waitUntilAtLeastOneExists(hasContentDescription("You score 0"), 5_000)
