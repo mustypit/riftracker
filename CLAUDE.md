@@ -300,6 +300,6 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - Develop on the branch the session names (or `main` for this repo); commit and push when done;
   don't open PRs unless asked. Prototypes the owner wants to see first go on a branch (GIFs before
   pushing to main). Branch deletion is blocked for Claude: tell the owner which branches to delete.
-- `versionName` is bumped by hand for a release (1.1 now); build artifacts are kept 14 days
+- `versionName` is bumped by hand for a release (1.2 now); build artifacts are kept 14 days
   (reports, screenshots) and 30 days (APK), so make releases from a recent build.
 - Readability: import names instead of writing out `androidx.…` / `io.github.mustypit.…` inline.

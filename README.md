@@ -6,7 +6,8 @@ match, browse the cards and build decks. Not affiliated with Riot Games.
 - **At the table:** the phone lies between you, each half facing its player with the legend's art.
   Tap Conquer, Hold or Ability to score; first to 8, best of 1 or best of 3. Tap a score to take a
   point off, undo anything, see how each point was scored on the side track. A 3D d20 roll decides
-  who goes first. Battlefields and XP per game, a timer, and the screen stays on.
+  who goes first. A small capsule in the middle shows each player their games won and the time, the
+  right way up for both. Battlefields and XP per game, and the screen stays on.
 - **Matches and stats:** every match saved with a point-by-point chart. The Matches tab has your
   history plus win rates per legend you played, against each opposing legend and per battlefield,
   for all time or the last 30 or 7 days. Log matches played without the app.
