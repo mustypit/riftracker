@@ -150,7 +150,7 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     Box(Modifier.fillMaxSize().background(C.Black)) {
         Column(Modifier.fillMaxSize()) {
             for (side in listOf(Side.OPP, Side.ME)) {
-                if (side == Side.ME) MiddleBar(vm, match, game)
+                if (side == Side.ME) Spacer(Modifier.height(MIDDLE_BAR_HEIGHT))
                 PlayerHalf(
                     match, game, side, enabled = current != null, onPoint = { vm.addPoint(side, it) },
                     modifier = Modifier.weight(1f).let { if (side == Side.OPP) it.rotate(180f) else it },
@@ -162,6 +162,15 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                 )
             }
         }
+        // Dice: each player's die is thrown in from their edge and rolls to a stop; higher goes first
+        // (ties are thrown again). A tap after they settle fades back to the board and starts the game.
+        // Drawn under the middle bar, which stays lit and usable.
+        var lastRoll by remember { mutableStateOf<Dice.Roll?>(null) }
+        if (roll != null) lastRoll = roll
+        AnimatedVisibility(
+            visible = roll != null, enter = fadeIn(tween(180)), exit = fadeOut(tween(380)),
+        ) { lastRoll?.let { DiceOverlay(match, it, onDone = vm::finishRoll) } }
+        Box(Modifier.align(Alignment.Center).fillMaxWidth()) { MiddleBar(vm, match, game) }
         // Battlefields for the next game, picked on the card before it starts (optional).
         val pending by vm.pendingBattlefields.collectAsState()
         var picking by remember { mutableStateOf<Side?>(null) }
@@ -211,15 +220,11 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
                 onClose = { picking = null },
             )
         }
-        // Dice: each player's die is thrown in from their edge and rolls to a stop; higher goes first
-        // (ties are thrown again). A tap after they settle fades back to the board and starts the game.
-        var lastRoll by remember { mutableStateOf<Dice.Roll?>(null) }
-        if (roll != null) lastRoll = roll
-        AnimatedVisibility(
-            visible = roll != null, enter = fadeIn(tween(180)), exit = fadeOut(tween(380)),
-        ) { lastRoll?.let { DiceOverlay(match, it, onDone = vm::finishRoll) } }
     }
 }
+
+/** Height of the bar between the two halves. */
+private val MIDDLE_BAR_HEIGHT = 52.dp
 
 // Dice for who goes first: a d20 each, thrown together; after a tie, a pause and the next throw.
 private const val DIE_RADIUS = 48f // dp, circumradius
@@ -231,7 +236,7 @@ private const val SPARKLE_TIME = 8000f // ms of twinkling after the dice settle 
 private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val w = maxWidth.value
-        val halfH = (maxHeight.value - 4f) / 2f
+        val halfH = (maxHeight.value - MIDDLE_BAR_HEIGHT.value) / 2f
         // One throw per die per round, from the roll's own seed (the numbers were drawn before this).
         val throws = remember(roll, w, halfH) {
             roll.throws.mapIndexed { i, (me, opp) ->
@@ -257,7 +262,7 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
                 val track = if (side == Side.ME) throws[i].first else throws[i].second
                 val win = settled && roll.winner == side
                 val (c1, c2) = playerColors(if (side == Side.ME) match.myLegend else match.oppLegend, side)
-                Box(Modifier.weight(1f).fillMaxWidth().let { if (side == Side.OPP) it.rotate(180f) else it }) {
+                Box(Modifier.weight(1f).fillMaxWidth().clipToBounds().let { if (side == Side.OPP) it.rotate(180f) else it }) {
                     // Once rolled: the winner's half lights up in their colours, with stars.
                     if (win) {
                         val l1 = lerp(c1, Color.White, 0.35f)
@@ -273,7 +278,7 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
                             scale = if (win) 1f + 0.15f * emph else 1f)
                     }
                 }
-                if (side == Side.OPP) Spacer(Modifier.height(4.dp))
+                if (side == Side.OPP) Spacer(Modifier.height(MIDDLE_BAR_HEIGHT))
             }
         }
     }
@@ -295,28 +300,23 @@ private val dieOutline = android.graphics.Paint(android.graphics.Paint.ANTI_ALIA
 private val light = V3(-0.35, -0.55, 1.0).unit()
 
 /**
- * A d20 in perspective from a camera above the middle of the half: lit faces nearest last, numbers
- * laid onto the faces that look up, and a shadow on the table that softens as the die rises.
+ * A d20 seen straight from above with an orthographic camera (no perspective: the die keeps its size
+ * and shape wherever it is): lit faces nearest last, numbers laid onto the faces that look up, and a
+ * shadow on the table that drifts and softens as the die rises (the only cue for height).
  */
 private fun DrawScope.drawD20(f: D20.Frame, radiusDp: Float, c1: Color, c2: Color, alpha: Float, scale: Float) {
     val r = (radiusDp * density * scale).toDouble()
-    val camX = size.width / 2.0; val camY = size.height / 2.0
-    val camZ = 900.0 * density
-    fun project(p: V3): Offset {
-        val k = camZ / (camZ - p.z)
-        return Offset((camX + (p.x - camX) * k).toFloat(), (camY + (p.y - camY) * k).toFloat())
-    }
+    fun project(p: V3) = Offset(p.x.toFloat(), p.y.toFloat())
     val lift = f.z * density
     val center = V3(f.x * density.toDouble(), f.y * density.toDouble(), r * D20.inradius + lift)
     val sh = project(V3(center.x + lift * 0.3, center.y + lift * 0.5, 0.0))
     val shR = (r * (1.0 + lift / (220.0 * density))).toFloat()
     drawCircle(Brush.radialGradient(listOf(Color.Black.copy(alpha = (0.55f * alpha / (1f + f.z / 90f))), Color.Transparent), center = sh, radius = shR), radius = shR, center = sh)
     val verts = D20.vertices.map { f.q.rotate(it) * r + center }
-    val camera = V3(camX, camY, camZ)
     val visible = D20.faces.indices.mapNotNull { i ->
         val n = f.q.rotate(D20.normals[i])
         val c = D20.faces[i].map { verts[it] }.reduce(V3::plus) * (1.0 / 3)
-        if ((n dot (camera - c)) <= 0) null else Triple(i, n, c)
+        if (n.z <= 0) null else Triple(i, n, c)
     }.sortedBy { it.third.z }
     val edge = Color.White.copy(alpha = 0.35f * alpha)
     for ((i, n, c) in visible) {
@@ -640,7 +640,7 @@ private fun MiddleBar(vm: MainViewModel, match: Match, game: Game?) {
         now = AppGraph.clock()
         while (running) { delay(1000); now = AppGraph.clock() }
     }
-    Row(Modifier.fillMaxWidth().height(52.dp).background(C.Black).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().height(MIDDLE_BAR_HEIGHT).background(C.Black).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = vm::undo, enabled = game != null) { Icon(Icons.AutoMirrored.Filled.Undo, "Undo", tint = Color.White) }
         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
             // After a tap on a score took a point off, the pill offers to undo it for a few seconds.

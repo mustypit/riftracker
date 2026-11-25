@@ -203,7 +203,8 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   ties are thrown again (`game/Dice.kt`). **Fairness**: numbers are drawn first from `AppGraph.random`
   (SecureRandom in the app), then the free simulation is relabelled by one of the die's 60 symmetries so
   that number lands on top (the motion never decides the result). Drawn in `CounterScreen.drawD20`:
-  perspective from above, faces lit and tinted across the legend's two domain colours, white outlined
+  orthographic camera straight above (owner: no perspective; height shows only in the shadow), drawn under
+  the middle bar (which stays usable) and kept inside each half, faces lit and tinted across the legend's two domain colours, white outlined
   numbers (6. and 9.), soft shadow; the opponent's die faces them. Settled: winner's die grows, their
   half lights up (gradient of their colours, white glow, twinkling stars `Sparkles`), loser's die dims;
   one tap fades back to the board and starts the game. `DiceTest` checks geometry, fairness (chi² over
