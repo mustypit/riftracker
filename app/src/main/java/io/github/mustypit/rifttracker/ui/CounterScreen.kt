@@ -426,9 +426,9 @@ private fun PlayerHalf(
         Column(Modifier.fillMaxSize().padding(top = 36.dp, bottom = OUTER_EDGE_MARGIN), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
             Spacer(Modifier.height(2.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(26.dp)) {
-                PointButton(RiftIcons.Conquer, "${match.nameOf(side)} CONQUER", c1, enabled) { onPoint(PointKind.CONQUER) }
-                PointButton(RiftIcons.Hold, "${match.nameOf(side)} HOLD", c1, enabled) { onPoint(PointKind.HOLD) }
-                PointButton(RiftIcons.Ability, "${match.nameOf(side)} ABILITY", c1, enabled) { onPoint(PointKind.ABILITY) }
+                PointButton(RiftIcons.Conquer, "CONQUER", "${match.nameOf(side)} CONQUER", c1, enabled) { onPoint(PointKind.CONQUER) }
+                PointButton(RiftIcons.Hold, "HOLD", "${match.nameOf(side)} HOLD", c1, enabled) { onPoint(PointKind.HOLD) }
+                PointButton(RiftIcons.Ability, "ABILITY", "${match.nameOf(side)} ABILITY", c1, enabled) { onPoint(PointKind.ABILITY) }
             }
         }
         // The score, centred SCORE_CENTRE of the way down from the inner edge (owner's layout).
@@ -552,8 +552,9 @@ private fun RoundStep(text: String, description: String, enabled: Boolean, onCli
 
 /** Round icon button tinted with the player's colour. */
 @Composable
-private fun PointButton(icon: ImageVector, description: String, color: Color, enabled: Boolean, onClick: () -> Unit) {
+private fun PointButton(icon: ImageVector, label: String, description: String, color: Color, enabled: Boolean, onClick: () -> Unit) {
     val source = remember { MutableInteractionSource() }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
     Box(
         Modifier.size(78.dp).squishWhenPressed(source).clip(CircleShape).background(color.copy(alpha = if (enabled) 0.9f else 0.35f))
             .border(1.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
@@ -561,6 +562,13 @@ private fun PointButton(icon: ImageVector, description: String, color: Color, en
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(38.dp)) }
+    // What the button scores, under it (white with a soft shadow, readable on any art).
+    Text(
+        label, color = Color.White.copy(alpha = if (enabled) 0.92f else 0.45f),
+        style = Caps.copy(fontSize = 11.sp, shadow = Shadow(Color.Black.copy(alpha = 0.8f), blurRadius = 8f)),
+        modifier = Modifier.padding(top = 7.dp).clearAndSetSemantics { },
+    )
+    }
 }
 
 /** How long the burst ring around a newly scored point lasts. */
