@@ -1,7 +1,6 @@
 package io.github.mustypit.rifttracker.game
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 /** One card in the library: its original normal printing (from OpenRift, see build_legend_assets.py). */
 @Serializable
@@ -98,7 +97,7 @@ object Cards {
 
     /** Loads assets/cards/cards.json. Token cards and rules reminders ("other") aren't shown. */
     fun install(json: String) {
-        index(Json { ignoreUnknownKeys = true }.decodeFromString<List<Card>>(json).filter { it.type != "other" })
+        index(LibraryJson.decodeFromString<List<Card>>(json).filter { it.type != "other" })
     }
 
     private fun index(cards: List<Card>) {

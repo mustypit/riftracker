@@ -1,6 +1,7 @@
 package io.github.mustypit.rifttracker.ui
 
 import android.app.Application
+import java.security.SecureRandom
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.mustypit.rifttracker.data.AppDb
@@ -36,7 +37,7 @@ import io.github.mustypit.rifttracker.game.Dice
 object AppGraph {
     var clock: () -> Long = System::currentTimeMillis
     /** The dice: the system's cryptographic random source (tests swap in a seeded one). */
-    var random: Random = java.security.SecureRandom().asKotlinRandom()
+    var random: Random = SecureRandom().asKotlinRandom()
 }
 
 enum class Tab(val label: String) { Play("Play"), Matches("Matches"), Cards("Cards"), Decks("Decks"), Settings("Settings") }

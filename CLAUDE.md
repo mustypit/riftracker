@@ -45,6 +45,8 @@ report as artifacts.
 | `game/DeckCodesTest` | Deck codes: Piltover Archive's golden fixtures (encode and decode, v3–v6), the README deck, our decks round trip, alt-art codes |
 | `game/DiceTest` | The d20 for who goes first: geometry, fair results (chi² over 100,000 rolls, either player first half the time), every throw lands flat with the drawn number up and stays on screen |
 | `data/MigrationTest` | A version-1 database keeps its matches when the decks table is added |
+| `game/CatalogImportTest` | OpenRift's catalog (sample fixture) to the app's libraries: original normal printing, other printings' codes, bans, straight apostrophes, legends named for their champion, battlefields, image ids |
+| `data/CardUpdatesTest` | In-app updates with a fake network: saved and installed, at most hourly, ETag and 304, "Check now", failures and too-little data keep the current data, pictures fetched once (404s not retried), new legend art cropped |
 | `stats/StatsTest` | Win rate (draw = a third), legends and opponents, decks, best run, going first vs second, evenings and months, periods |
 | `ui/AppTest` | Real app on Robolectric with a fixed clock: a full best-of-3 played through the counter, the dice, undo, restart mid-match (saved state), abandon, draw, history and stats screens, logging a past match, card library and filters, deck builder (views, runes, battlefields, sideboard/maybe, deck codes, banned cards), decks in matches, settings and accent, empty states; screenshots of each, and animation frames for GIFs. `AppDarkTest` reruns it all in dark mode |
 
@@ -162,8 +164,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   tournament rules; was 8), only cards the deck may hold, copy limit counts main + side (`Deck.copies`),
   banned counts; more than 10 is labelled "Side n/10". Maybe: no limits, never illegal, not in deck codes.
   `DeckRules.add/remove(deck, board, c)`, `move(deck, c, from, to, all)` (main↔side keeps the total; out of
-  maybe obeys the copy limit). Deck page: SIDEBOARD n/10 and MAYBE (dashed, faded) lists under the main
-  deck; ⇄ on any row opens `MoveSheet` (1 / All to each other board, card page). Add cards: the dock is a
+  maybe obeys the copy limit). Deck page: SIDEBOARD n/10 and MAYBEBOARD (faded) under the main deck; ⇄ on any row opens `MoveSheet` (1 / All to each other board, card page). Add cards: the dock is a
   Main · Side · Maybe switch (`MainViewModel.addBoard`) choosing where taps go; badges "n×" main, "n S"
   side, "n M" maybe. Text export has "Sideboard:"; import reads Sideboard/Maybeboard sections.
   **No sideboarding inside a match** (owner): the sideboard is for deckbuilding on the go. During a
@@ -261,7 +262,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   "+" for a custom hue at the same pastel saturation/lightness (the slider shows only then). **No
   explanatory or warning text** (owner: users judge readability themselves; customisation is a last
   resort). Stored as ARGB in `SettingsStore`. `C.Accent` / `C.OnAccent` replace yellow everywhere
-  (tab pill, middle-bar pill, filter tokens, lead-change outlines, header accents). Rejected: a plain
+  (tab pill, filter tokens, tab underlines, lead-change outlines, header accents). Rejected: a plain
   row of saturated circles, named preview tiles, domain emblems, follow-my-legend, a slider with a
   readability check.
 - **Dark palette** is Graphite (neutral grey: paper #121314, cards #1D1E20), owner's pick; the
@@ -275,7 +276,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - Next: deck versions. Deferred: XP/levels. Not wanted: 4-player boards, card scanner, a rules
   engine. A separate desktop project ("Riftbound Table", play against Claude through the owner's
   Claude Code login) was handed off to its own session; it reuses `game/` from here.
-- **Minimal UI copy** (owner's request): short one-line headers ("New match", "Settings"), no
+- **Minimal UI copy** (owner's request): short one-line headers ("Play", "Settings"), no
   explanatory sentences under settings, one-line empty states, no "(optional)" labels, dialogs with a
   title and buttons only. The ★ on a player button marks who lost the last game, without a caption.
   Don't add explanations back.
@@ -288,8 +289,8 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - **Motion** (`Motion.kt`, all short): the score rolls like a wheel (`RollingNumber`: up = old
   number down and out, new from the top; down = the reverse); a scored point's icon pops onto the
   side track with a burst ring (not on reopen); point and big buttons squish when pressed
-  (`squishWhenPressed`); screens slide in/out by depth, tabs crossfade (`screenTransition` in
-  `AppShell`); score-chart rows draw in top to bottom (`rowReveal`); win rates count up
+  (`squishWhenPressed`); screens slide in over the one behind, root tabs crossfade (`screenTransition`
+  in `AppShell`), tabs inside a screen slide (`tabSlide`); score-chart rows draw in top to bottom (`rowReveal`); win rates count up
   (`countUpPercent`). `AppTest.pointPopAnimationFrames` / `screenAnimationFrames` record frames to
   `app/screenshots/anim/` (paused `mainClock`, 20 ms steps): turn them into a GIF to show the owner.
 - **App icon** (owner's pick, after flat marks and 2D rune sketches): a real 3D render of a flat golden

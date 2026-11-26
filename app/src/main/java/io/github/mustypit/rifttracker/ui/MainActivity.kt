@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.FormatListBulleted
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import io.github.mustypit.rifttracker.data.CardUpdates
@@ -93,7 +92,7 @@ fun AppShell(vm: MainViewModel) {
                     onClick = { vm.selectTab(t) },
                     icon = {
                         Icon(
-                            when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.Default.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Decks -> RiftIcons.Deck; Tab.Settings -> Icons.Default.Settings },
+                            when (t) { Tab.Play -> RiftIcons.CrossedSwords; Tab.Matches -> Icons.AutoMirrored.Filled.FormatListBulleted; Tab.Cards -> RiftIcons.Cards; Tab.Decks -> RiftIcons.Deck; Tab.Settings -> Icons.Default.Settings },
                             null,
                         )
                     },

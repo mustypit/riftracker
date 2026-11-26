@@ -1,6 +1,7 @@
 package io.github.mustypit.rifttracker.data
 
 import android.content.Context
+import java.io.ByteArrayOutputStream
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import io.github.mustypit.rifttracker.game.Battlefields
@@ -14,6 +15,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.Collections
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -51,6 +53,8 @@ object CardUpdates {
     val version = MutableStateFlow(0)
 
     private val lock = Mutex()
+    /** Pictures OpenRift answered 404 for, this run (not retried until the app restarts). */
+    private val missing: MutableSet<String> = Collections.synchronizedSet(HashSet())
     private var userAgent = "RiftTracker ($USER_AGENT_CONTACT)"
 
     private fun dir(context: Context) = File(context.filesDir, "openrift")
@@ -149,7 +153,7 @@ object CardUpdates {
         val cut = Bitmap.createBitmap(src, x0, y0, (src.width * box[2]).toInt() - x0, (src.height * box[3]).toInt() - y0)
         val scale = minOf(1f, 720f / maxOf(cut.width, cut.height))
         val out = if (scale < 1f) Bitmap.createScaledBitmap(cut, (cut.width * scale).toInt(), (cut.height * scale).toInt(), true) else cut
-        return java.io.ByteArrayOutputStream().also { out.compress(Bitmap.CompressFormat.JPEG, 82, it) }.toByteArray()
+        return ByteArrayOutputStream().also { out.compress(Bitmap.CompressFormat.JPEG, 82, it) }.toByteArray()
     }
 
     /** Art for a new legend or battlefield that the app doesn't ship, if it was downloaded. */
@@ -163,8 +167,10 @@ object CardUpdates {
         val local = File(dir(context), "images/$file")
         if (local.exists()) return local.readBytes()
         val imageId = Cards.bySlug(file.substringBeforeLast('.'))?.imageId ?: return null
+        // A picture OpenRift doesn't have isn't asked for again every time the card is drawn.
+        if (imageId in missing) return null
         val r = runCatching { fetch("$MEDIA$imageId-400w.webp", mapOf("User-Agent" to userAgent)) }.getOrNull() ?: return null
-        val bytes = r.body?.takeIf { r.code == 200 && it.isNotEmpty() } ?: return null
+        val bytes = r.body?.takeIf { r.code == 200 && it.isNotEmpty() } ?: run { if (r.code == 404) missing += imageId; return null }
         runCatching { local.parentFile?.mkdirs(); local.writeBytes(bytes) }
         return bytes
     }
@@ -187,7 +193,7 @@ object CardUpdates {
 
     /** Tests: forget everything (memory only; files live in the test's own app folder). */
     fun resetForTests() {
-        fetch = ::httpGet; minLegends = 20; minCards = 500
+        fetch = ::httpGet; minLegends = 20; minCards = 500; missing.clear()
         _status.value = Status(null); version.value = 0
     }
 }

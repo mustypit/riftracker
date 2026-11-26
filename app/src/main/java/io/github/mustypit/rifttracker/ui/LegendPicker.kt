@@ -1,6 +1,7 @@
 package io.github.mustypit.rifttracker.ui
 
 import android.graphics.BitmapFactory
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -66,8 +67,15 @@ private val tilePalette = listOf(
 internal open class AssetArt(private val folder: String) {
     private val cache = HashMap<String, ImageBitmap?>()
     private var files: Set<String>? = null
+    private var dataVersion = 0
 
-    fun get(context: android.content.Context, id: String): ImageBitmap? = cache.getOrPut(id) {
+    fun get(context: Context, id: String): ImageBitmap? {
+        // New card data may have brought art for legends or battlefields that had none.
+        CardUpdates.version.value.let { v -> if (v != dataVersion) { dataVersion = v; cache.values.removeAll { it == null } } }
+        return load(context, id)
+    }
+
+    private fun load(context: Context, id: String): ImageBitmap? = cache.getOrPut(id) {
         val names = files ?: (context.assets.list(folder)?.toSet() ?: emptySet()).also { files = it }
         val file = listOf("webp", "png", "jpg").map { "$id.$it" }.firstOrNull { it in names }
             // Not bundled: art for a newer legend or battlefield, downloaded from OpenRift.

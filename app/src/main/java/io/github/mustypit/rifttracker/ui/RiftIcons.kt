@@ -1,6 +1,7 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
@@ -68,7 +69,7 @@ object RiftIcons {
     // round ends): a list in a rounded square, a #, and three cascading cards for "stacked".
     private fun ImageVector.Builder.line(d: String) = addPath(
         addPathNodes(d), stroke = SolidColor(Color.Black), strokeLineWidth = 1.6f,
-        strokeLineCap = StrokeCap.Round, strokeLineJoin = androidx.compose.ui.graphics.StrokeJoin.Round,
+        strokeLineCap = StrokeCap.Round, strokeLineJoin = StrokeJoin.Round,
     )
 
     val ViewList = icon("view_list") {

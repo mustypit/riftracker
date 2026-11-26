@@ -1,6 +1,11 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.foundation.background
+import android.app.Activity
+import android.content.ContextWrapper
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Typeface
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -18,7 +23,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.luminance
@@ -26,14 +30,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Dp
 import io.github.mustypit.rifttracker.game.Battlefields
 import io.github.mustypit.rifttracker.game.Dice
 import io.github.mustypit.rifttracker.game.D20
 import io.github.mustypit.rifttracker.game.V3
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.drawscope.withTransform
 import io.github.mustypit.rifttracker.game.Legends
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +59,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -137,8 +138,8 @@ fun CounterScreen(vm: MainViewModel, match: Match) {
     val view = LocalView.current
     DisposableEffect(Unit) {
         view.keepScreenOn = true
-        val window = generateSequence(view.context) { (it as? android.content.ContextWrapper)?.baseContext }
-            .filterIsInstance<android.app.Activity>().firstOrNull()?.window
+        val window = generateSequence(view.context) { (it as? ContextWrapper)?.baseContext }
+            .filterIsInstance<Activity>().firstOrNull()?.window
         val bars = window?.let { WindowCompat.getInsetsController(it, view) }
         bars?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         bars?.hide(WindowInsetsCompat.Type.systemBars())
@@ -286,18 +287,18 @@ private fun DiceOverlay(match: Match, roll: Dice.Roll, onDone: () -> Unit) {
     }
 }
 
-private val dieText = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-    textAlign = android.graphics.Paint.Align.CENTER
-    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+private val dieText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    textAlign = Paint.Align.CENTER
+    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     textSize = 104f
 }
-private val dieOutline = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-    textAlign = android.graphics.Paint.Align.CENTER
-    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+private val dieOutline = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    textAlign = Paint.Align.CENTER
+    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     textSize = 104f
-    style = android.graphics.Paint.Style.STROKE
+    style = Paint.Style.STROKE
     strokeWidth = 14f
-    strokeJoin = android.graphics.Paint.Join.ROUND
+    strokeJoin = Paint.Join.ROUND
 }
 private val light = V3(-0.35, -0.55, 1.0).unit()
 
@@ -340,7 +341,7 @@ private fun DrawScope.drawD20(f: D20.Frame, radiusDp: Float, c1: Color, c2: Colo
             val k = r * 0.25
             val p0 = project(c); var pr = project(c + right * k); val pu = project(c + up * k)
             if ((pr.x - p0.x) * (pu.y - p0.y) - (pr.y - p0.y) * (pu.x - p0.x) > 0) { right = right * -1.0; pr = project(c + right * k) }
-            val m = android.graphics.Matrix()
+            val m = Matrix()
             m.setPolyToPoly(floatArrayOf(0f, 0f, 100f, 0f, 0f, -100f), 0, floatArrayOf(p0.x, p0.y, pr.x, pr.y, pu.x, pu.y), 0, 3)
             val num = D20.numbers[i]
             val label = if (num == 6 || num == 9) "$num." else "$num"

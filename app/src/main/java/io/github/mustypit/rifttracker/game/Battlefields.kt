@@ -3,6 +3,9 @@ package io.github.mustypit.rifttracker.game
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+/** One lenient JSON reader for the card, legend and battlefield libraries (new fields are ignored). */
+internal val LibraryJson = Json { ignoreUnknownKeys = true }
+
 data class Battlefield(val id: String, val name: String, val set: String, val artist: String? = null)
 
 /** One entry of assets/battlefields/battlefields.json, written by scripts/build_legend_assets.py. */
@@ -18,7 +21,7 @@ object Battlefields {
         private set
 
     fun install(json: String) {
-        all = Json { ignoreUnknownKeys = true }.decodeFromString<List<BattlefieldEntry>>(json)
+        all = LibraryJson.decodeFromString<List<BattlefieldEntry>>(json)
             .map { Battlefield(Legends.idOf(it.name), it.name.trim(), it.set.ifBlank { "Other" }, it.artist) }
             .distinctBy { it.name.lowercase() }
     }

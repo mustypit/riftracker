@@ -2,6 +2,10 @@
 package io.github.mustypit.rifttracker.ui
 
 import android.graphics.BitmapFactory
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import java.util.concurrent.Executors
 import android.util.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.animation.core.tween
@@ -23,7 +27,6 @@ import io.github.mustypit.rifttracker.game.Compare
 import io.github.mustypit.rifttracker.game.CardSort
 import io.github.mustypit.rifttracker.game.CardQuery
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.material3.DropdownMenuItem
@@ -98,7 +101,6 @@ import io.github.mustypit.rifttracker.game.CardType
 import io.github.mustypit.rifttracker.game.Cards
 import io.github.mustypit.rifttracker.game.Domain
 import io.github.mustypit.rifttracker.game.RulesText
-import java.text.NumberFormat
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
@@ -122,10 +124,10 @@ internal object CardArt {
     private val cache = object : LruCache<String, ImageBitmap>((Runtime.getRuntime().maxMemory() / 1024 / 8).toInt()) {
         override fun sizeOf(key: String, value: ImageBitmap) = (value.width * value.height * 4 / 1024).coerceAtLeast(1)
     }
-    private val decoder = java.util.concurrent.Executors.newFixedThreadPool(2)
-    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+    private val decoder = Executors.newFixedThreadPool(2)
+    private val main = Handler(Looper.getMainLooper())
     fun cached(file: String): ImageBitmap? = cache.get(file)
-    suspend fun load(context: android.content.Context, file: String): ImageBitmap? = cache.get(file)
+    suspend fun load(context: Context, file: String): ImageBitmap? = cache.get(file)
         ?: kotlinx.coroutines.suspendCancellableCoroutine { cont ->
             decoder.execute {
                 // Bundled picture, else one downloaded from OpenRift (newer cards).

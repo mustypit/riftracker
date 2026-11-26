@@ -1,5 +1,7 @@
 package io.github.mustypit.rifttracker.game
 
+import kotlinx.serialization.Serializable
+
 /** Riftbound's six domains, with the colours printed on the cards. */
 enum class Domain(val argb: Long) {
     FURY(0xFFE2483A), CALM(0xFF3FAE63), MIND(0xFF3B8BEB), BODY(0xFFF08A2E), CHAOS(0xFF7B4FC0), ORDER(0xFFE3B52B)
@@ -16,7 +18,7 @@ data class Legend(
 )
 
 /** One entry of assets/legends/legends.json, written by scripts/build_legend_assets.py. */
-@kotlinx.serialization.Serializable
+@Serializable
 data class LegendEntry(
     val name: String,
     val title: String = "",
@@ -88,7 +90,7 @@ object Legends {
      * from OpenRift (a set it hasn't added yet) stay as they are.
      */
     fun install(json: String) {
-        val entries = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromString<List<LegendEntry>>(json)
+        val entries = LibraryJson.decodeFromString<List<LegendEntry>>(json)
         val byKey = entries.associateBy { it.name.trim().lowercase() }
         fun domains(e: LegendEntry) = e.domains.mapNotNull { d -> Domain.entries.firstOrNull { it.name.equals(d, ignoreCase = true) } }
         val updated = builtIn.map { l ->

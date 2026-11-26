@@ -49,6 +49,7 @@ class CardUpdatesTest {
             when {
                 url == CardUpdates.CATALOG_URL -> catalogReply(headers)
                 url.endsWith("-full.webp") -> CardUpdates.Response(200, picture(300, 420), null) // a portrait card
+                url.contains("img-axe") -> CardUpdates.Response(404, null, null) // OpenRift has no picture
                 url.endsWith("-400w.webp") -> CardUpdates.Response(200, picture(40, 56), null)
                 else -> CardUpdates.Response(404, null, null)
             }
@@ -132,6 +133,10 @@ class CardUpdatesTest {
         assertEquals(listOf("https://openrift.app/media/cards/img-unit-400w.webp"), requests.map { it.first })
         // Kept: the second time comes from the phone.
         CardUpdates.cardImage(context, "chemtech-enforcer.webp")
+        assertEquals(1, requests.size)
+        // A picture OpenRift doesn't have is asked for once, not every time the card is drawn.
+        requests.clear()
+        repeat(3) { assertNull(CardUpdates.cardImage(context, "draven-s-axe.webp")) }
         assertEquals(1, requests.size)
         // A card the app doesn't know: nothing to fetch.
         assertNull(CardUpdates.cardImage(context, "no-such-card.webp"))

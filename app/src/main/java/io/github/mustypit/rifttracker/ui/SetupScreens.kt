@@ -28,7 +28,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,9 +41,6 @@ import io.github.mustypit.rifttracker.game.Outcome
 import io.github.mustypit.rifttracker.game.Side
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale

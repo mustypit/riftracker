@@ -1,6 +1,8 @@
 package io.github.mustypit.rifttracker.ui
 
 import androidx.compose.material3.TextButton
+import android.content.Context
+import android.os.Build
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import io.github.mustypit.rifttracker.data.CardUpdates
@@ -151,9 +153,9 @@ private fun CardsRow() {
 
 /** The installed app's version, e.g. "1.0 · build 57". */
 object AppInfo {
-    fun version(context: android.content.Context): String {
+    fun version(context: Context): String {
         val info = runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull() ?: return "?"
-        val code = if (android.os.Build.VERSION.SDK_INT >= 28) info.longVersionCode else @Suppress("DEPRECATION") info.versionCode.toLong()
+        val code = if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else @Suppress("DEPRECATION") info.versionCode.toLong()
         return "${info.versionName} · build $code"
     }
 }

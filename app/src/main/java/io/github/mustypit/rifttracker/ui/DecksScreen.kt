@@ -1,5 +1,7 @@
 package io.github.mustypit.rifttracker.ui
 
+import android.content.ClipData
+import java.util.Locale
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
@@ -13,7 +15,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,12 +27,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -56,11 +55,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.DropdownMenuItem
@@ -84,12 +78,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -822,7 +818,7 @@ private fun EnergyCurve(deck: Deck, height: Dp = 64.dp, showAverage: Boolean = f
             Text("ENERGY", style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
             Text("avg ", style = Caps, color = C.Muted)
             val avg by animateFloatAsState(DeckRules.averageEnergy(deck).toFloat(), tween(400), label = "avg")
-            Text("%.1f".format(java.util.Locale.ENGLISH, avg), fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.Ink)
+            Text("%.1f".format(Locale.ENGLISH, avg), fontWeight = FontWeight.Black, fontSize = 14.sp, color = C.Ink)
         }
         Row(Modifier.fillMaxWidth().height(height).padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
             curve.forEachIndexed { i, n ->
@@ -959,14 +955,15 @@ private fun DeckStats(deck: Deck, edit: ((Deck) -> Deck) -> Unit) {
             }
         }
     }
-    val clipboard = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
     var copied by remember { mutableStateOf<String?>(null) }
     val code = remember(deck) { runCatching { DeckCodes.fromDeck(deck) }.getOrNull() }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         listOfNotNull(("Copy deck code" to code).takeIf { code != null }, "Copy as text" to DeckRules.toText(deck)).forEach { (label, value) ->
             Text(if (copied == label) "Copied" else label, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = C.Ink, textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).border(1.5.dp, C.Line, RoundedCornerShape(12.dp))
-                    .clickable { clipboard.setText(AnnotatedString(value!!)); copied = label }.padding(12.dp))
+                    .clickable { val text = value!!; scope.launch { clipboard.setClipEntry(ClipData.newPlainText(label, text).toClipEntry()) }; copied = label }.padding(12.dp))
         }
     }
 }
