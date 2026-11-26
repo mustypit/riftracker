@@ -14,6 +14,8 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.click
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.swipe
@@ -889,6 +891,39 @@ open class AppTest {
         // Saved with the deck, and deck codes carry the choice.
         val saved = runBlocking(Dispatchers.IO) { io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(context).decks()).all.first() }.single()
         assertEquals(mapOf("iron-revenant" to "RAD-170s", "mordekaiser-twice-slain" to "RAD-020a"), saved.arts)
+    }
+
+    /** The search bar comes back when scrolling up the library (frames: screenshots/anim/searchbar_*). */
+    @Test
+    fun cardSearchBarFrames() {
+        launch()
+        click("Cards")
+        rule.waitFor("Search cards")
+        settleImages()
+        rule.mainClock.autoAdvance = false
+        var frame = 0
+        fun frames(count: Int) = repeat(count) {
+            if (it % 5 == 0) Thread.sleep(60)
+            if (prefix.isEmpty()) rule.onRoot().captureRoboImage("screenshots/anim/searchbar_%03d.png".format(frame++))
+            rule.mainClock.advanceTimeBy(20)
+        }
+        val list = rule.onNode(hasScrollToIndexAction())
+        frames(6)
+        // A long way down: the bar stays out of the way.
+        list.performTouchInput { swipeUp(startY = height * 0.85f, endY = height * 0.15f, durationMillis = 300) }; frames(20)
+        list.performTouchInput { swipeUp(startY = height * 0.85f, endY = height * 0.15f, durationMillis = 300) }; frames(24)
+        rule.onAllNodes(hasText("Search cards", substring = true)).assertCountEquals(0)
+        // A little way back up: the search bar slides in.
+        list.performTouchInput { swipeDown(startY = height * 0.45f, endY = height * 0.6f, durationMillis = 200) }; frames(24)
+        rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).assertExists()
+        rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).performTextInput("Morde"); frames(20)
+        // Scrolling on down tucks it away again.
+        rule.mainClock.autoAdvance = true
+        rule.onNode(hasSetTextAction() and hasText("Search cards", substring = true)).performTextClearance()
+        rule.waitForIdle()
+        rule.mainClock.autoAdvance = false
+        list.performTouchInput { swipeUp(startY = height * 0.7f, endY = height * 0.3f, durationMillis = 250) }; frames(24)
+        rule.mainClock.autoAdvance = true
     }
 
     @Test

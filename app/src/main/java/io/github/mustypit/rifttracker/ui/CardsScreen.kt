@@ -13,6 +13,13 @@ import androidx.compose.animation.core.spring
 import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Board
 import io.github.mustypit.rifttracker.game.Printing
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.text.style.TextAlign
@@ -277,8 +284,19 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
     val grid = if (deckId == null) vm.cardsGrid else rememberLazyGridState()
     fun update(f: (CardQuery) -> CardQuery) { vm.cardSearch.value = f(vm.cardSearch.value) }
     BackHandler(enabled = filtersOpen) { vm.cardFiltersOpen.value = false }
+    // Scrolling back up brings the search bar down over the grid; scrolling on down tucks it away.
+    var barShown by remember { mutableStateOf(false) }
+    val headerGone by remember { derivedStateOf { grid.firstVisibleItemIndex > 0 } }
+    val scrollWatch = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y > 4f) barShown = true else if (available.y < -4f) barShown = false
+                return Offset.Zero
+            }
+        }
+    }
 
-    Box(modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize().nestedScroll(scrollWatch)) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(3), state = grid, modifier = Modifier.fillMaxSize().padding(bottom = if (deck != null) 72.dp else 0.dp),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
@@ -389,6 +407,23 @@ fun CardsScreen(vm: MainViewModel, modifier: Modifier = Modifier, deckId: Long? 
                     }
                 }
                 Text("Done", fontWeight = FontWeight.Black, color = C.OnSolid, modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(C.Solid).clickable { vm.back() }.padding(horizontal = 16.dp, vertical = 10.dp))
+            }
+        }
+        AnimatedVisibility(
+            barShown && headerGone, modifier = Modifier.align(Alignment.TopCenter),
+            enter = slideInVertically(tween(220)) { -it }, exit = slideOutVertically(tween(180)) { -it },
+        ) {
+            Box(Modifier.shadow(10.dp)) {
+                HeaderBlock(onBack = deck?.let { { vm.back() } }) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        RiftTextField("Search cards", q.text, { t -> update { it.copy(text = t) } }, Modifier.weight(1f))
+                        Box(
+                            Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.12f))
+                                .clickable { vm.cardFiltersOpen.value = true }.semantics { contentDescription = "Filters" },
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(RiftIcons.Sort, null, tint = Color.White, modifier = Modifier.size(22.dp)) }
+                    }
+                }
             }
         }
         if (filtersOpen) FilterSheet(q, results.size, ::update) { vm.cardFiltersOpen.value = false }
