@@ -30,11 +30,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import io.github.mustypit.rifttracker.game.Legends
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import io.github.mustypit.rifttracker.game.Battlefields
-import io.github.mustypit.rifttracker.game.Cards
+import io.github.mustypit.rifttracker.data.CardUpdates
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.key
 
 class MainActivity : ComponentActivity() {
     private val vm: MainViewModel by viewModels()
@@ -42,10 +43,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // Legend and battlefield data from OpenRift, if the app was built with it (scripts/build_legend_assets.py).
-        runCatching { assets.open("legends/legends.json").bufferedReader().use { Legends.install(it.readText()) } }
-        runCatching { assets.open("cards/cards.json").bufferedReader().use { Cards.install(it.readText()) } }
-        runCatching { assets.open("battlefields/battlefields.json").bufferedReader().use { Battlefields.install(it.readText()) } }
+        // Card, legend and battlefield data: bundled, then anything newer downloaded from OpenRift.
+        CardUpdates.installStartup(this)
         setContent {
             val mode by vm.settings.theme.collectAsState()
             val dark = when (mode) {
@@ -54,8 +53,16 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
             }
             val accent by vm.settings.accent.collectAsState()
-            RiftTheme(dark, accent) { AppShell(vm) }
+            // New card data from OpenRift redraws the app with it.
+            val cards by CardUpdates.version.collectAsState()
+            RiftTheme(dark, accent) { key(cards) { AppShell(vm) } }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Checks OpenRift for new cards whenever the app opens (at most once an hour).
+        lifecycleScope.launch { CardUpdates.check(applicationContext, AppGraph.clock()) }
     }
 }
 

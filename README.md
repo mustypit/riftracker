@@ -12,7 +12,8 @@ match, browse the cards and build decks. Not affiliated with Riot Games.
   history plus win rates per legend you played, against each opposing legend and per battlefield,
   for all time or the last 30 or 7 days. Log matches played without the app.
 - **Cards:** the whole card library with pictures, Scryfall-style filters (domains, type, energy /
-  power / might, keywords, tags, rules text) and banned cards marked.
+  power / might, keywords, tags, rules text) and banned cards marked. New cards and banlist changes
+  arrive on their own: the app checks [OpenRift](https://openrift.app) when it opens.
 - **Decks:** build decks with the Riftbound rules checked as you go (copies, domains, signatures,
   runes, battlefields, banlist), with a sideboard and a maybeboard. View a deck as a list, a grid of
   every card, or stacked with counts; group by type or cost and sort by energy or name. Energy curve,
@@ -20,7 +21,8 @@ match, browse the cards and build decks. Not affiliated with Riot Games.
   Piltover Archive, Riftmana and other deck sites use) or plain card lists. Pick a deck when you start
   a match to track its record and games.
 - Light and dark themes, your choice of accent colour, smooth sliding screens.
-- No ads, no account, no internet access: everything stays on your phone.
+- No ads, no account, no tracking: your matches and decks stay on your phone. The app goes online
+  only to check OpenRift for new card data and to fetch pictures of cards it doesn't ship.
 
 ## Install
 
@@ -33,7 +35,8 @@ download the `rifttracker-apk` artifact (needs a GitHub account).
 
 ## Credits
 
-- Card data and images: [OpenRift](https://openrift.app), refreshed weekly.
+- Card data and images: [OpenRift](https://openrift.app)'s free Riftbound API, checked by the app and
+  bundled weekly.
 - Deck codes: [Piltover Archive's RiftboundDeckCodes](https://github.com/Piltover-Archive/RiftboundDeckCodes)
   format (Apache 2.0), ported to Kotlin.
 - RiftTracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games

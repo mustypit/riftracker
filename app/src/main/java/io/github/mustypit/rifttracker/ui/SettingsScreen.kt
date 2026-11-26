@@ -1,5 +1,9 @@
 package io.github.mustypit.rifttracker.ui
 
+import androidx.compose.material3.TextButton
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import io.github.mustypit.rifttracker.data.CardUpdates
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -105,6 +109,8 @@ fun SettingsScreen(vm: MainViewModel, onBack: (() -> Unit)? = null) {
             )
             Text("${Math.round(darkness * 100)}%", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = C.Muted, modifier = Modifier.align(Alignment.CenterHorizontally))
         }
+        SectionLabel("Cards")
+        CardsRow()
         val version = remember { AppInfo.version(context) }
         Text(
             "RiftTracker $version\nFan app, not affiliated with Riot Games · cards: OpenRift",
@@ -112,6 +118,34 @@ fun SettingsScreen(vm: MainViewModel, onBack: (() -> Unit)? = null) {
             modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 28.dp),
         )
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** "Updated today · Check now": card data from OpenRift (checked on its own whenever the app opens). */
+@Composable
+private fun CardsRow() {
+    val status by CardUpdates.status.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val now = AppGraph.clock()
+    val label = when {
+        status.checking -> "Checking…"
+        status.failed -> "Couldn't check"
+        status.updatedAt == null -> "Built in"
+        else -> when (val days = ((now - status.updatedAt!!) / 86_400_000L).toInt()) {
+            0 -> "Updated today"
+            1 -> "Updated yesterday"
+            else -> "Updated $days days ago"
+        }
+    }
+    Row(
+        Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.Card).padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = C.Ink, modifier = Modifier.weight(1f).semantics { contentDescription = "Cards $label" })
+        TextButton(onClick = { scope.launch { CardUpdates.check(context.applicationContext, AppGraph.clock(), force = true) } }, enabled = !status.checking) {
+            Text("Check now", fontWeight = FontWeight.Bold, color = if (status.checking) C.Muted else C.Ink)
+        }
     }
 }
 

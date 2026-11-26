@@ -25,6 +25,8 @@ data class Card(
     val maxCopies: Int? = null,
     val banned: Boolean = false,
     val image: String? = null,
+    /** OpenRift's picture id, to fetch the picture when the app doesn't ship it (newer cards). */
+    val imageId: String? = null,
     /** Other printings' card codes (reprints, promos), for deck codes. */
     val codes: List<String> = emptyList(),
 ) {

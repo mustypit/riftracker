@@ -78,6 +78,21 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   card is its tag whose `tagCategoryMap` category is `legend`; names use straight apostrophes. The app
   merges `legends.json` into the built-in list at startup (`Legends.install`). Riftcodex was the
   earlier source (it lagged behind on Radiance and mixed in overnumbered art); it's no longer used.
+- **In-app card updates** (owner: "API calls and checks entirely within the app"; OpenRift's API is
+  free, no key, for "your own tools"): `data/CardUpdates.kt` checks `GET /api/v1/catalog?langs=EN` when
+  the app opens (`MainActivity.onStart`), at most once an hour (OpenRift: responses cacheable an hour),
+  with the saved ETag so unchanged data is a 304 with no body; "Check now" in Settings forces it.
+  `game/CatalogImport.kt` is the Kotlin port of the importer's selection (original normal printing,
+  codes, bans, champions; **keep it in step with scripts/build_legend_assets.py**) and writes the same
+  three JSON files plus `imageId`s to files/openrift/ (written to a temp folder, then swapped in; under
+  20 legends or 500 cards is ignored). Startup installs bundled assets, then the saved files on top.
+  Card pictures the app doesn't ship are fetched one at a time when shown (`cardImage`, 400w, kept);
+  new legends'/battlefields' art is cropped on the phone with the importer's boxes. OpenRift asks:
+  User-Agent with the app and a contact (`RiftTracker/<version> (+https://github.com/mustypit/riftracker)`,
+  owner's choice: no email), keep traffic light, **don't mirror images in bulk** (the weekly importer now
+  only fetches new or changed pictures, by imageId). Settings: one row "Updated today · Check now".
+  Failures keep the current data. Tests use `CardUpdates.fetch` fakes (AppTest answers 304);
+  `CardUpdatesTest`, `CatalogImportTest` (fixture `test/resources/openrift/catalog_sample.json`).
 - **Card library** (Cards tab): `game/Cards.kt`: `Card`; `CardQuery` (name text, rules text, tags,
   domains, type, stats rows, keywords, sort) and `Cards.search`. The search box matches **names only**
   (owner: "shadow" must only find cards named …shadow…). Rules text (sheet's "Text", like Scryfall):
@@ -282,7 +297,8 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   re-render: `design/icon/`. Adaptive icon: foreground = the render (`mipmap-*/ic_launcher_foreground.webp`,
   gem ≈ 48% of the layer), background `@color/icon_background`, monochrome = flat outline vector. Not the
   Riftbound logo: Riot's policy forbids using its logos/trademarks, so marks must be original.
-- No ads or tracking. Everything stays on the phone.
+- No ads or tracking. Matches and decks stay on the phone; the app's only network use is OpenRift's
+  card data and pictures (INTERNET permission, added for that).
 
 ## Conventions
 

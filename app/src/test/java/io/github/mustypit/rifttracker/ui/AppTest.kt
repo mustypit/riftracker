@@ -84,6 +84,8 @@ open class AppTest {
         AppGraph.clock = { clock.get() }
         AppGraph.random = Random(7)
         Zone.id = ZoneOffset.UTC
+        // No real network in tests: OpenRift answers "nothing new".
+        io.github.mustypit.rifttracker.data.CardUpdates.fetch = { _, _ -> io.github.mustypit.rifttracker.data.CardUpdates.Response(304, null, null) }
         runBlocking(Dispatchers.IO) { AppDb.get(context).clearAllTables() }
         // A few real battlefields (the app adds the full OpenRift list when it has it).
         if (io.github.mustypit.rifttracker.game.Battlefields.all.isEmpty()) {
@@ -399,6 +401,11 @@ open class AppTest {
         launch()
         click("Settings")
         rule.waitFor("THEME")
+        // Card data: built in until OpenRift sends something newer; "Check now" asks right away.
+        rule.onNode(hasContentDescription("Cards Built in")).performScrollTo().assertExists()
+        shot("19h_settings_cards")
+        click("Check now")
+        rule.onNode(hasContentDescription("Cards Built in")).assertExists()
         val other = if (this is AppDarkTest) "Light" else "Dark"
         click(other)
         rule.waitForIdle()

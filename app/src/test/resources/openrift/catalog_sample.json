@@ -1,0 +1,27 @@
+{
+ "sets": [
+  {"id": "s-ogn", "slug": "ogn", "name": "Origins", "releases": {"EN": {"releasedAt": "2025-10-31", "precision": "day"}}, "setType": "main"},
+  {"id": "s-new", "slug": "nxt", "name": "Nexus", "releases": {"EN": {"releasedAt": "2026-12-01", "precision": "day"}}, "setType": "main"},
+  {"id": "s-pro", "slug": "pro", "name": "Promos", "releases": {}, "setType": "supplemental"}
+ ],
+ "cards": {
+  "c-jinx-legend": {"slug": "loose-cannon", "name": "Loose Cannon", "types": ["legend"], "superTypes": [], "domains": ["fury", "chaos", "colorless"], "tags": ["Jinx"], "keywords": [], "bans": []},
+  "c-unit": {"slug": "chemtech-enforcer", "name": "Chemtech Enforcer", "types": ["unit"], "superTypes": [], "domains": ["fury"], "energy": 2, "power": 0, "might": 2, "tags": ["Zaun"], "keywords": ["Assault"], "bans": [], "maxCopiesOverride": null},
+  "c-banned": {"slug": "draven-s-axe", "name": "Draven’s Axe", "types": ["gear"], "superTypes": [], "domains": ["fury"], "energy": 1, "power": 1, "tags": [], "keywords": [], "bans": [{"format": "standard"}]},
+  "c-field": {"slug": "cosmic-vista", "name": "Cosmic Vista", "types": ["battlefield"], "superTypes": [], "domains": [], "tags": [], "keywords": [], "bans": []},
+  "c-newleg": {"slug": "gate-crasher", "name": "Gate Crasher", "types": ["legend"], "superTypes": [], "domains": ["body", "order"], "tags": ["Nova"], "keywords": [], "bans": []}
+ },
+ "printings": {
+  "p1": {"cardId": "c-jinx-legend", "setId": "s-ogn", "shortCode": "OGN-251", "language": "EN", "artVariant": "normal", "isOvernumbered": false, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "normal", "rarity": "rare", "artist": "Kudos", "canonicalRank": 1, "images": [{"imageId": "img-jinx"}], "printedRulesText": "Legend text"},
+  "p1b": {"cardId": "c-jinx-legend", "setId": "s-ogn", "shortCode": "OGN-251a", "language": "EN", "artVariant": "altart", "isOvernumbered": false, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "foil", "rarity": "rare", "artist": "Other", "canonicalRank": 2, "images": [{"imageId": "img-jinx-alt"}]},
+  "p2": {"cardId": "c-unit", "setId": "s-ogn", "shortCode": "OGN-024", "language": "EN", "artVariant": "normal", "isOvernumbered": false, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "normal", "rarity": "common", "artist": "A", "canonicalRank": 1, "images": [{"imageId": "img-unit"}], "printedRulesText": "[Assault 2]"},
+  "p2b": {"cardId": "c-unit", "setId": "s-ogn", "shortCode": "OGN-324*", "language": "EN", "artVariant": "normal", "isOvernumbered": true, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "foil", "rarity": "common", "artist": "B", "canonicalRank": 3, "images": [{"imageId": "img-unit-over"}]},
+  "p2c": {"cardId": "c-unit", "setId": "s-pro", "shortCode": "PRO-007", "language": "EN", "artVariant": "normal", "isOvernumbered": false, "isSigned": false, "markers": ["promo"], "distributionChannels": [{"channel": "nexus-night"}], "finish": "normal", "rarity": "common", "artist": "C", "canonicalRank": 4, "images": [{"imageId": "img-unit-promo"}]},
+  "p3": {"cardId": "c-banned", "setId": "s-ogn", "shortCode": "OGN-030", "language": "EN", "artVariant": "normal", "isOvernumbered": false, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "normal", "rarity": "uncommon", "artist": "D", "canonicalRank": 1, "images": [{"imageId": "img-axe"}]},
+  "p4": {"cardId": "c-field", "setId": "s-ogn", "shortCode": "OGN-290", "language": "EN", "artVariant": "normal", "isOvernumbered": false, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "normal", "rarity": "common", "artist": "E", "canonicalRank": 1, "images": [{"imageId": "img-vista"}], "printedRulesText": "When you hold here, score 1."},
+  "p5": {"cardId": "c-newleg", "setId": "s-new", "shortCode": "NXT-001", "language": "EN", "artVariant": "normal", "isOvernumbered": false, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "normal", "rarity": "rare", "artist": "F", "canonicalRank": 1, "images": [{"imageId": "img-vi"}]},
+  "p6": {"cardId": "c-unit", "setId": "s-ogn", "shortCode": "OGN-024", "language": "EN", "artVariant": "normal", "isOvernumbered": false, "isSigned": false, "markers": [], "distributionChannels": [], "finish": "normal", "rarity": "common", "artist": "A", "canonicalRank": 2, "images": []}
+ },
+ "markers": [], "distributionChannels": [], "enums": {}, "keywords": {}, "tagCategories": [],
+ "tagCategoryMap": {"Jinx": "legend", "Nova": "legend", "Zaun": "region"}
+}

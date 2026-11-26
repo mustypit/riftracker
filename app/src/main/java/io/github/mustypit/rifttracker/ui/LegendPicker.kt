@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.mustypit.rifttracker.game.Legend
 import io.github.mustypit.rifttracker.game.Legends
+import io.github.mustypit.rifttracker.data.CardUpdates
 import kotlin.math.absoluteValue
 
 private val tilePalette = listOf(
@@ -68,7 +69,9 @@ internal open class AssetArt(private val folder: String) {
 
     fun get(context: android.content.Context, id: String): ImageBitmap? = cache.getOrPut(id) {
         val names = files ?: (context.assets.list(folder)?.toSet() ?: emptySet()).also { files = it }
-        val file = listOf("webp", "png", "jpg").map { "$id.$it" }.firstOrNull { it in names } ?: return@getOrPut null
+        val file = listOf("webp", "png", "jpg").map { "$id.$it" }.firstOrNull { it in names }
+            // Not bundled: art for a newer legend or battlefield, downloaded from OpenRift.
+            ?: return@getOrPut CardUpdates.art(context, folder, id)?.let { f -> BitmapFactory.decodeFile(f.path)?.asImageBitmap() }
         context.assets.open("$folder/$file").use { BitmapFactory.decodeStream(it) }?.asImageBitmap()
     }
 }

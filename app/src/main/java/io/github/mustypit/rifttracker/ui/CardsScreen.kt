@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.spring
 import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Board
+import io.github.mustypit.rifttracker.data.CardUpdates
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
@@ -127,7 +128,9 @@ internal object CardArt {
     suspend fun load(context: android.content.Context, file: String): ImageBitmap? = cache.get(file)
         ?: kotlinx.coroutines.suspendCancellableCoroutine { cont ->
             decoder.execute {
+                // Bundled picture, else one downloaded from OpenRift (newer cards).
                 val bmp = runCatching { context.assets.open("cards/$file").use { BitmapFactory.decodeStream(it) }?.asImageBitmap() }.getOrNull()
+                    ?: runCatching { CardUpdates.cardImage(context, file)?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }?.asImageBitmap() }.getOrNull()
                 main.post {
                     bmp?.let { cache.put(file, it) }
                     if (cont.isActive) cont.resumeWith(Result.success(bmp))

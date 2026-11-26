@@ -109,7 +109,11 @@ def pick(catalog, kind):
     return out
 
 
-def save_art(folder, file_id, image_id_, box, landscape):
+def save_art(folder, file_id, image_id_, box, landscape, previous=None):
+    """Crops the artwork. Skips the download when the same picture is already there (OpenRift asks
+    not to mirror images in bulk: only new or changed pictures are fetched)."""
+    if previous == image_id_ and (folder / f"{file_id}.jpg").exists():
+        return f"{file_id}.jpg"
     try:
         im = Image.open(io.BytesIO(get(IMAGE.format(image_id_)))).convert("RGB")
         w, h = im.size
@@ -124,6 +128,14 @@ def save_art(folder, file_id, image_id_, box, landscape):
     except Exception as e:  # keep going; the app falls back to a colour tile
         print(f"  no art for {file_id}: {e}")
         return None
+
+
+def previous_ids(folder):
+    """imageId per name from the last run's index (to skip unchanged pictures)."""
+    index = folder / f"{folder.name}.json"
+    if not index.exists():
+        return {}
+    return {e.get("name") or e.get("slug"): e.get("imageId") for e in json.loads(index.read_text(encoding="utf-8"))}
 
 
 def write_index(folder, library):
@@ -145,13 +157,13 @@ def main(source):
         sys.exit(f"Only {len(legends)} legends from OpenRift; not touching the app's data.")
 
     OUT.mkdir(parents=True, exist_ok=True)
-    library = []
+    library, before = [], previous_ids(OUT)
     for name, (c, p, s) in legends.items():
-        image = save_art(OUT, image_id(name), p["images"][0]["imageId"], ART_BOX, landscape=False)
+        image = save_art(OUT, image_id(name), p["images"][0]["imageId"], ART_BOX, landscape=False, previous=before.get(name))
         library.append({
             "name": name, "title": clean(c["name"]), "set": s.get("name", ""),
             "domains": [d for d in c.get("domains", []) if d in DOMAINS],
-            "artist": p.get("artist"), "image": image,
+            "artist": p.get("artist"), "image": image, "imageId": p["images"][0]["imageId"],
         })
         print(f"{name:14} {p.get('shortCode', ''):10} {s.get('name', ''):16} {'/'.join(library[-1]['domains']):12} {image or '-'}")
     write_index(OUT, library)
@@ -159,10 +171,10 @@ def main(source):
     battlefields = pick(catalog, "battlefield")
     if battlefields:
         BF_OUT.mkdir(parents=True, exist_ok=True)
-        bf_library = []
+        bf_library, before = [], previous_ids(BF_OUT)
         for name, (c, p, s) in battlefields.items():
-            image = save_art(BF_OUT, image_id(name), p["images"][0]["imageId"], BF_ART_BOX, landscape=True)
-            bf_library.append({"name": name, "set": s.get("name", ""), "artist": p.get("artist"), "image": image})
+            image = save_art(BF_OUT, image_id(name), p["images"][0]["imageId"], BF_ART_BOX, landscape=True, previous=before.get(name))
+            bf_library.append({"name": name, "set": s.get("name", ""), "artist": p.get("artist"), "image": image, "imageId": p["images"][0]["imageId"]})
             print(f"  battlefield {name:30} {p.get('shortCode', ''):10} {s.get('name', ''):16} {image or '-'}")
         write_index(BF_OUT, bf_library)
 
@@ -228,7 +240,15 @@ def write_cards(catalog):
     limit = int(os.environ.get("CARD_IMAGES_LIMIT", "0") or 0)
     chosen = library if not limit else library[:: max(1, len(library) // limit)][:limit]
     CARDS_OUT.mkdir(parents=True, exist_ok=True)
+    before = {}
+    if (CARDS_OUT / "cards.json").exists():
+        before = {e["slug"]: e.get("imageId") for e in json.loads((CARDS_OUT / "cards.json").read_text(encoding="utf-8"))}
     for e in chosen:
+        # Unchanged picture already in the app: keep it (only new or changed pictures are fetched).
+        # Bundles from before imageId was recorded have None: those keep their file too.
+        if (CARDS_OUT / f"{e['slug']}.webp").exists() and before.get(e["slug"], "missing") in (None, e["imageId"]):
+            e["image"] = f"{e['slug']}.webp"
+            continue
         try:
             im = Image.open(io.BytesIO(get(IMAGE.format(e["imageId"])))).convert("RGB")
             if im.width > im.height:  # landscape battlefields: keep them landscape, same width budget
@@ -240,8 +260,7 @@ def write_cards(catalog):
         except Exception as ex:
             print(f"  no image for {e['slug']}: {ex}")
     for e in library:
-        e.setdefault("image", None)
-        del e["imageId"]
+        e.setdefault("image", None)  # imageId stays: the app fetches pictures it doesn't ship by it
     (CARDS_OUT / "cards.json").write_text(json.dumps(library, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     by_type = {}
     for e in library:
