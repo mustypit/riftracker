@@ -98,6 +98,7 @@ import io.github.mustypit.rifttracker.game.DeckCodes
 import io.github.mustypit.rifttracker.game.Cards
 import io.github.mustypit.rifttracker.game.Deck
 import io.github.mustypit.rifttracker.game.Printing
+import io.github.mustypit.rifttracker.game.Prices
 import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Domain
 import io.github.mustypit.rifttracker.game.Legends
@@ -407,7 +408,10 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                         SectionHead("STATS")
                         DeckStats(deck, ::edit)
                     }
-                    DeckTab.Stats -> if (matches.isEmpty()) EmptyState("No matches yet", "Pick this deck when you start a match.", Modifier.fillMaxWidth()) else DeckRecord(matches)
+                    DeckTab.Stats -> {
+                        DeckValue(deck)
+                        if (matches.isEmpty()) EmptyState("No matches yet", "Pick this deck when you start a match.", Modifier.fillMaxWidth()) else DeckRecord(matches)
+                    }
                     DeckTab.Matches -> if (matches.isEmpty()) EmptyState("No matches yet", "Pick this deck when you start a match.", Modifier.fillMaxWidth()) else {
                         Column(Modifier.fullBleed(16.dp)) {
                             matches.forEach { m -> MatchRow(m, onClick = { vm.push(Screen.MatchDetail(m.id)) }, showMyLegend = false) }
@@ -1038,5 +1042,32 @@ fun DeckArtsScreen(vm: MainViewModel, id: Long) {
             }
         }
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** Deck value on Cardmarket at the chosen arts: the total, the priciest cards, the rest behind "All cards". */
+@Composable
+private fun DeckValue(deck: Deck) {
+    val value = remember(deck, Prices.byCode) { Prices.deckValue(deck) } ?: return
+    val (total, rows) = value
+    var all by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card).padding(horizontal = 14.dp, vertical = 12.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("DECK VALUE", style = Caps, color = C.Muted, modifier = Modifier.weight(1f))
+            Icon(RiftIcons.Cardmarket, "Cardmarket", tint = C.Muted, modifier = Modifier.size(14.dp))
+        }
+        Text(Prices.format(total), fontWeight = FontWeight.Black, fontSize = 30.sp, color = C.Ink, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp).semantics { contentDescription = "Deck value ${Prices.format(total)}" })
+        (if (all) rows else rows.take(4)).forEach { (c, n, p) ->
+            Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                CardArtThumb(c, 44.dp, 30.dp, printing = deck.printingOf(c))
+                Text(c.name, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                if (n > 1) Text("×$n", fontSize = 12.sp, color = C.Muted)
+                Text(Prices.format(n * p.eur), fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.Ink)
+            }
+        }
+        if (rows.size > 4) Text(
+            if (all) "Fewer" else "All cards", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = C.Ink, textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).clickable { all = !all }.padding(vertical = 8.dp),
+        )
     }
 }

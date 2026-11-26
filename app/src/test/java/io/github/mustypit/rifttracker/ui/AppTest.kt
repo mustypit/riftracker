@@ -854,16 +854,23 @@ open class AppTest {
             val cards = io.github.mustypit.rifttracker.game.Cards.all.map { c -> extra[c.slug]?.let { c.copy(printings = it) } ?: c }
             io.github.mustypit.rifttracker.game.Cards.install(kotlinx.serialization.json.Json.encodeToString(cards))
         }
+        // Sample Cardmarket prices (the real ones come from OpenRift's price data).
+        val demo = io.github.mustypit.rifttracker.game.Cards.bySlug("amateur-demolitionist")!!.code!!
+        io.github.mustypit.rifttracker.game.Prices.byCode = mapOf(
+            "RAD-143" to 1.20, "RAD-170" to 9.50, "RAD-170s" to 84.00, "RAD-020" to 3.10, "RAD-020a" to 22.50,
+            "RAD-137" to 4.90, "RAD-137a" to 18.00, demo to 0.30,
+        ).mapValues { io.github.mustypit.rifttracker.game.CardPrice(it.value, "https://www.cardmarket.com/en/Riftbound/Products/Singles/x") }
         // Cards tab: the card page ends with the printings; tapping one swaps the picture, same page.
         click("Cards")
         type("Search cards", "Iron Revenant")
         rule.onNode(hasContentDescription("Card Iron Revenant")).performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Printing RAD-143, on")).performScrollTo().assertExists()
-        rule.onNode(hasContentDescription("Printing RAD-170s")).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Printing RAD-170s")).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick); rule.waitForIdle()
         rule.onNode(hasContentDescription("Printing RAD-170s, on")).assertExists()
         settleImages(); shot("52_card_printings")
         rule.onNode(hasContentDescription("Printing RAD-170s, on")).performScrollTo(); settleImages(); shot("52b_card_printings_carousel")
         rule.onNode(hasText("RAD-170s", substring = true)).assertExists() // the set line follows
+        rule.onNode(hasContentDescription("Price €84.00")).performScrollTo(); settleImages(); shot("57_card_price")
         rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
         // A deck with the regular arts; Card arts (deck menu) picks others.
         val legend = io.github.mustypit.rifttracker.game.Cards.bySlug("iron-revenant")!!
@@ -891,6 +898,11 @@ open class AppTest {
         // Saved with the deck, and deck codes carry the choice.
         val saved = runBlocking(Dispatchers.IO) { io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(context).decks()).all.first() }.single()
         assertEquals(mapOf("iron-revenant" to "RAD-170s", "mordekaiser-twice-slain" to "RAD-020a"), saved.arts)
+        // Deck value at the chosen arts: 84 + 22.50 + 2 × 4.90 + 3 × 0.30.
+        rule.onNode(hasContentDescription("Stats tab", substring = true)).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Deck value €117.20")).assertExists()
+        settleImages(); shot("58_deck_value")
+        io.github.mustypit.rifttracker.game.Prices.byCode = emptyMap()
     }
 
     /** The search bar comes back when scrolling up the library (frames: screenshots/anim/searchbar_*). */

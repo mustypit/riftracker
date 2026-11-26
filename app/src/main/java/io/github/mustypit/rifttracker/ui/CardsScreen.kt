@@ -13,6 +13,9 @@ import androidx.compose.animation.core.spring
 import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Board
 import io.github.mustypit.rifttracker.game.Printing
+import java.net.URLEncoder
+import io.github.mustypit.rifttracker.game.Prices
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.runtime.derivedStateOf
@@ -686,6 +689,7 @@ fun CardDetailScreen(vm: MainViewModel, slug: String) {
                 }
             }
             val p = shown
+            CardPriceRow(card, p)
             Text(
                 (if (p == null) listOfNotNull(card.set, card.code, card.rarity?.replaceFirstChar { it.uppercase() }, card.artist)
                 else listOfNotNull(p.set, p.code, p.rarity?.replaceFirstChar { it.uppercase() }, p.artist)).joinToString(" · "),
@@ -697,6 +701,26 @@ fun CardDetailScreen(vm: MainViewModel, slug: String) {
             PrintingCarousel(card, selected = shown, onPick = { shown = it })
         }
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+/**
+ * The printing's Cardmarket price, quiet (no box, smaller than the rules text), with Cardmarket's mark
+ * as the way to its product page (or a search for the card when there's no exact page).
+ */
+@Composable
+private fun CardPriceRow(card: Card, printing: Printing?) {
+    val price = Prices.of(card, printing) ?: return
+    val uri = LocalUriHandler.current
+    val link = price.url ?: "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=" + URLEncoder.encode(card.name, "UTF-8")
+    Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(Prices.format(price.eur), fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = C.Ink, modifier = Modifier.semantics { contentDescription = "Price ${Prices.format(price.eur)}" })
+        Spacer(Modifier.weight(1f))
+        Box(
+            Modifier.size(40.dp).clip(CircleShape).background(Color.White).border(1.dp, C.Line, CircleShape)
+                .clickable { uri.openUri(link) }.semantics { contentDescription = "Cardmarket" },
+            contentAlignment = Alignment.Center,
+        ) { Icon(RiftIcons.Cardmarket, null, tint = RiftIcons.CardmarketBlue, modifier = Modifier.size(20.dp)) }
     }
 }
 
