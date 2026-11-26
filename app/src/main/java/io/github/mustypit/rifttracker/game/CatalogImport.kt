@@ -41,7 +41,8 @@ object CatalogImport {
         val cards = asList(root["cards"]).associateBy { it.str("id") }
         val printings = asList(root["printings"])
         val tagMap = (root["tagCategoryMap"] as? JsonObject)?.mapValues { (it.value as? JsonPrimitive)?.contentOrNull } ?: emptyMap()
-        val bySetRank = compareBy<JsonObject>(*rankKeys(sets))
+        val original = rank(sets, newest = false) // legend and battlefield art: the original printing
+        val newest = rank(sets, newest = true)    // the library: the newest standard printing
 
         fun imageId(p: JsonObject) = (p["images"] as? JsonArray)?.firstOrNull()?.jsonObject?.str("imageId")
 
@@ -51,7 +52,18 @@ object CatalogImport {
             val cid = p.str("cardId") ?: continue
             if (cid !in cards || imageId(p) == null) continue
             val cur = best[cid]
-            if (cur == null || bySetRank.compare(p, cur) < 0) best[cid] = p
+            if (cur == null || newest.compare(p, cur) < 0) best[cid] = p
+        }
+        // Every English printing with a picture, one per picture, the shown one first.
+        val printingsPerCard = printings.filter { it.str("language") == "EN" && imageId(it) != null && it.str("cardId") in cards }
+            .groupBy { it.str("cardId")!! }
+            .mapValues { (cid, ps) -> ps.sortedWith(newest).distinctBy { imageId(it) }.let { l -> listOfNotNull(best[cid]) + l.filter { imageId(it) != best[cid]?.let(::imageId) } } }
+        fun kind(p: JsonObject) = when {
+            p.bool("isSigned") -> "signed"
+            p.bool("isOvernumbered") -> "overnumbered"
+            (p.str("artVariant") ?: "normal") != "normal" -> "altart"
+            p.nonEmpty("markers") || p.nonEmpty("distributionChannels") -> "promo"
+            else -> "normal"
         }
         val codesPerCard = HashMap<String, MutableSet<String>>()
         for (p in printings) {
@@ -82,6 +94,15 @@ object CatalogImport {
                 // Downloaded cards have no bundled picture: the app fetches it by this id when shown.
                 put("image", "$slug.webp")
                 put("imageId", imageId(p))
+                putJsonArray("printings") {
+                    printingsPerCard[cid].orEmpty().forEach { q ->
+                        val code = q.str("shortCode") ?: return@forEach
+                        add(buildJsonObject {
+                            put("code", code); put("set", sets[q.str("setId")]?.str("name") ?: ""); put("imageId", imageId(q))
+                            put("rarity", q.str("rarity")); put("artist", q.str("artist")); put("kind", kind(q))
+                        })
+                    }
+                }
             }
         }.sortedWith(compareBy({ it.str("set") }, { it.str("code") ?: "" }, { it.str("name") }))
 
@@ -94,7 +115,7 @@ object CatalogImport {
                 val name = if (kind == "legend") champion(c, tagMap) else clean(c.str("name") ?: "")
                 byName.getOrPut(name) { mutableListOf() } += c to p
             }
-            return byName.map { (name, options) -> options.minWithOrNull { a, b -> bySetRank.compare(a.second, b.second) }!!.let { Triple(name, it.first, it.second) } }
+            return byName.map { (name, options) -> options.minWithOrNull { a, b -> original.compare(a.second, b.second) }!!.let { Triple(name, it.first, it.second) } }
         }
         val legends = pick("legend")
         val legendArt = LinkedHashMap<String, String>()
@@ -127,24 +148,23 @@ object CatalogImport {
         )
     }
 
-    /** Lower is better: the original normal printing (same order as the importer's `rank`). */
-    private fun rankKeys(sets: Map<String?, JsonObject>): Array<(JsonObject) -> Comparable<*>?> {
+    /**
+     * Printing order, best first (same as the importer's `rank`): standard before special versions
+     * (overnumbered, alternate art, signed, promo-stamped, special distribution, odd size); English;
+     * released in English; then the original (earliest) or the [newest] release; a main set over a
+     * supplemental one; normal finish.
+     */
+    private fun rank(sets: Map<String?, JsonObject>, newest: Boolean): Comparator<JsonObject> {
         fun en(p: JsonObject) = sets[p.str("setId")]?.obj("releases")?.obj("EN")?.str("releasedAt")
-        return arrayOf(
-            { p ->
-                listOf(
-                    p.bool("isOvernumbered"), (p.str("artVariant") ?: "normal") != "normal", p.bool("isSigned"),
-                    p.nonEmpty("markers"), p.nonEmpty("distributionChannels"), (p.str("size") ?: "standard") != "standard",
-                ).count { it }
-            },
-            { p -> p.str("language") != "EN" },
-            { p -> en(p) == null },
-            { p -> en(p) ?: "" },
-            { p -> sets[p.str("setId")]?.str("setType") != "main" },
-            { p -> p.str("finish") != "normal" },
-            { p -> p.int("canonicalRank") ?: 0 },
-            { p -> p.str("shortCode") ?: "" },
-        )
+        val byRelease = compareBy<JsonObject> {
+            listOf(
+                it.bool("isOvernumbered"), (it.str("artVariant") ?: "normal") != "normal", it.bool("isSigned"),
+                it.nonEmpty("markers"), it.nonEmpty("distributionChannels"), (it.str("size") ?: "standard") != "standard",
+            ).count { b -> b }
+        }.thenBy { it.str("language") != "EN" }.thenBy { en(it) == null }
+        val dated = if (newest) byRelease.thenByDescending { en(it) ?: "" } else byRelease.thenBy { en(it) ?: "" }
+        return dated.thenBy { sets[it.str("setId")]?.str("setType") != "main" }.thenBy { it.str("finish") != "normal" }
+            .thenBy { it.int("canonicalRank") ?: 0 }.thenBy { it.str("shortCode") ?: "" }
     }
 
     /** The champion a legend card is for: its tag whose category is "legend". */

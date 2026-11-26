@@ -25,6 +25,9 @@ object DeckCodeFormat {
 
     private data class Parsed(val set: String, val number: String, val variant: String)
 
+    /** Whether the format can carry this card code (a known set and variant). */
+    fun canEncode(code: String): Boolean = runCatching { parse(code).let { it.set in SETS && it.variant in VARIANTS } }.getOrDefault(false)
+
     private fun parse(code: String): Parsed {
         val parts = code.split("-")
         require(parts.size == 2 && parts[0].isNotEmpty() && parts[1].isNotEmpty()) { "Invalid card code: $code" }
@@ -261,10 +264,13 @@ object DeckCodes {
 
     fun runeCard(d: Domain): Card? = Cards.all.firstOrNull { it.type == "rune" && it.domainList == listOf(d) && it.code?.contains('-') == true }
 
-    private fun codeOf(c: Card?): String? = c?.code?.takeIf { it.contains('-') }
+    /** The card's code for a deck code: its shown printing's, or another printing's when the format can't carry that one (a newer set). */
+    private fun codeOf(c: Card?): String? = c?.let { (listOfNotNull(it.code) + it.codes).firstOrNull(DeckCodeFormat::canEncode) }
 
     /** A code for [deck]: legend, main deck, runes and battlefields; sideboard; chosen champion. Cards without a code are left out. */
     fun fromDeck(deck: Deck): String {
+        // A card's chosen printing goes into the code, so other apps show the same art.
+        fun codeOf(c: Card?): String? = c?.let { deck.printingOf(it)?.code?.takeIf(DeckCodeFormat::canEncode) } ?: this.codeOf(c)
         val main = mutableListOf<DeckCodeFormat.Entry>()
         fun add(c: Card?, n: Int) { val code = codeOf(c) ?: return; if (n > 0) main += DeckCodeFormat.Entry(code, n) }
         add(DeckRules.legendOf(deck), 1)
@@ -285,8 +291,12 @@ object DeckCodes {
         val main = linkedMapOf<String, Int>()
         val runes = linkedMapOf<String, Int>()
         val fields = mutableListOf<String>()
+        val arts = linkedMapOf<String, String>()
+        // A code naming a special printing of a card (alt art, signed…) keeps it as the deck's art; a plain reprint doesn't.
+        fun keepArt(c: Card, cc: String) { if (cc != c.code && c.printing(cc)?.kind.let { it != null && it != "normal" }) arts[c.slug] = cc }
         for ((cc, n) in decoded.main) {
             val c = cardFor(cc)
+            if (c != null) keepArt(c, cc)
             when {
                 c == null -> unknown += cc
                 c.type == "legend" -> if (legend == null) legend = c else unknown += cc
@@ -298,10 +308,10 @@ object DeckCodes {
         val side = linkedMapOf<String, Int>()
         for ((cc, n) in decoded.sideboard) {
             val c = cardFor(cc)
-            if (c == null) unknown += cc else side[c.slug] = (side[c.slug] ?: 0) + n
+            if (c == null) unknown += cc else { keepArt(c, cc); side[c.slug] = (side[c.slug] ?: 0) + n }
         }
         val leg = legend ?: return null to unknown
         val champ = decoded.chosenChampion?.let(::cardFor) ?: DeckRules.champions(leg).firstOrNull { main.containsKey(it.slug) }
-        return Deck(name = name, legend = leg.slug, champion = champ?.slug, main = main, runes = runes, battlefields = fields, side = side) to unknown
+        return Deck(name = name, legend = leg.slug, champion = champ?.slug, main = main, runes = runes, battlefields = fields, side = side, arts = arts) to unknown
     }
 }

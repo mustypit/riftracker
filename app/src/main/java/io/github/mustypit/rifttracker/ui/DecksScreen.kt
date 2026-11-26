@@ -97,6 +97,7 @@ import io.github.mustypit.rifttracker.game.DeckCodeFormat
 import io.github.mustypit.rifttracker.game.DeckCodes
 import io.github.mustypit.rifttracker.game.Cards
 import io.github.mustypit.rifttracker.game.Deck
+import io.github.mustypit.rifttracker.game.Printing
 import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Domain
 import io.github.mustypit.rifttracker.game.Legends
@@ -347,7 +348,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp)) {
-            DeckHeader(deck, onBack = { vm.back() }, onRename = { renaming = true }, onDuplicate = { vm.duplicateDeck(id) }, onDelete = { vm.deleteDeck(id) })
+            DeckHeader(deck, onBack = { vm.back() }, onRename = { renaming = true }, onDuplicate = { vm.duplicateDeck(id) }, onArts = { vm.push(Screen.DeckArts(id)) }, onDelete = { vm.deleteDeck(id) })
             DeckTabs(tab, total = 1 + deck.mainSize + deck.runeCount + deck.battlefields.size + deck.sideSize, matchCount = matches.size) { tab = it }
             AnimatedContent(tab, contentAlignment = Alignment.TopStart, transitionSpec = { tabSlide() }, label = "deck tab") { t ->
             Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -362,7 +363,7 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                             if (view == DeckView.Grid) Column(
                                 Modifier.graphicsLayer { alpha = if (board == Board.MAYBE) 0.7f else 1f },
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) { CardGrid(list, stacked, chosen, open) }
+                            ) { CardGrid(list, stacked, chosen, open, deck::printingOf) }
                             else list.forEach { (c, n) ->
                                 val k = "${board.name}/$section/${c.slug}"
                                 key(k) {
@@ -376,8 +377,8 @@ fun DeckScreen(vm: MainViewModel, id: Long) {
                         }
                         DeckRules.legendOf(deck)?.let { legend ->
                             SectionHead("LEGEND")
-                            if (view == DeckView.Grid) CardGrid(listOf(legend to 1), stacked = true, chosen = false, onOpen = open)
-                            else LegendRow(legend) { open(legend) }
+                            if (view == DeckView.Grid) CardGrid(listOf(legend to 1), stacked = true, chosen = false, onOpen = open, art = deck::printingOf)
+                            else LegendRow(legend, deck.printingOf(legend)) { open(legend) }
                         }
                         SectionHead("MAIN DECK", deck.mainSize, DeckRules.MAIN_SIZE, description = "Main ${deck.mainSize} of ${DeckRules.MAIN_SIZE}")
                         Crossfade(Triple(view, stacked, group to sort), animationSpec = tween(220), label = "deck view") { (_, _, gs) ->
@@ -610,7 +611,7 @@ private fun sections(deck: Deck, group: DeckGroup, sort: DeckSort): List<Pair<St
 
 /** Card pictures, three across. Every copy is its own card unless [stacked] (then one with its count). */
 @Composable
-private fun CardGrid(list: List<Pair<Card, Int>>, stacked: Boolean, chosen: Boolean, onOpen: (Card) -> Unit) {
+private fun CardGrid(list: List<Pair<Card, Int>>, stacked: Boolean, chosen: Boolean, onOpen: (Card) -> Unit, art: (Card) -> Printing? = { null }) {
     val tiles = if (stacked) list else list.flatMap { (c, n) -> List(n) { c to 1 } }
     tiles.chunked(3).forEach { rowCards ->
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -620,6 +621,7 @@ private fun CardGrid(list: List<Pair<Card, Int>>, stacked: Boolean, chosen: Bool
                         c, Modifier.fillMaxWidth()
                             .then(if (chosen) Modifier.border(2.5.dp, C.Accent, RoundedCornerShape(8.dp)).padding(3.dp) else Modifier)
                             .shadow(2.dp, RoundedCornerShape(7.dp)).clickable { onOpen(c) }.semantics { contentDescription = "Deck card ${c.name}" },
+                        printing = art(c),
                     )
                     if (stacked) CopyBadge(n, Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp), large = true)
                 }
@@ -630,13 +632,13 @@ private fun CardGrid(list: List<Pair<Card, Int>>, stacked: Boolean, chosen: Bool
 }
 
 @Composable
-private fun LegendRow(legend: Card, onOpen: () -> Unit) {
+private fun LegendRow(legend: Card, printing: Printing?, onOpen: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.Card).border(1.dp, C.Line, RoundedCornerShape(12.dp))
             .clickable(onClick = onOpen).padding(start = 46.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        CardArtThumb(legend)
+        CardArtThumb(legend, printing = printing)
         Text(DeckRules.championTag(legend)?.let { "$it, ${legend.name}" } ?: legend.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -670,7 +672,7 @@ private fun CardRow(
                 val p = c.power ?: 0
                 if (p > 0) Row { val ds = c.domainList.ifEmpty { listOf<Domain?>(null) }; repeat(p) { i -> RuneSymbol(ds[i % ds.size], 11.dp) } }
             }
-            CardArtThumb(c)
+            CardArtThumb(c, printing = deck.printingOf(c))
             Text(c.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = C.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             val tag = when {
                 c.banned -> null
@@ -756,7 +758,7 @@ private fun MoveSheet(deck: Deck, c: Card, from: Board, onMove: (Board, Boolean)
 }
 
 @Composable
-private fun DeckHeader(deck: Deck, onBack: () -> Unit, onRename: () -> Unit, onDuplicate: () -> Unit, onDelete: () -> Unit) {
+private fun DeckHeader(deck: Deck, onBack: () -> Unit, onRename: () -> Unit, onDuplicate: () -> Unit, onArts: () -> Unit, onDelete: () -> Unit) {
     val art = legendArt(deck)
     val legend = DeckRules.legendOf(deck)
     var menu by remember { mutableStateOf(false) }
@@ -772,6 +774,7 @@ private fun DeckHeader(deck: Deck, onBack: () -> Unit, onRename: () -> Unit, onD
                 DropdownMenu(menu, { menu = false }) {
                     DropdownMenuItem(text = { Text("Rename") }, onClick = { menu = false; onRename() })
                     DropdownMenuItem(text = { Text("Duplicate") }, onClick = { menu = false; onDuplicate() })
+                    DropdownMenuItem(text = { Text("Card arts") }, onClick = { menu = false; onArts() })
                     DropdownMenuItem(text = { Text("Delete") }, onClick = { menu = false; confirmDelete = true })
                 }
             }
@@ -1006,5 +1009,34 @@ private fun PasteOverlay(onClose: () -> Unit, onImport: (Deck) -> Unit) {
         parsed?.second?.takeIf { it.isNotEmpty() }?.let { Text("${it.size} not found", color = C.Muted, fontSize = 13.sp) }
         val deck = parsed?.first
         BigButton("IMPORT", if (deck != null) C.Solid else C.Track, if (deck != null) C.OnSolid else C.Muted) { if (deck != null) onImport(deck) }
+    }
+}
+
+/**
+ * Card arts (from the deck's menu, owner's pick): the deck's cards that have other printings, each
+ * with its printings side by side; the deck's printing has a ✓, tapping another uses it in the deck.
+ */
+@Composable
+fun DeckArtsScreen(vm: MainViewModel, id: Long) {
+    val drafts by vm.deckDrafts.collectAsState()
+    val decks by vm.decks.collectAsState()
+    val deck = drafts[id] ?: decks.firstOrNull { it.id == id } ?: return
+    val cards = remember(deck.legend, deck.main.keys, deck.side.keys, deck.maybe.keys) {
+        (listOf(deck.legend) + deck.main.keys + deck.side.keys + deck.maybe.keys).distinct()
+            .mapNotNull(Cards::bySlug).filter { it.printings.size > 1 }
+    }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        HeaderBlock(onBack = { vm.back() }) {
+            Text("Card arts", color = Color.White, fontWeight = FontWeight.Black, fontSize = 30.sp)
+            Text(deck.name, color = Color.White.copy(alpha = 0.7f), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        }
+        if (cards.isEmpty()) EmptyState("One art each", "", Modifier.fillMaxWidth())
+        cards.forEach { c ->
+            Text(c.name, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = C.Ink, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp))
+            PrintingCarousel(c, selected = deck.printingOf(c), check = true) { p ->
+                vm.editDeck(id) { d -> d.copy(arts = if (p == c.printings.first()) d.arts - c.slug else d.arts + (c.slug to p.code)) }
+            }
+        }
+        Spacer(Modifier.height(24.dp))
     }
 }

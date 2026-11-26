@@ -130,7 +130,7 @@ class CardUpdatesTest {
         requests.clear()
         val bytes = CardUpdates.cardImage(context, "chemtech-enforcer.webp")
         assertNotNull(bytes)
-        assertEquals(listOf("https://openrift.app/media/cards/img-unit-400w.webp"), requests.map { it.first })
+        assertEquals(listOf("https://openrift.app/media/cards/img-unit-new-400w.webp"), requests.map { it.first })
         // Kept: the second time comes from the phone.
         CardUpdates.cardImage(context, "chemtech-enforcer.webp")
         assertEquals(1, requests.size)

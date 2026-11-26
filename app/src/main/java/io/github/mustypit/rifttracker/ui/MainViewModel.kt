@@ -50,6 +50,7 @@ sealed interface Screen {
     data class CardDetail(val slug: String) : Screen
     data object NewDeck : Screen
     data class DeckDetail(val id: Long) : Screen
+    data class DeckArts(val id: Long) : Screen
     data class DeckAddCards(val id: Long) : Screen
 }
 

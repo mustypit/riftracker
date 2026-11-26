@@ -2,7 +2,22 @@ package io.github.mustypit.rifttracker.game
 
 import kotlinx.serialization.Serializable
 
-/** One card in the library: its original normal printing (from OpenRift, see build_legend_assets.py). */
+/**
+ * One printing of a card (English): the newest standard one, a reprint, an alternate art, an
+ * overnumbered or signed version, a promo. [kind] is "normal", "altart", "overnumbered", "signed" or
+ * "promo". The picture is fetched by [imageId] when the app doesn't ship it.
+ */
+@Serializable
+data class Printing(
+    val code: String,
+    val set: String = "",
+    val imageId: String,
+    val rarity: String? = null,
+    val artist: String? = null,
+    val kind: String = "normal",
+)
+
+/** One card in the library, shown as its newest standard printing (from OpenRift, see build_legend_assets.py). */
 @Serializable
 data class Card(
     val slug: String,
@@ -28,7 +43,12 @@ data class Card(
     val imageId: String? = null,
     /** Other printings' card codes (reprints, promos), for deck codes. */
     val codes: List<String> = emptyList(),
+    /** Every English printing with a picture, the one shown first (empty in older data). */
+    val printings: List<Printing> = emptyList(),
 ) {
+    /** The printing with this code, if the card has it. */
+    fun printing(code: String?): Printing? = code?.let { c -> printings.firstOrNull { it.code == c } }
+
     val domainList: List<Domain> get() = domains.mapNotNull { d -> Domain.entries.firstOrNull { it.name.equals(d, true) } }
     val isChampion: Boolean get() = "champion" in superTypes
     val landscape: Boolean get() = type == "battlefield"

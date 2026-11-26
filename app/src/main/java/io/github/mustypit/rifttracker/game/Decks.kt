@@ -26,8 +26,12 @@ data class Deck(
     val side: Map<String, Int> = emptyMap(),
     /** Maybeboard: cards being considered. No limits, never makes a deck illegal, not exported in codes. */
     val maybe: Map<String, Int> = emptyMap(),
+    /** Chosen printing per card: slug -> printing code (cards not listed use their standard printing). */
+    val arts: Map<String, String> = emptyMap(),
 ) {
     fun count(slug: String) = main[slug] ?: 0
+    /** The printing this deck shows for [card]: its chosen one, or null for the standard printing. */
+    fun printingOf(card: Card): Printing? = card.printing(arts[card.slug])
     fun count(board: Board, slug: String) = board(board)[slug] ?: 0
     fun board(board: Board): Map<String, Int> = when (board) { Board.MAIN -> main; Board.SIDE -> side; Board.MAYBE -> maybe }
     fun withBoard(board: Board, cards: Map<String, Int>): Deck = when (board) {

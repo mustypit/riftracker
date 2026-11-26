@@ -119,6 +119,7 @@ fun AppShell(vm: MainViewModel) {
                     is Screen.CardDetail -> CardDetailScreen(vm, s.slug)
                     Screen.NewDeck -> NewDeckScreen(vm)
                     is Screen.DeckDetail -> DeckScreen(vm, s.id)
+                    is Screen.DeckArts -> DeckArtsScreen(vm, s.id)
                     is Screen.DeckAddCards -> CardsScreen(vm, deckId = s.id)
                     null -> when (d.tab) {
                         Tab.Play -> if (loaded) NewMatchScreen(vm)

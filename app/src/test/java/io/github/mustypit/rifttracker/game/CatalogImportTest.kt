@@ -14,20 +14,42 @@ class CatalogImportTest {
     @After fun reset() { Cards.resetForTests(); Legends.resetForTests(); Battlefields.resetForTests() }
 
     @Test
-    fun picksTheOriginalNormalPrinting() {
+    fun showsTheNewestStandardPrintingAndKeepsEveryPrinting() {
         val r = CatalogImport.parse(sample)
         Cards.install(r.cardsJson)
         val unit = Cards.bySlug("chemtech-enforcer")!!
-        // Not the overnumbered foil, not the promo with a marker and a distribution channel.
-        assertEquals("OGN-024", unit.code)
-        assertEquals("Origins", unit.set)
-        assertEquals("A", unit.artist)
-        assertEquals("img-unit", unit.imageId)
+        // The newest standard printing (a reprint in a later set), not the overnumbered foil, the
+        // alternate art or the promo with a marker and a distribution channel.
+        assertEquals("NXT-024", unit.code)
+        assertEquals("Nexus", unit.set)
+        assertEquals("Newer", unit.artist)
+        assertEquals("img-unit-new", unit.imageId)
         assertEquals("chemtech-enforcer.webp", unit.image)
         // Every other printing's code still finds the card (variant suffix dropped).
-        assertEquals(listOf("OGN-324", "PRO-007"), unit.codes)
+        assertEquals(listOf("OGN-024", "OGN-324", "PRO-007"), unit.codes)
         assertEquals(unit, Cards.byCode("PRO-007"))
+        assertEquals(unit, Cards.byCode("OGN-024"))
         assertEquals(2, unit.energy); assertEquals(listOf("Assault"), unit.keywords); assertEquals("[Assault 2]", unit.text)
+        // The carousel: English printings with a picture, one per picture, the shown one first.
+        assertEquals(listOf("NXT-024", "OGN-024", "OGN-024a", "OGN-324*", "PRO-007"), unit.printings.map { it.code })
+        assertEquals(listOf("normal", "normal", "altart", "overnumbered", "promo"), unit.printings.map { it.kind })
+        assertEquals("img-unit-alt", unit.printing("OGN-024a")!!.imageId)
+    }
+
+    @Test
+    fun deckCodesKeepTheChosenPrinting() {
+        val r = CatalogImport.parse(sample)
+        Cards.install(r.cardsJson); Legends.install(r.legendsJson)
+        val deck = Deck(name = "x", legend = "loose-cannon", main = mapOf("chemtech-enforcer" to 3), arts = mapOf("chemtech-enforcer" to "OGN-024a"))
+        val code = DeckCodes.fromDeck(deck)
+        val back = DeckCodes.toDeck(code, "x").first!!
+        assertEquals(mapOf("chemtech-enforcer" to 3), back.main)
+        assertEquals(mapOf("chemtech-enforcer" to "OGN-024a"), back.arts)
+        // Without a choice, a printing the format can't carry (a set it doesn't know) falls back to one it can.
+        val plain = DeckCodes.toDeck(DeckCodes.fromDeck(deck.copy(arts = emptyMap())), "x").first!!
+        assertEquals(mapOf("chemtech-enforcer" to 3), plain.main)
+        assertEquals(emptyMap<String, String>(), plain.arts)
+        assertEquals(null, DeckCodeFormat.canEncode("NXT-024").takeIf { it })
     }
 
     @Test

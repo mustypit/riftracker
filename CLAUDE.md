@@ -95,6 +95,17 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   only fetches new or changed pictures, by imageId). Settings: one row "Updated today · Check now".
   Failures keep the current data. Tests use `CardUpdates.fetch` fakes (AppTest answers 304);
   `CardUpdatesTest`, `CatalogImportTest` (fixture `test/resources/openrift/catalog_sample.json`).
+- **Printings** (owner's flow): `Card.printings` = every English printing with a picture (one per picture;
+  `kind` normal/altart/overnumbered/signed/promo), the shown one first. The library shows each card's **newest
+  standard printing** (`CatalogImport.rank(newest = true)`, importer `rank(newest=True)`); legend and battlefield
+  art stay the original printing. Card page: a "PRINTINGS" carousel at the end; tapping one swaps the picture and
+  set line **in place** (no new page). Decks: cards are added with the standard art; the deck's ⋮ menu → **Card
+  arts** (`DeckArtsScreen`) lists only cards with other printings, ✓ on the deck's one, tap to switch (`Deck.arts`
+  slug → printing code; a card tap is never used for this, owner: too niche). Grid, list rows and legend show the
+  chosen art; no labels ("alt art", "signed": owner, users can see it). Deck codes write the chosen printing
+  (when the format knows its set) and read special printings back into `arts`. Other printings' pictures are
+  fetched on first view (`CardImage(printing=)` → `p/<imageId>.webp` via `CardUpdates.cardImage`).
+  `AppTest.printings` (real Mordekaiser printings in `test/resources/printings/`).
 - **Card library** (Cards tab): `game/Cards.kt`: `Card`; `CardQuery` (name text, rules text, tags,
   domains, type, stats rows, keywords, sort) and `Cards.search`. The search box matches **names only**
   (owner: "shadow" must only find cards named …shadow…). Rules text (sheet's "Text", like Scryfall):
@@ -105,7 +116,7 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
   that stat never matches (power counts as 0 for cards with an energy cost). Keywords: a card needs
   every one picked. `RulesText.parse` splits OpenRift markup `[Keyword]`, `_(reminder)_`, `:rb_…:` into
   words and symbols. Data: `assets/cards/cards.json` + `assets/cards/<slug>.webp` (whole card, 400 px,
-  ~31 MB for ~1,100 cards; the importer writes them, each card's original normal printing).
+  ~31 MB for ~1,100 cards; the importer writes them, each card's newest standard printing).
   `ui/CardsScreen.kt` (owner-approved mockups): search field in the black header, no count header and
   no set dividers; domain and type chips; active filters as yellow removable tokens + "+ Filters";
   "N cards" + sort (Energy/Name/Set); one flat 3-column grid (battlefields full width). Filter sheet is

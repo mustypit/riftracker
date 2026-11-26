@@ -72,10 +72,13 @@ def as_list(d):
     return [dict(v, id=v.get("id", k)) for k, v in d.items()] if isinstance(d, dict) else list(d)
 
 
-def rank(p, sets):
-    """Lower is better: the original normal printing."""
+def rank(p, sets, newest=False):
+    """Lower is better: the original (or with newest=True, the newest) standard printing.
+    Same order as CatalogImport.rank in the app: keep the two in step."""
     s = sets.get(p.get("setId"), {})
     en = ((s.get("releases") or {}).get("EN") or {}).get("releasedAt")
+    if newest and en:
+        en = "".join(chr(0x7E - ord(ch) + 0x20) for ch in en)  # newest first: invert the date text
     special = (
         bool(p.get("isOvernumbered")), p.get("artVariant", "normal") != "normal", bool(p.get("isSigned")),
         bool(p.get("markers")), bool(p.get("distributionChannels")), p.get("size", "standard") != "standard",
@@ -199,7 +202,8 @@ def write_cards(catalog):
         c = cards.get(p.get("cardId"))
         if not c or not p.get("images"):
             continue
-        if c["id"] not in best or rank(p, sets) < rank(best[c["id"]], sets):
+        # The library shows each card's newest standard printing.
+        if c["id"] not in best or rank(p, sets, newest=True) < rank(best[c["id"]], sets, newest=True):
             best[c["id"]] = p
     # How big would "every printing" be? Count English printings with their own picture, per card.
     images_per_card = {}
@@ -214,6 +218,21 @@ def write_cards(catalog):
         sc = p.get("shortCode")
         if sc and p.get("cardId") in cards:
             codes_per_card.setdefault(p["cardId"], set()).add(re.sub(r"[a-z*]$", "", sc))
+    # Every English printing with a picture (one per picture), the shown one first: the app's carousel.
+    def kind(p):
+        if p.get("isSigned"): return "signed"
+        if p.get("isOvernumbered"): return "overnumbered"
+        if p.get("artVariant", "normal") != "normal": return "altart"
+        if p.get("markers") or p.get("distributionChannels"): return "promo"
+        return "normal"
+    printings_per_card = {}
+    for p in sorted(as_list(catalog["printings"]), key=lambda q: rank(q, sets, newest=True)):
+        cid = p.get("cardId")
+        if cid in cards and p.get("language") == "EN" and p.get("images") and p.get("shortCode"):
+            lst = printings_per_card.setdefault(cid, [])
+            if all(x["imageId"] != p["images"][0]["imageId"] for x in lst):
+                lst.append({"code": p["shortCode"], "set": sets.get(p.get("setId"), {}).get("name", ""),
+                            "imageId": p["images"][0]["imageId"], "rarity": p.get("rarity"), "artist": p.get("artist"), "kind": kind(p)})
     kinds = {}
     for p in as_list(catalog["printings"]):
         if p.get("language") == "EN":
@@ -235,6 +254,7 @@ def write_cards(catalog):
             "artist": p.get("artist"), "maxCopies": c.get("maxCopiesOverride"), "banned": bool(c.get("bans")),
             "codes": sorted(codes_per_card.get(cid, set()) - {p.get("shortCode")}),
             "imageId": p["images"][0]["imageId"],
+            "printings": sorted(printings_per_card.get(cid, []), key=lambda x: x["imageId"] != p["images"][0]["imageId"]),
         })
     library.sort(key=lambda e: (e["set"], e["code"] or "", e["name"]))
     limit = int(os.environ.get("CARD_IMAGES_LIMIT", "0") or 0)

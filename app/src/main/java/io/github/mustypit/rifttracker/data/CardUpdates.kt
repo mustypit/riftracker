@@ -164,9 +164,11 @@ object CardUpdates {
      * (400 px, one card at a time, only when shown) and kept. Call off the main thread.
      */
     fun cardImage(context: Context, file: String): ByteArray? {
-        val local = File(dir(context), "images/$file")
+        // "p/<imageId>.webp" is another printing of a card; "<slug>.webp" a card's shown printing.
+        val local = File(dir(context), "images/" + file.replace('/', '_'))
         if (local.exists()) return local.readBytes()
-        val imageId = Cards.bySlug(file.substringBeforeLast('.'))?.imageId ?: return null
+        val imageId = (if (file.startsWith("p/")) file.removePrefix("p/").substringBeforeLast('.') else Cards.bySlug(file.substringBeforeLast('.'))?.imageId)
+            ?: return null
         // A picture OpenRift doesn't have isn't asked for again every time the card is drawn.
         if (imageId in missing) return null
         val r = runCatching { fetch("$MEDIA$imageId-400w.webp", mapOf("User-Agent" to userAgent)) }.getOrNull() ?: return null

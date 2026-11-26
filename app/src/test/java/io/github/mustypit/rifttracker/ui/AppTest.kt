@@ -827,6 +827,70 @@ open class AppTest {
         }
     }
 
+    /**
+     * Printings (owner's flow): the card page's carousel swaps the picture in place; a deck's
+     * "Card arts" (from its menu) picks the art per card, and the grid and list show it.
+     */
+    @Test
+    fun printings() {
+        launch()
+        rule.waitFor("Log a past match")
+        // A few real Mordekaiser printings; their pictures come from the (fake) network, as in the app.
+        val pictures = mapOf("t-iron-170" to "iron-revenant-170", "t-iron-170s" to "iron-revenant-170s", "t-ts-020a" to "twice-slain-020a", "t-dom-137a" to "dominating-137a")
+        io.github.mustypit.rifttracker.data.CardUpdates.fetch = { url, _ ->
+            val id = pictures.keys.firstOrNull { url.contains("/$it-") }
+            if (id == null) io.github.mustypit.rifttracker.data.CardUpdates.Response(304, null, null)
+            else io.github.mustypit.rifttracker.data.CardUpdates.Response(200, javaClass.getResource("/printings/${pictures[id]}.webp")!!.readBytes(), null)
+        }
+        fun p(code: String, id: String, kind: String = "normal") = io.github.mustypit.rifttracker.game.Printing(code, "Radiance", id, kind = kind)
+        val extra = mapOf(
+            "iron-revenant" to listOf(p("RAD-143", "t-iron-143"), p("RAD-170", "t-iron-170", "overnumbered"), p("RAD-170s", "t-iron-170s", "signed")),
+            "mordekaiser-twice-slain" to listOf(p("RAD-020", "t-ts-020"), p("RAD-020a", "t-ts-020a", "altart")),
+            "mordekaiser-dominating" to listOf(p("RAD-137", "t-dom-137"), p("RAD-137a", "t-dom-137a", "altart")),
+        )
+        rule.runOnUiThread {
+            val cards = io.github.mustypit.rifttracker.game.Cards.all.map { c -> extra[c.slug]?.let { c.copy(printings = it) } ?: c }
+            io.github.mustypit.rifttracker.game.Cards.install(kotlinx.serialization.json.Json.encodeToString(cards))
+        }
+        // Cards tab: the card page ends with the printings; tapping one swaps the picture, same page.
+        click("Cards")
+        type("Search cards", "Iron Revenant")
+        rule.onNode(hasContentDescription("Card Iron Revenant")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Printing RAD-143, on")).performScrollTo().assertExists()
+        rule.onNode(hasContentDescription("Printing RAD-170s")).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Printing RAD-170s, on")).assertExists()
+        settleImages(); shot("52_card_printings")
+        rule.onNode(hasContentDescription("Printing RAD-170s, on")).performScrollTo(); settleImages(); shot("52b_card_printings_carousel")
+        rule.onNode(hasText("RAD-170s", substring = true)).assertExists() // the set line follows
+        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+        // A deck with the regular arts; Card arts (deck menu) picks others.
+        val legend = io.github.mustypit.rifttracker.game.Cards.bySlug("iron-revenant")!!
+        val champion = io.github.mustypit.rifttracker.game.Cards.bySlug("mordekaiser-twice-slain")!!
+        val deck = io.github.mustypit.rifttracker.game.DeckRules.newDeck(legend, champion, "Morde control").let { d ->
+            d.copy(main = d.main + ("mordekaiser-dominating" to 2) + ("amateur-demolitionist" to 3), updatedAt = clock.get())
+        }
+        runBlocking(Dispatchers.IO) { io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(context).decks()).save(deck) }
+        click("Decks")
+        click("Morde control")
+        rule.waitFor("MAIN DECK", substring = true)
+        rule.onNode(hasContentDescription("Grid view", substring = true)).performClick(); rule.waitForIdle()
+        settleImages(); shot("53_deck_regular_arts")
+        rule.onNode(hasContentDescription("Deck options")).performClick(); rule.waitForIdle()
+        click("Card arts")
+        rule.waitFor("Card arts")
+        rule.onNode(hasContentDescription("Printing RAD-170s")).performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Printing RAD-020a")).performScrollTo().performClick(); rule.waitForIdle()
+        rule.onNode(hasContentDescription("Printing RAD-020a, on")).assertExists()
+        settleImages(); shot("54_card_arts")
+        rule.onNode(hasContentDescription("Back")).performClick(); rule.waitForIdle()
+        settleImages(); shot("55_deck_chosen_arts_grid")
+        rule.onNode(hasContentDescription("List view", substring = true)).performClick(); rule.waitForIdle()
+        settleImages(); shot("56_deck_chosen_arts_list")
+        // Saved with the deck, and deck codes carry the choice.
+        val saved = runBlocking(Dispatchers.IO) { io.github.mustypit.rifttracker.data.DeckStore(AppDb.get(context).decks()).all.first() }.single()
+        assertEquals(mapOf("iron-revenant" to "RAD-170s", "mordekaiser-twice-slain" to "RAD-020a"), saved.arts)
+    }
+
     @Test
     fun bannedCards() {
         // A saved deck holding a banned card and a banned battlefield.

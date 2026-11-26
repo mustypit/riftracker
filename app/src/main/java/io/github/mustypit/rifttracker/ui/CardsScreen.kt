@@ -12,6 +12,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.spring
 import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Board
+import io.github.mustypit.rifttracker.game.Printing
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.style.TextAlign
 import io.github.mustypit.rifttracker.data.CardUpdates
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.offset
@@ -143,10 +147,12 @@ internal object CardArt {
 
 /** A card's picture (the whole printed card), with a quiet placeholder while it loads. Banned cards carry a tag. */
 @Composable
-fun CardImage(card: Card, modifier: Modifier = Modifier, corner: Dp = 7.dp, showBanned: Boolean = true) {
+fun CardImage(card: Card, modifier: Modifier = Modifier, corner: Dp = 7.dp, showBanned: Boolean = true, printing: Printing? = null) {
     val context = LocalContext.current
-    val file = card.image
-    val bitmap by produceState(file?.let(CardArt::cached), file) { if (file != null && value == null) value = CardArt.load(context, file) }
+    // Another printing than the shown one: its picture by OpenRift id (fetched once, then kept).
+    val file = printing?.takeIf { it.imageId != card.imageId && it != card.printings.firstOrNull() }?.let { "p/${it.imageId}.webp" } ?: card.image
+    // Keyed by file, so switching printings shows the new picture (the old one stays until it's ready).
+    val bitmap by produceState(file?.let(CardArt::cached), file) { if (file != null) value = CardArt.cached(file) ?: CardArt.load(context, file) ?: value }
     val ratio = if (card.landscape) 1039f / 744f else 744f / 1039f
     Box(modifier.aspectRatio(ratio).clip(RoundedCornerShape(corner)).background(C.Track)) {
         bitmap?.let { Image(it, card.name, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
@@ -171,14 +177,14 @@ fun CardThumb(card: Card, size: Dp, modifier: Modifier = Modifier) {
  * above the name, so the frame and text are cropped away. For deck list rows.
  */
 @Composable
-fun CardArtThumb(card: Card, width: Dp = 56.dp, height: Dp = 38.dp, modifier: Modifier = Modifier) {
+fun CardArtThumb(card: Card, width: Dp = 56.dp, height: Dp = 38.dp, modifier: Modifier = Modifier, printing: Printing? = null) {
     val cardW = width / 0.78f
     val cardH = cardW * (1039f / 744f)
     Box(modifier.size(width, height).clip(RoundedCornerShape(7.dp)).background(C.Track)) {
         CardImage(
             card, Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).requiredSize(cardW, cardH)
                 .offset(x = -cardW * 0.11f, y = -cardH * 0.135f),
-            corner = 0.dp, showBanned = false,
+            corner = 0.dp, showBanned = false, printing = printing,
         )
     }
 }
@@ -591,13 +597,15 @@ internal fun Modifier.fullBleed(side: Dp): Modifier = layout { m, c ->
 @Composable
 fun CardDetailScreen(vm: MainViewModel, slug: String) {
     val card = Cards.bySlug(slug) ?: return
+    // The printing on show: tapping one in the carousel swaps it in place (same page).
+    var shown by remember(slug) { mutableStateOf(card.printings.firstOrNull()) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Box(Modifier.fillMaxWidth().background(C.Black).statusBarsPadding().padding(bottom = 20.dp)) {
             IconButton(onClick = { vm.back() }, modifier = Modifier.padding(start = 8.dp, top = 4.dp)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White)
             }
             CardImage(
-                card, showBanned = false, modifier = Modifier.align(Alignment.Center).padding(start = 28.dp, end = 28.dp, top = 52.dp).fillMaxWidth().widthIn(max = if (card.landscape) 520.dp else 420.dp)
+                card, showBanned = false, printing = shown, modifier = Modifier.align(Alignment.Center).padding(start = 28.dp, end = 28.dp, top = 52.dp).fillMaxWidth().widthIn(max = if (card.landscape) 520.dp else 420.dp)
                     .shadow(16.dp, RoundedCornerShape(12.dp)),
                 corner = 12.dp,
             )
@@ -642,11 +650,37 @@ fun CardDetailScreen(vm: MainViewModel, slug: String) {
                     }
                 }
             }
+            val p = shown
             Text(
-                listOfNotNull(card.set, card.code, card.rarity?.replaceFirstChar { it.uppercase() }, card.artist).joinToString(" · "),
+                (if (p == null) listOfNotNull(card.set, card.code, card.rarity?.replaceFirstChar { it.uppercase() }, card.artist)
+                else listOfNotNull(p.set, p.code, p.rarity?.replaceFirstChar { it.uppercase() }, p.artist)).joinToString(" · "),
                 color = C.Muted, fontSize = 13.sp,
             )
-            Spacer(Modifier.height(8.dp))
+        }
+        if (card.printings.size > 1) {
+            Text("PRINTINGS", style = Caps, color = C.Muted, modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp))
+            PrintingCarousel(card, selected = shown, onPick = { shown = it })
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** Every printing of [card] side by side; [selected] is outlined in the accent (with a ✓ when [check]). */
+@Composable
+fun PrintingCarousel(card: Card, selected: Printing?, check: Boolean = false, width: Dp = 96.dp, onPick: (Printing) -> Unit) {
+    LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        items(card.printings, key = { it.imageId }) { p ->
+            val on = p.imageId == (selected ?: card.printings.first()).imageId
+            Box(
+                Modifier.width(width).then(if (on) Modifier.border(3.dp, C.Accent, RoundedCornerShape(10.dp)).padding(4.dp) else Modifier.padding(4.dp))
+                    .clickable { onPick(p) }.semantics { contentDescription = "Printing ${p.code}" + if (on) ", on" else "" },
+            ) {
+                CardImage(card, Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(7.dp)), showBanned = false, printing = p)
+                if (check && on) Text(
+                    "✓", color = C.OnAccent, fontWeight = FontWeight.Black, fontSize = 12.sp, textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(5.dp).size(20.dp).clip(CircleShape).background(C.Accent),
+                )
+            }
         }
     }
 }
