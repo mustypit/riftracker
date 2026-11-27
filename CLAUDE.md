@@ -328,6 +328,9 @@ none: setup forms and the legend picker are screens/overlays, not dialogs. Dialo
 - Develop on the branch the session names (or `main` for this repo); commit and push when done;
   don't open PRs unless asked. Prototypes the owner wants to see first go on a branch (GIFs before
   pushing to main). Branch deletion is blocked for Claude: tell the owner which branches to delete.
-- `versionName` is bumped by hand for a release (1.2 now); build artifacts are kept 14 days
-  (reports, screenshots) and 30 days (APK), so make releases from a recent build.
+- `versionName` is bumped by hand for a release (1.2 now). CI builds only `main` (plus branches run by
+  hand from the Actions tab), skips docs-only pushes and cancels a superseded run; artifacts: APK 14 days,
+  screenshots (screens only, no animation frames) 5 days, test report only on failure. Make releases
+  from a recent build. (Owner hit 90% of the monthly Actions quota; this repo is public, so the minutes
+  are free, but each run used to upload ~1.3 GB of frames.)
 - Readability: import names instead of writing out `androidx.…` / `io.github.mustypit.…` inline.
