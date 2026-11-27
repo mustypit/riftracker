@@ -402,10 +402,10 @@ open class AppTest {
         click("Settings")
         rule.waitFor("THEME")
         // Card data: built in until OpenRift sends something newer; "Check now" asks right away.
-        rule.onNode(hasContentDescription("Cards Built in")).performScrollTo().assertExists()
+        rule.onNode(hasContentDescription("Cards Built in"), useUnmergedTree = true).performScrollTo().assertExists()
         shot("19h_settings_cards")
         click("Check now")
-        rule.onNode(hasContentDescription("Cards Built in")).assertExists()
+        rule.onNode(hasContentDescription("Cards Built in"), useUnmergedTree = true).assertExists()
         val other = if (this is AppDarkTest) "Light" else "Dark"
         click(other)
         rule.waitForIdle()
