@@ -1,7 +1,14 @@
 name: Build APK
+# Builds main (and any branch on demand from the Actions tab). Docs-only pushes don't build.
 on:
   push:
+    branches: [main]
+    paths-ignore: ["**.md", "design/**"]
   workflow_dispatch:
+# A newer push to the same branch cancels the build still running.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,17 +33,19 @@ jobs:
         # Every JVM test (logic, database, UI on Robolectric) plus a screenshot of each screen.
         run: ./gradlew recordRoborazziDebug --no-daemon
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: failure()
         with:
           name: test-report
           path: app/build/reports/tests/
-          retention-days: 14
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
         with:
+          # The screens only (~40 MB); the animation frames (over 1 GB) stay on the runner.
           name: screenshots
-          path: app/screenshots/
-          retention-days: 14
+          path: |
+            app/screenshots/*.png
+          retention-days: 5
       - name: Build APK
         run: ./gradlew assembleDebug --no-daemon
       - name: Check the APK can update the installed app
@@ -53,4 +62,4 @@ jobs:
           name: rifttracker-apk
           path: rifttracker-${{ github.run_number }}.apk
           # Releases keep the APKs worth keeping; the Release workflow picks from recent builds.
-          retention-days: 30
+          retention-days: 14
