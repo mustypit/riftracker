@@ -8,6 +8,11 @@ import io.github.mustypit.rifttracker.game.Battlefields
 import io.github.mustypit.rifttracker.game.CatalogImport
 import io.github.mustypit.rifttracker.game.Cards
 import io.github.mustypit.rifttracker.game.Legends
+import io.github.mustypit.rifttracker.game.Prices
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +35,8 @@ import java.net.URL
  */
 object CardUpdates {
     const val CATALOG_URL = "https://openrift.app/api/v1/catalog?langs=EN"
+    const val PRICES_URL = "https://openrift.app/api/v1/prices"
+    const val LINKS_URL = "https://openrift.app/api/v1/prices/links?printings="
     private const val MEDIA = "https://openrift.app/media/cards/"
     const val USER_AGENT_CONTACT = "+https://github.com/mustypit/riftracker"
     private const val CHECK_EVERY_MS = 60 * 60 * 1000L
@@ -72,6 +79,7 @@ object CardUpdates {
         read("legends/legends.json", "legends.json")?.let { runCatching { Legends.install(it) } }
         read("cards/cards.json", "cards.json")?.let { runCatching { Cards.install(it) } }
         read("battlefields/battlefields.json", "battlefields.json")?.let { runCatching { Battlefields.install(it) } }
+        File(context.filesDir, "openrift-prices.json").takeIf { it.exists() }?.let { f -> runCatching { Prices.byPrinting = Prices.parse(f.readText()) } }
         val p = prefs(context)
         _status.value = Status(p.getLong("updatedAt", 0L).takeIf { it > 0 })
     }
@@ -112,6 +120,22 @@ object CardUpdates {
                 version.value++
             }
             p.edit().putLong("checkedAt", now).apply()
+            // Prices (once a day upstream): same ETag rule; a failure here doesn't fail the card check.
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    val file = File(context.filesDir, "openrift-prices.json")
+                    val headers = buildMap {
+                        put("User-Agent", userAgent)
+                        if (file.exists()) p.getString("pricesEtag", null)?.let { put("If-None-Match", it) }
+                    }
+                    val r = fetch(PRICES_URL, headers)
+                    if (r.code == 200 && r.body != null) {
+                        val text = r.body.decodeToString()
+                        val parsed = Prices.parse(text)
+                        if (parsed.isNotEmpty()) { file.writeText(text); p.edit().putString("pricesEtag", r.etag).apply(); parsed } else null
+                    } else null
+                }?.let { Prices.byPrinting = it; version.value++ }
+            }
         }.isSuccess
         _status.value = Status(p.getLong("updatedAt", 0L).takeIf { it > 0 }, checking = false, failed = !ok)
     }
@@ -176,6 +200,18 @@ object CardUpdates {
         runCatching { local.parentFile?.mkdirs(); local.writeBytes(bytes) }
         return bytes
     }
+
+    /**
+     * The Cardmarket product page of one printing (`/api/v1/prices/links?printings=<id>`, a single
+     * lookup when the user taps the logo). Null when there's none or no network. Call off the main thread.
+     */
+    fun cardmarketLink(printingId: String): String? = runCatching {
+        val r = fetch(LINKS_URL + printingId, mapOf("User-Agent" to userAgent))
+        if (r.code != 200 || r.body == null) return null
+        val root = Json.parseToJsonElement(r.body.decodeToString()).jsonObject
+        val cm = root["links"]?.jsonObject?.get(printingId)?.jsonObject?.get("cardmarket")?.jsonObject ?: return null
+        (cm["url"] as? JsonPrimitive)?.contentOrNull?.takeIf { it.startsWith("https://") }
+    }.getOrNull()
 
     private fun versionName(context: Context) =
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "?"

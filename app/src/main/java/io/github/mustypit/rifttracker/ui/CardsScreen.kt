@@ -13,6 +13,10 @@ import androidx.compose.animation.core.spring
 import io.github.mustypit.rifttracker.game.DeckRules
 import io.github.mustypit.rifttracker.game.Board
 import io.github.mustypit.rifttracker.game.Printing
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import java.net.URLEncoder
 import io.github.mustypit.rifttracker.game.Prices
 import androidx.compose.ui.platform.LocalUriHandler
@@ -712,13 +716,20 @@ fun CardDetailScreen(vm: MainViewModel, slug: String) {
 private fun CardPriceRow(card: Card, printing: Printing?) {
     val price = Prices.of(card, printing) ?: return
     val uri = LocalUriHandler.current
-    val link = price.url ?: "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=" + URLEncoder.encode(card.name, "UTF-8")
+    val scope = rememberCoroutineScope()
+    val id = (printing ?: card.printings.firstOrNull())?.id
+    // The printing's exact product page (looked up when tapped), else a Cardmarket search for the card.
+    fun open() = scope.launch {
+        val link = id?.let { withContext(Dispatchers.IO) { CardUpdates.cardmarketLink(it) } }
+            ?: ("https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=" + URLEncoder.encode(card.name, "UTF-8"))
+        runCatching { uri.openUri(link) }
+    }
     Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(Prices.format(price.eur), fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = C.Ink, modifier = Modifier.semantics { contentDescription = "Price ${Prices.format(price.eur)}" })
         Spacer(Modifier.weight(1f))
         Box(
             Modifier.size(40.dp).clip(CircleShape).background(Color.White).border(1.dp, C.Line, CircleShape)
-                .clickable { uri.openUri(link) }.semantics { contentDescription = "Cardmarket" },
+                .clickable { open() }.semantics { contentDescription = "Cardmarket" },
             contentAlignment = Alignment.Center,
         ) { Icon(RiftIcons.Cardmarket, null, tint = RiftIcons.CardmarketBlue, modifier = Modifier.size(20.dp)) }
     }

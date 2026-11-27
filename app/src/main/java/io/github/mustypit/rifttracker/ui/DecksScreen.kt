@@ -1048,7 +1048,7 @@ fun DeckArtsScreen(vm: MainViewModel, id: Long) {
 /** Deck value on Cardmarket at the chosen arts: the total, the priciest cards, the rest behind "All cards". */
 @Composable
 private fun DeckValue(deck: Deck) {
-    val value = remember(deck, Prices.byCode) { Prices.deckValue(deck) } ?: return
+    val value = remember(deck, Prices.byPrinting) { Prices.deckValue(deck) } ?: return
     val (total, rows) = value
     var all by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.Card).padding(horizontal = 14.dp, vertical = 12.dp)) {

@@ -15,6 +15,8 @@ data class Printing(
     val rarity: String? = null,
     val artist: String? = null,
     val kind: String = "normal",
+    /** OpenRift's printing id: prices and store links are keyed by it. */
+    val id: String? = null,
 )
 
 /** One card in the library, shown as its newest standard printing (from OpenRift, see build_legend_assets.py). */

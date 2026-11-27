@@ -3,6 +3,7 @@ package io.github.mustypit.rifttracker.ui
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
@@ -36,15 +37,13 @@ object RiftIcons {
     val Minus = icon("minus") { fill("M6 10.7h12a1.3 1.3 0 0 1 0 2.6H6a1.3 1.3 0 0 1 0-2.6z") }
 
     /** Two crossed swords, kept minimal: two lines in an X, each with a short crossguard. The Play tab. */
+    /**
+     * Two crossed swords (owner's pick "1"): solid blades with points, crossguards, grips and round
+     * pommels, crossed high so the guards stay apart; the back sword is cut where the front one passes.
+     * Generated as one even-odd shape (see design/icon/play_swords.py).
+     */
     val CrossedSwords = icon("crossed_swords") {
-        fun line(d: String) = addPath(
-            addPathNodes(d), stroke = SolidColor(Color.Black), strokeLineWidth = 2.4f,
-            strokeLineCap = StrokeCap.Round,
-        )
-        line("M4.5 4.5L19 19")    // blade + handle, top-left to bottom-right
-        line("M19.5 4.5L5 19")    // the other one
-        line("M13.5 18.5L18.5 13.5") // its crossguard
-        line("M5.5 13.5L10.5 18.5")  // and this one's
+        addPath(addPathNodes("M11.59 7.47L8.34 4.21L5.95 3.58L6.59 5.96L9.84 9.22ZM4.60 12.73L3.85 14.04L7.58 17.78L8.90 17.02L7.62 15.75L17.41 5.96L18.05 3.58L15.66 4.21L5.87 14.00ZM18.28 15.91L17.81 16.38L20.11 18.69L20.59 18.21L21.07 17.74L18.76 15.43L20.15 14.04L19.40 12.73L18.13 14.00L14.16 10.03L12.41 11.78L16.38 15.75L15.10 17.02L16.42 17.78ZM5.24 15.43L2.93 17.74L3.89 18.69L6.19 16.38ZM3.72 18.71L3.69 18.63L3.65 18.56L3.61 18.48L3.57 18.41L3.52 18.34L3.47 18.28L3.41 18.21L3.35 18.16L3.28 18.10L3.21 18.05L3.14 18.01L3.07 17.97L2.99 17.93L2.91 17.90L2.83 17.88L2.75 17.86L2.66 17.85L2.58 17.84L2.49 17.84L2.41 17.84L2.32 17.85L2.24 17.86L2.16 17.88L2.08 17.90L2.00 17.93L1.92 17.97L1.85 18.01L1.77 18.05L1.71 18.10L1.64 18.16L1.58 18.21L1.52 18.28L1.47 18.34L1.42 18.41L1.37 18.48L1.33 18.56L1.30 18.63L1.27 18.71L1.24 18.79L1.22 18.88L1.21 18.96L1.20 19.04L1.20 19.13L1.20 19.21L1.21 19.30L1.22 19.38L1.24 19.46L1.27 19.55L1.30 19.62L1.33 19.70L1.37 19.78L1.42 19.85L1.47 19.92L1.52 19.98L1.58 20.04L1.64 20.10L1.71 20.16L1.77 20.20L1.85 20.25L1.92 20.29L2.00 20.32L2.08 20.35L2.16 20.38L2.24 20.40L2.32 20.41L2.41 20.42L2.49 20.42L2.58 20.42L2.66 20.41L2.75 20.40L2.83 20.38L2.91 20.35L2.99 20.32L3.07 20.29L3.14 20.25L3.21 20.20L3.28 20.16L3.35 20.10L3.41 20.04L3.47 19.98L3.52 19.92L3.57 19.85L3.61 19.78L3.65 19.70L3.69 19.62L3.72 19.55L3.74 19.46L3.76 19.38L3.78 19.30L3.78 19.21L3.79 19.13L3.78 19.04L3.78 18.96L3.76 18.88L3.74 18.79ZM22.70 18.63L22.67 18.56L22.63 18.48L22.58 18.41L22.53 18.34L22.48 18.28L22.42 18.21L22.36 18.16L22.29 18.10L22.23 18.05L22.15 18.01L22.08 17.97L22.00 17.93L21.92 17.90L21.84 17.88L21.76 17.86L21.68 17.85L21.59 17.84L21.51 17.84L21.42 17.84L21.34 17.85L21.25 17.86L21.17 17.88L21.09 17.90L21.01 17.93L20.93 17.97L20.86 18.01L20.79 18.05L20.72 18.10L20.65 18.16L20.59 18.21L20.53 18.28L20.48 18.34L20.43 18.41L20.39 18.48L20.35 18.56L20.31 18.63L20.28 18.71L20.26 18.79L20.24 18.88L20.22 18.96L20.22 19.04L20.21 19.13L20.22 19.21L20.22 19.30L20.24 19.38L20.26 19.46L20.28 19.55L20.31 19.62L20.35 19.70L20.39 19.78L20.43 19.85L20.48 19.92L20.53 19.98L20.59 20.04L20.65 20.10L20.72 20.16L20.79 20.20L20.86 20.25L20.93 20.29L21.01 20.32L21.09 20.35L21.17 20.38L21.25 20.40L21.34 20.41L21.42 20.42L21.51 20.42L21.59 20.42L21.68 20.41L21.76 20.40L21.84 20.38L21.92 20.35L22.00 20.32L22.08 20.29L22.15 20.25L22.23 20.20L22.29 20.16L22.36 20.10L22.42 20.04L22.48 19.98L22.53 19.92L22.58 19.85L22.63 19.78L22.67 19.70L22.70 19.62L22.73 19.55L22.76 19.46L22.78 19.38L22.79 19.30L22.80 19.21L22.80 19.13L22.80 19.04L22.79 18.96L22.78 18.88L22.76 18.79L22.73 18.71Z"), fill = SolidColor(Color.Black), pathFillType = PathFillType.EvenOdd)
     }
 
     /** Two cards, the front one outlined: the Cards tab. Kept as simple as the other tab icons. */

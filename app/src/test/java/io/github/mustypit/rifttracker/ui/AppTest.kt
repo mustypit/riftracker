@@ -844,22 +844,22 @@ open class AppTest {
             if (id == null) io.github.mustypit.rifttracker.data.CardUpdates.Response(304, null, null)
             else io.github.mustypit.rifttracker.data.CardUpdates.Response(200, javaClass.getResource("/printings/${pictures[id]}.webp")!!.readBytes(), null)
         }
-        fun p(code: String, id: String, kind: String = "normal") = io.github.mustypit.rifttracker.game.Printing(code, "Radiance", id, kind = kind)
+        fun p(code: String, id: String, kind: String = "normal") = io.github.mustypit.rifttracker.game.Printing(code, "Radiance", id, kind = kind, id = "pid-$code")
         val extra = mapOf(
             "iron-revenant" to listOf(p("RAD-143", "t-iron-143"), p("RAD-170", "t-iron-170", "overnumbered"), p("RAD-170s", "t-iron-170s", "signed")),
             "mordekaiser-twice-slain" to listOf(p("RAD-020", "t-ts-020"), p("RAD-020a", "t-ts-020a", "altart")),
             "mordekaiser-dominating" to listOf(p("RAD-137", "t-dom-137"), p("RAD-137a", "t-dom-137a", "altart")),
+            "amateur-demolitionist" to listOf(p("RAD-001", "t-ad-001")),
         )
         rule.runOnUiThread {
             val cards = io.github.mustypit.rifttracker.game.Cards.all.map { c -> extra[c.slug]?.let { c.copy(printings = it) } ?: c }
             io.github.mustypit.rifttracker.game.Cards.install(kotlinx.serialization.json.Json.encodeToString(cards))
         }
         // Sample Cardmarket prices (the real ones come from OpenRift's price data).
-        val demo = io.github.mustypit.rifttracker.game.Cards.bySlug("amateur-demolitionist")!!.code!!
-        io.github.mustypit.rifttracker.game.Prices.byCode = mapOf(
-            "RAD-143" to 1.20, "RAD-170" to 9.50, "RAD-170s" to 84.00, "RAD-020" to 3.10, "RAD-020a" to 22.50,
-            "RAD-137" to 4.90, "RAD-137a" to 18.00, demo to 0.30,
-        ).mapValues { io.github.mustypit.rifttracker.game.CardPrice(it.value, "https://www.cardmarket.com/en/Riftbound/Products/Singles/x") }
+        io.github.mustypit.rifttracker.game.Prices.byPrinting = mapOf(
+            "RAD-143" to 120, "RAD-170" to 950, "RAD-170s" to 8400, "RAD-020" to 310, "RAD-020a" to 2250,
+            "RAD-137" to 490, "RAD-137a" to 1800, "RAD-001" to 30,
+        ).entries.associate { "pid-${it.key}" to io.github.mustypit.rifttracker.game.CardPrice(it.value) }
         // Cards tab: the card page ends with the printings; tapping one swaps the picture, same page.
         click("Cards")
         type("Search cards", "Iron Revenant")
@@ -902,7 +902,7 @@ open class AppTest {
         rule.onNode(hasContentDescription("Stats tab", substring = true)).performScrollTo().performClick(); rule.waitForIdle()
         rule.onNode(hasContentDescription("Deck value €117.20")).assertExists()
         settleImages(); shot("58_deck_value")
-        io.github.mustypit.rifttracker.game.Prices.byCode = emptyMap()
+        io.github.mustypit.rifttracker.game.Prices.byPrinting = emptyMap()
     }
 
     /** The search bar comes back when scrolling up the library (frames: screenshots/anim/searchbar_*). */

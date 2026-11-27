@@ -35,19 +35,23 @@ class CardUpdatesTest {
     private val sample = javaClass.getResource("/openrift/catalog_sample.json")!!.readBytes()
     private val requests = mutableListOf<Pair<String, Map<String, String>>>()
     private var catalogReply: (Map<String, String>) -> CardUpdates.Response = { CardUpdates.Response(200, sample, "\"e1\"") }
+    // No prices unless a test serves them (keeps the card tests' counts simple).
+    private var pricesReply: (Map<String, String>) -> CardUpdates.Response = { CardUpdates.Response(404, null, null) }
 
     private fun picture(w: Int, h: Int): ByteArray =
         ByteArrayOutputStream().also { Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
 
     @Before
     fun setUp() {
-        File(context.filesDir, "openrift").deleteRecursively()
+        File(context.filesDir, "openrift").deleteRecursively(); File(context.filesDir, "openrift-prices.json").delete()
         context.getSharedPreferences("card_updates", Context.MODE_PRIVATE).edit().clear().commit()
         CardUpdates.minLegends = 1; CardUpdates.minCards = 1
         CardUpdates.fetch = { url, headers ->
             requests += url to headers
             when {
                 url == CardUpdates.CATALOG_URL -> catalogReply(headers)
+                url == CardUpdates.PRICES_URL -> pricesReply(headers)
+                url.startsWith(CardUpdates.LINKS_URL) -> CardUpdates.Response(200, ("""{"links":{"p7":{"cardmarket":{"available":true,"productId":1,"url":"https://www.cardmarket.com/en/Riftbound/Products/Singles/x"}}}}""").encodeToByteArray(), null)
                 url.endsWith("-full.webp") -> CardUpdates.Response(200, picture(300, 420), null) // a portrait card
                 url.contains("img-axe") -> CardUpdates.Response(404, null, null) // OpenRift has no picture
                 url.endsWith("-400w.webp") -> CardUpdates.Response(200, picture(40, 56), null)
@@ -64,6 +68,27 @@ class CardUpdatesTest {
 
     private fun check(now: Long, force: Boolean = false) = runBlocking { CardUpdates.check(context, now, force) }
     private fun catalogRequests() = requests.filter { it.first == CardUpdates.CATALOG_URL }
+
+    @Test
+    fun pricesComeWithTheCheckAndStoreLinksOnTap() {
+        pricesReply = { CardUpdates.Response(200, """{"prices":{"p7":{"cardmarket":380}}}""".encodeToByteArray(), "\"pe1\"") }
+        CardUpdates.installStartup(context)
+        check(now = 1_000)
+        assertEquals(380, io.github.mustypit.rifttracker.game.Prices.byPrinting["p7"]?.cents)
+        // Saved for the next start, and asked again with the ETag an hour later.
+        io.github.mustypit.rifttracker.game.Prices.byPrinting = emptyMap()
+        CardUpdates.installStartup(context)
+        assertEquals(380, io.github.mustypit.rifttracker.game.Prices.byPrinting["p7"]?.cents)
+        pricesReply = { CardUpdates.Response(304, null, null) }
+        check(now = 1_000 + 61 * 60_000)
+        assertEquals("\"pe1\"", requests.last { it.first == CardUpdates.PRICES_URL }.second["If-None-Match"])
+        assertEquals(380, io.github.mustypit.rifttracker.game.Prices.byPrinting["p7"]?.cents)
+        // The logo looks up one printing's product page.
+        assertEquals("https://www.cardmarket.com/en/Riftbound/Products/Singles/x", CardUpdates.cardmarketLink("p7"))
+        assertEquals(CardUpdates.LINKS_URL + "p7", requests.last().first)
+        assertNull(CardUpdates.cardmarketLink("unknown"))
+        io.github.mustypit.rifttracker.game.Prices.byPrinting = emptyMap()
+    }
 
     @Test
     fun downloadsSavesAndInstallsNewCards() {

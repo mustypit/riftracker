@@ -34,6 +34,9 @@ class CatalogImportTest {
         assertEquals(listOf("NXT-024", "OGN-024", "OGN-024a", "OGN-324*", "PRO-007"), unit.printings.map { it.code })
         assertEquals(listOf("normal", "normal", "altart", "overnumbered", "promo"), unit.printings.map { it.kind })
         assertEquals("img-unit-alt", unit.printing("OGN-024a")!!.imageId)
+        // Each printing keeps OpenRift's printing id (prices and store links are keyed by it).
+        assertEquals("p7", unit.printings.first().id)
+        assertEquals("p8", unit.printing("OGN-024a")!!.id)
     }
 
     @Test
@@ -85,6 +88,19 @@ class CatalogImportTest {
         Battlefields.install(r.battlefieldsJson)
         assertEquals(listOf("Cosmic Vista"), Battlefields.all.map { it.name })
         assertEquals(mapOf("cosmic_vista" to "img-vista"), r.battlefieldArt)
+    }
+
+    @Test
+    fun pricesAreCardmarketCentsByPrinting() {
+        val prices = Prices.parse("""{"prices":{"p7":{"tcgplayer":452,"cardmarket":380},"p8":{"tcgplayer":99}},"currencies":{}}""")
+        assertEquals(mapOf("p7" to CardPrice(380)), prices)
+        Cards.install(CatalogImport.parse(sample).cardsJson)
+        Prices.byPrinting = prices
+        val unit = Cards.bySlug("chemtech-enforcer")!!
+        assertEquals(CardPrice(380), Prices.of(unit))
+        assertEquals(null, Prices.of(unit, unit.printing("OGN-024a"))) // no Cardmarket price for that printing
+        assertEquals("€3.80", Prices.format(Prices.of(unit)!!.eur))
+        Prices.byPrinting = emptyMap()
     }
 
     @Test

@@ -99,7 +99,7 @@ object CatalogImport {
                         val code = q.str("shortCode") ?: return@forEach
                         add(buildJsonObject {
                             put("code", code); put("set", sets[q.str("setId")]?.str("name") ?: ""); put("imageId", imageId(q))
-                            put("rarity", q.str("rarity")); put("artist", q.str("artist")); put("kind", kind(q))
+                            put("rarity", q.str("rarity")); put("artist", q.str("artist")); put("kind", kind(q)); put("id", q.str("id"))
                         })
                     }
                 }

@@ -232,7 +232,7 @@ def write_cards(catalog):
             lst = printings_per_card.setdefault(cid, [])
             if all(x["imageId"] != p["images"][0]["imageId"] for x in lst):
                 lst.append({"code": p["shortCode"], "set": sets.get(p.get("setId"), {}).get("name", ""),
-                            "imageId": p["images"][0]["imageId"], "rarity": p.get("rarity"), "artist": p.get("artist"), "kind": kind(p)})
+                            "imageId": p["images"][0]["imageId"], "rarity": p.get("rarity"), "artist": p.get("artist"), "kind": kind(p), "id": p["id"]})
     kinds = {}
     for p in as_list(catalog["printings"]):
         if p.get("language") == "EN":
